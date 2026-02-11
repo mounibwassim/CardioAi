@@ -78,19 +78,21 @@ export default function Layout({ children }: LayoutProps) {
                 {children || <Outlet />}
             </main>
             <footer className="bg-white border-t border-slate-200 mt-auto">
-                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 relative">
-                    <p className="text-center text-sm text-slate-500">
-                        &copy; {new Date().getFullYear()} CardioAI. Professional Medical Intelligence System.
-                    </p>
-
-                    {/* Hidden Doctor Portal Access */}
-                    {!isDoctor && (
-                        <div className="absolute right-4 bottom-4 opacity-50 hover:opacity-100 transition-opacity">
-                            <Link to="/doctor-secure-access-portal" className="text-xs text-slate-300 hover:text-primary-400">
-                                Staff Access
+                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-2 text-sm text-slate-500">
+                        <p>
+                            &copy; {new Date().getFullYear()} CardioAI. Professional Medical Intelligence System. All rights reserved.
+                        </p>
+                        {!isDoctor && (
+                            <Link
+                                to="/doctor-secure-access-portal"
+                                className="text-xs text-slate-300 hover:text-primary-500 transition-colors opacity-50 hover:opacity-100 ml-2"
+                                title="Staff Access"
+                            >
+                                ●
                             </Link>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </footer>
         </div>
