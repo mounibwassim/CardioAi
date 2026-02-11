@@ -328,53 +328,78 @@ def reset_database():
     wipe_data()
     return {"message": "System reset complete. All data wiped."}
 
-@app.post("/contact")
-def send_contact_email(request: ContactRequest):
-    sender_email = os.getenv("EMAIL_USER")
-    sender_password = os.getenv("EMAIL_PASS")
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
+# --- Email Logic ---
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_email_to_owner(name: str, email: str, message: str) -> bool:
+    # Defaults for Gmail if not set
+    smtp_server = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+    smtp_port_str = os.getenv("EMAIL_PORT", "587")
     
+    try:
+        smtp_port = int(smtp_port_str)
+    except ValueError:
+        smtp_port = 587
+
+    sender_email = os.getenv("EMAIL_USER")
+    # Support both EMAIL_PASS (old) and EMAIL_PASSWORD (new request)
+    sender_password = os.getenv("EMAIL_PASSWORD") or os.getenv("EMAIL_PASS")
+
     if not sender_email or not sender_password:
-        logger.error("Missing EMAIL_USER or EMAIL_PASS environment variables.")
-        return {"message": "Message received (queued)."}
+        logger.error("Email credentials missing (EMAIL_USER or EMAIL_PASSWORD)")
+        return False
 
-    receiver_email = "mounibwassimm@gmail.com" 
+    receiver_email = "mounibwassimm@gmail.com"  # Hardcoded owner email or use sender_email
 
-    message = f"""\
-Subject: New Contact Request: {request.name}
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"New Contact Message from {name} - CardioAI"
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
 
-Name: {request.name}
-Email: {request.email}
+    text = f"""
+    New message received:
 
-Message:
-{request.message}
-"""
+    Name: {name}
+    Email: {email}
+    Message:
+    {message}
+    """
+
+    msg.attach(MIMEText(text, "plain"))
 
     try:
-        logger.info(f"Sending email from {sender_email} to {receiver_email}")
-        
-        import smtplib
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
-
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = receiver_email
-        msg['Subject'] = f"New Contact Request: {request.name}"
-        msg.attach(MIMEText(message, 'plain'))
-
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, receiver_email, msg.as_string())
-        server.quit()
-        logger.info("Email sent successfully.")
-
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+        logger.info(f"Email sent successfully from {sender_email} to {receiver_email}")
+        return True
     except Exception as e:
-        logger.error(f"Failed to send email: {e}")
-    
-    return {"message": "Message received. We will contact you shortly."}
+        logger.error(f"Email error: {e}")
+        return False
+
+@app.post("/contact")
+def send_contact_email(request: ContactRequest):
+    success = send_email_to_owner(
+        request.name,
+        request.email,
+        request.message
+    )
+
+    if not success:
+        # 500 might be too harsh if we want frontend to just show "received" even if email fails?
+        # But user requested raising 500 on failure in their snippet.
+        logger.error("Failed to send contact email.")
+        # raise HTTPException(status_code=500, detail="Email failed") 
+        # Better UX: Return success but log error so user isn't discouraged, 
+        # unless strictly required. User asked for:
+        # if not success: raise HTTPException...
+        # I will follow their request.
+        raise HTTPException(status_code=500, detail="Failed to send email. Please try again later.")
+
+    return {"message": "Message sent successfully"}
 
 if __name__ == "__main__":
     import uvicorn

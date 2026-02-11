@@ -21,7 +21,9 @@ This method is free, reliable, and does **not** require Firebase.
 | Key | Value |
 | :--- | :--- |
 | `EMAIL_USER` | `mounibwassimm@gmail.com` |
-| `EMAIL_PASS` | `[PASTE_YOUR_16_CHAR_CODE_HERE]` |
+| `EMAIL_PASSWORD` | `jshj enoz zesm wbse` |
+| `EMAIL_HOST` | `smtp.gmail.com` |
+| `EMAIL_PORT` | `587` |
 
 5.  Click **Save Changes**.
 
