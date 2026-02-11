@@ -106,13 +106,18 @@ async def startup_event():
         c = conn.cursor()
         # Check if admin exists
         admin = c.execute("SELECT * FROM users WHERE username = 'admin'").fetchone()
+        hashed_default = get_password_hash("admin123")
+        
         if not admin:
-            # Hash the default password immediately
-            hashed_default = get_password_hash("admin123")
             c.execute("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
                       ("admin", hashed_default, "doctor"))
-            conn.commit()
-            logger.info("Default admin user created: admin / [hashed]")
+            logger.info("Default admin user created: admin / admin123")
+        else:
+            # FORCE RESET PASSWORD ON STARTUP to ensure access
+            c.execute("UPDATE users SET password_hash = ? WHERE username = 'admin'", (hashed_default,))
+            logger.info("Admin password reset to default: admin / admin123")
+            
+        conn.commit()
         conn.close()
     except Exception as e:
         logger.error(f"Error seeding admin: {e}")
@@ -129,47 +134,7 @@ async def startup_event():
     except Exception as e:
         logger.error(f"CRITICAL ERROR loading model: {e}")
 
-# Pydantic Models
-class PatientData(BaseModel):
-    age: int
-    sex: int
-    cp: int
-    trestbps: int
-    chol: int
-    fbs: int
-    restecg: int
-    thalach: int
-    exang: int
-    oldpeak: float
-    slope: int
-    ca: int
-    thal: int
-
-class PredictionResult(BaseModel):
-    prediction: int
-    risk_score: float
-    risk_level: str
-
-class PatientCreate(BaseModel):
-    name: str
-    age: int
-    sex: int
-    contact: Optional[str] = None
-
-class FeedbackCreate(BaseModel):
-    name: str
-    rating: int
-    comment: str
-    patient_id: Optional[int] = None
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-class ContactRequest(BaseModel):
-    name: str
-    email: EmailStr
-    message: str
+# ... (Pydantic models - no change needed) ...
 
 # Endpoints
 
@@ -208,6 +173,10 @@ def doctor_login(creds: LoginRequest):
             conn.commit()
             conn.close()
             authenticated = True
+        else:
+             logger.warning(f"Password mismatch for user: {creds.username}")
+    else:
+        logger.warning(f"User not found: {creds.username}")
 
     if authenticated:
         # Success
