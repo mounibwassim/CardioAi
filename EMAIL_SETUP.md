@@ -21,7 +21,7 @@ This method is free, reliable, and does **not** require Firebase.
 | Key | Value |
 | :--- | :--- |
 | `EMAIL_USER` | `mounibwassimm@gmail.com` |
-| `EMAIL_PASSWORD` | `jshj enoz zesm wbse` |
+| `EMAIL_PASSWORD` | `jshjenozzesmwbse` |
 | `EMAIL_HOST` | `smtp.gmail.com` |
 | `EMAIL_PORT` | `587` |
 
