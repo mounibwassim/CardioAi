@@ -7,121 +7,101 @@ import Heart3D from './Heart3D';
 export default function NeuralPulseField() {
     const groupRef = useRef<THREE.Group>(null);
     const { mouse } = useThree();
-    const [, setHover] = useState(false);
+    const [hovered, setHover] = useState(false);
 
-    // Particle System Data - Organic/Irregular Shape
-    const particles = useMemo(() => {
-        const count = 600; // Increased count for density
+    // Dynamic "AI Cloud" Particle System
+    // Goal: Wide, horizontal, irregular, "expensive" medical look
+    const { particles, linesGeometry } = useMemo(() => {
+        const count = 350; // Balanced for performance vs density
         const positions = new Float32Array(count * 3);
+        const sizes = new Float32Array(count);
 
+        // Distribution: Wide Box with organic noise
         for (let i = 0; i < count; i++) {
-            // Perlin-noise-like distribution (using multiple sin/cos layers) to create "clumps" and irregular strands
-            const u = Math.random() * Math.PI * 2;
-            const v = Math.random() * Math.PI;
+            // Horizontal spread (X): -20 to 20
+            // Vertical spread (Y): -6 to 6 (flatter)
+            // Depth (Z): -5 to 5
 
-            // Base radius varies significantly
-            const r = 8 + Math.random() * 6 + Math.sin(u * 5) * 2 + Math.cos(v * 4) * 2;
+            const x = (Math.random() - 0.5) * 40;
+            const y = (Math.random() - 0.5) * 12;
+            const z = (Math.random() - 0.5) * 10;
 
-            // Convert to Cartesian
-            let x = r * Math.sin(v) * Math.cos(u);
-            let y = r * Math.sin(v) * Math.sin(u);
-            let z = r * Math.cos(v);
-
-            // Stretch/Squash for organic feel
-            x *= 1.2; // Wider
-            y *= 0.8; // Flatter
+            // Apply some "clustering" preference to center but keep it wide
+            // No sphere math here.
 
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
+
+            sizes[i] = Math.random() < 0.1 ? 0.3 : 0.1; // Some large "nodes"
         }
 
-        // Generate connections between nearby particles (simulating neural pathways)
-        // This is computationally expensive, so we simulate it with a subset relative to index
-        // or just use line segments for visual flair without strict topology
+        // Pre-compute connections for a static web (performance optimized)
+        // We will animate the "pulses" via shader or texture offset later, 
+        // but for standard Lines, we'll connect close neighbors.
+        const connectionPoints = [];
+        for (let i = 0; i < count; i++) {
+            const p1 = new THREE.Vector3(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
 
-        return { positions };
+            // Find neighbors
+            let connectionsFound = 0;
+            for (let j = i + 1; j < count; j++) {
+                if (connectionsFound > 3) break; // Limit interactions
+
+                const p2 = new THREE.Vector3(positions[j * 3], positions[j * 3 + 1], positions[j * 3 + 2]);
+                const dist = p1.distanceTo(p2);
+
+                if (dist < 5) { // Connection threshold
+                    connectionPoints.push(p1.x, p1.y, p1.z);
+                    connectionPoints.push(p2.x, p2.y, p2.z);
+                    connectionsFound++;
+                }
+            }
+        }
+
+        const linesGeo = new THREE.BufferGeometry();
+        linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(connectionPoints, 3));
+
+        return {
+            particles: { positions, sizes },
+            linesGeometry: linesGeo
+        };
     }, []);
 
-    // Expanding Pulse Waves - Irregular/Organic
-    const PulseWaves = () => {
-        const waveRef = useRef<THREE.Group>(null);
-
-        useFrame(() => {
-            if (waveRef.current) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                waveRef.current.children.forEach((mesh: any, i) => {
-                    // Non-linear expansion
-                    mesh.scale.x += 0.003 + (i * 0.001);
-                    mesh.scale.y += 0.003 + (i * 0.001);
-                    mesh.scale.z += 0.003 + (i * 0.001);
-
-                    // Rotate slowly
-                    mesh.rotation.z += 0.001;
-                    mesh.rotation.y += 0.002;
-
-                    // Fade out
-                    if (mesh.material) {
-                        mesh.material.opacity -= 0.001;
-                    }
-
-                    // Reset with random rotation for variety
-                    if (mesh.material.opacity <= 0) {
-                        mesh.scale.set(0.1, 0.1, 0.1);
-                        mesh.material.opacity = 0.4;
-                        mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-                    }
-                });
-            }
-        });
-
-        return (
-            <group ref={waveRef}>
-                {[0, 1, 2, 3].map(i => (
-                    <mesh key={i} scale={[0.5 + i * 0.8, 0.5 + i * 0.8, 0.5 + i * 0.8]}>
-                        {/* Icosahedron gives a more tech/poly look than sphere */}
-                        <icosahedronGeometry args={[5, 1]} />
-                        <meshBasicMaterial
-                            color={i % 2 === 0 ? "#4fd1ff" : "#F472B6"} // Blue and Pink hints
-                            transparent
-                            opacity={0.3}
-                            wireframe
-                            side={THREE.DoubleSide}
-                        />
-                    </mesh>
-                ))}
-            </group>
-        );
-    }
-
     useFrame((state) => {
-        if (groupRef.current) {
-            // Smooth Mouse Follow (Damped)
-            const targetRotX = mouse.y * 0.3; // Tilt up/down
-            const targetRotY = mouse.x * 0.3; // Pan left/right
+        if (!groupRef.current) return;
 
-            groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, 0.02);
-            groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 0.02);
+        // Mouse Parallax & Tilt (Smooth lerp)
+        // Design: "Interaction stops completely when mouse leaves hero section" handled by parent clipping usually, 
+        // but here we just dampen nicely.
 
-            // Subtle continuous floating breathing
-            const time = state.clock.getElapsedTime();
-            groupRef.current.position.y = Math.sin(time * 0.5) * 0.2;
-            groupRef.current.rotation.z = Math.sin(time * 0.2) * 0.05;
-        }
+        const targetRotX = mouse.y * 0.15; // Subtle tilt
+        const targetRotY = mouse.x * 0.15;
+
+        const rotationSpeed = hovered ? 0.08 : 0.05;
+
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, rotationSpeed);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, rotationSpeed);
+
+        // Constant Slow Float
+        const time = state.clock.getElapsedTime();
+        groupRef.current.position.y = Math.sin(time * 0.2) * 0.5; // Slow vertical breathing
     });
 
     return (
         <group>
-            {/* Center Heart - Integrated */}
+            {/* Center: The "Real" Heart */}
+            {/* Placed at 0,0,0, stays effectively centered while field moves slightly around it */}
             <group scale={[0.8, 0.8, 0.8]}>
                 <Heart3D />
             </group>
 
-            {/* Neural Field Surrounding Heart */}
+            {/* The Neural AI Cloud */}
             <group ref={groupRef}
                 onPointerOver={() => setHover(true)}
                 onPointerOut={() => setHover(false)}
             >
+                {/* Nodes */}
                 <points>
                     <bufferGeometry>
                         <bufferAttribute
@@ -131,33 +111,48 @@ export default function NeuralPulseField() {
                             itemSize={3}
                             args={[particles.positions, 3]}
                         />
+                        <bufferAttribute
+                            attach="attributes-size"
+                            count={particles.sizes.length}
+                            array={particles.sizes}
+                            itemSize={1}
+                            args={[particles.sizes, 1]}
+                        />
                     </bufferGeometry>
+                    {/* SizeAttenuation must be true for depth perception */}
                     <pointsMaterial
-                        size={0.06}
-                        color="#60A5FA" // Lighter blue
+                        color="#00f3ff" // Cyan/Electric Blue
                         transparent
-                        opacity={0.6}
+                        opacity={0.8}
+                        size={0.15}
+                        sizeAttenuation={true}
                         blending={THREE.AdditiveBlending}
-                        sizeAttenuation
                         depthWrite={false}
                     />
                 </points>
 
-                {/* Connecting Lines (Static for performance, effectively simulating neural web) */}
-                {/* Visualizing just via Points mainly to keep it performant, lines would require expensive index generation for organic shape. 
-                    Instead using a secondary wireframe mesh to simulate "Web" */}
-                <mesh>
-                    <icosahedronGeometry args={[9, 2]} />
-                    <meshBasicMaterial
-                        color="#3b82f6"
-                        wireframe
+                {/* Connections (Neural Web) */}
+                <lineSegments geometry={linesGeometry}>
+                    <lineBasicMaterial
+                        color="#2d8cf0" // Deep electric blue
                         transparent
-                        opacity={0.05}
+                        opacity={0.15}
                         blending={THREE.AdditiveBlending}
+                        depthWrite={false}
                     />
-                </mesh>
+                </lineSegments>
 
-                <PulseWaves />
+                {/* Optional: Add some larger glowing "Data Packets" floating around */}
+                {[...Array(5)].map((_, i) => (
+                    <mesh key={i} position={[
+                        Math.sin(i) * 10,
+                        Math.cos(i) * 3,
+                        Math.sin(i * 2) * 5
+                    ]}>
+                        <sphereGeometry args={[0.2, 16, 16]} />
+                        <meshBasicMaterial color="#ffffff" transparent opacity={0.6} />
+                    </mesh>
+                ))}
             </group>
         </group>
     );

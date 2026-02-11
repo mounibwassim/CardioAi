@@ -109,7 +109,7 @@ def create_feedback(feedback: FeedbackCreate):
 
 class ContactRequest(BaseModel):
     name: str
-    email: EmailStr
+    email: str # Relaxed from EmailStr to prevent validation errors if package missing
     message: str
 
 # Endpoints
