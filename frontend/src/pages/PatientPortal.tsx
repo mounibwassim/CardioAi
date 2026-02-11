@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain, HeartPulse, Stethoscope, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain, HeartPulse, Stethoscope, CheckCircle, X } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Heart3D from '../components/Three/Heart3D';
 
 export default function PatientPortal() {
+    const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
 
@@ -21,7 +24,7 @@ export default function PatientPortal() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-900/90 via-primary-800/80 to-slate-900/90" />
                 </div>
 
-                <div className="container mx-auto px-6 py-16 relative z-10 pt-32">
+                <div className="container mx-auto px-6 lg:px-12 py-16 relative z-10 pt-32">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
@@ -117,8 +120,15 @@ export default function PatientPortal() {
             </section>
 
             {/* Services Section */}
-            <div id="services" className="py-24 bg-slate-50">
-                <div className="container mx-auto px-6 lg:px-12">
+            <div id="services" className="py-24 bg-slate-50 relative">
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src="/assets/images/medical abstract background blue.jpg"
+                        alt="Background"
+                        className="w-full h-full object-cover opacity-5 mix-blend-multiply"
+                    />
+                </div>
+                <div className="container mx-auto px-6 lg:px-12 relative z-10">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Explore Our Services</h2>
                         <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
@@ -147,7 +157,7 @@ export default function PatientPortal() {
                                 desc: "Direct access to world-class cardiologists for personalized advice.",
                                 icon: Stethoscope,
                                 link: "/services/expert-consultation",
-                                image: "/assets/images/doctor strategist.jpg" // Fallback if specific file not found
+                                image: "/assets/images/doctor cardiologist consultation.jpg"
                             },
                             {
                                 title: "Ongoing Monitoring",
@@ -210,25 +220,29 @@ export default function PatientPortal() {
                                 name: "Dr. Sarah Chen",
                                 role: "Chief Cardiologist",
                                 image: "/assets/images/Dr. Sarah Chen.jpg",
-                                quote: "Combining empathy with precision medicine."
+                                quote: "Combining empathy with precision medicine.",
+                                bio: "Dr. Chen leads our cardiology department with over 15 years of experience in interventional cardiology. She specializes in minimally invasive procedures and has pioneered several AI-driven diagnostic protocols."
                             },
                             {
                                 name: "Dr. Ahmed Al-Fayed",
                                 role: "AI Diagnostics Lead",
                                 image: "/assets/images/Dr. Ahmed Al-Fayed.jpg",
-                                quote: "Technology detects what the eye might miss."
+                                quote: "Technology detects what the eye might miss.",
+                                bio: "With a dual PhD in Cardiology and Computer Science, Dr. Al-Fayed bridges the gap between medicine and machine learning, ensuring our AI diagnostic tools are clinically accurate suitable for patient care."
                             },
                             {
                                 name: "Dr. Emily Ross",
                                 role: "Patient Care Director",
                                 image: "/assets/images/Dr. Emily Ross.jpg",
-                                quote: "Your heart health is our life's mission."
+                                quote: "Your heart health is our life's mission.",
+                                bio: "Dr. Ross oversees the patient experience, ensuring that every individual receives personalized, compassionate care throughout their journey with CardioAI."
                             }
                         ].map((doc, idx) => (
                             <motion.div
                                 key={idx}
                                 whileHover={{ y: -10 }}
-                                className="bg-white rounded-3xl p-4 shadow-xl border border-slate-100 hover:shadow-2xl transition-all text-center relative group"
+                                className="bg-white rounded-3xl p-4 shadow-xl border border-slate-100 hover:shadow-2xl transition-all text-center relative group cursor-pointer"
+                                onClick={() => setSelectedDoctor(doc)}
                             >
                                 <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-br from-primary-50 to-white rounded-t-3xl z-0" />
 
@@ -257,13 +271,64 @@ export default function PatientPortal() {
                 </div>
             </section>
 
+            {/* Doctor Modal */}
+            <AnimatePresence>
+                {selectedDoctor && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4"
+                        onClick={() => setSelectedDoctor(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl relative"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setSelectedDoctor(null)}
+                                className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors z-10"
+                            >
+                                <X className="h-5 w-5 text-slate-500" />
+                            </button>
+
+                            <div className="h-48 bg-cover bg-center" style={{ backgroundImage: `url('/assets/images/medical abstract background blue.jpg')` }} />
+
+                            <div className="px-8 pb-8 relative">
+                                <div className="absolute -top-16 left-8">
+                                    <img
+                                        src={selectedDoctor.image}
+                                        alt={selectedDoctor.name}
+                                        className="h-32 w-32 rounded-full border-4 border-white shadow-lg object-cover"
+                                    />
+                                </div>
+                                <div className="mt-20">
+                                    <h2 className="text-3xl font-bold text-slate-900">{selectedDoctor.name}</h2>
+                                    <p className="text-primary-600 font-semibold mb-4">{selectedDoctor.role}</p>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
+                                        <p className="text-slate-600 italic">"{selectedDoctor.quote}"</p>
+                                    </div>
+                                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</h4>
+                                    <p className="text-slate-600 leading-relaxed text-sm">
+                                        {selectedDoctor.bio}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* CTA Section - Ready for Assessment */}
             <div className="relative py-32 overflow-hidden">
                 <div
                     className="absolute inset-0 z-0 bg-cover bg-fixed bg-center"
                     style={{ backgroundImage: 'url(/assets/images/medical_team_consult.jpg)' }}
                 />
-                {/* Fallback styling if image missing, but we expect it to be handled */}
+
                 <div className="absolute inset-0 z-0 bg-slate-900" />
                 <img
                     src="/assets/images/doctor cardiologist consultation.jpg"
@@ -351,11 +416,21 @@ export default function PatientPortal() {
 
             {/* Footer */}
             <footer className="bg-slate-900 text-slate-400 py-12">
-                <div className="container mx-auto px-4 text-center">
-                    <p className="mb-4 text-lg font-semibold text-white">CardioAI Systems</p>
-                    <p>&copy; {new Date().getFullYear()} Professional Medical Intelligence. All rights reserved.</p>
+                <div className="container mx-auto px-4">
+                    <div className="flex flex-col md:flex-row justify-between items-center">
+                        <div className="mb-4 md:mb-0 text-center md:text-left">
+                            <p className="text-lg font-semibold text-white">CardioAI Systems</p>
+                            <p className="text-sm">&copy; {new Date().getFullYear()} Professional Medical Intelligence. All rights reserved.</p>
+                        </div>
+                        <div className="flex space-x-6">
+                            <Link to="/doctor/login" className="text-sm text-slate-500 hover:text-primary-400 transition-colors">
+                                Doctor Portal Login
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </footer>
         </div>
     );
 }
+

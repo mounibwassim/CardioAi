@@ -12,6 +12,10 @@ export default function Heart3D() {
             meshRef.current.rotation.y += 0.005;
             // Gentle floating rotation on X axis
             meshRef.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.5) * 0.1;
+
+            // Heartbeat Pulse
+            const scale = 1 + Math.sin(state.clock.getElapsedTime() * 10) * 0.02;
+            meshRef.current.scale.set(scale, scale, scale);
         }
     });
 
@@ -34,6 +38,37 @@ export default function Heart3D() {
         bevelThickness: 1
     };
 
+    // Blood Particles
+    const Particles = () => {
+        const count = 100;
+        const mesh = useRef<THREE.InstancedMesh>(null);
+        const dummy = new THREE.Object3D();
+        const particles = useRef(new Array(count).fill(0).map(() => ({
+            position: [Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 10 - 5],
+            speed: Math.random() * 0.2 + 0.1
+        })));
+
+        useFrame(() => {
+            if (!mesh.current) return;
+            particles.current.forEach((particle, i) => {
+                particle.position[1] += particle.speed;
+                if (particle.position[1] > 15) particle.position[1] = -15;
+                dummy.position.set(particle.position[0] as number, particle.position[1] as number, particle.position[2] as number);
+                dummy.scale.set(0.2, 0.2, 0.2);
+                dummy.updateMatrix();
+                mesh.current!.setMatrixAt(i, dummy.matrix);
+            });
+            mesh.current.instanceMatrix.needsUpdate = true;
+        });
+
+        return (
+            <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+                <sphereGeometry args={[0.5, 10, 10]} />
+                <meshBasicMaterial color="#ef4444" transparent opacity={0.6} />
+            </instancedMesh>
+        );
+    };
+
     return (
         <group scale={0.15} rotation={[Math.PI, 0, 0]}>
             <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
@@ -41,7 +76,6 @@ export default function Heart3D() {
                     ref={meshRef}
                     onPointerOver={() => setHover(true)}
                     onPointerOut={() => setHover(false)}
-                    scale={hovered ? 1.1 : 1}
                 >
                     <extrudeGeometry args={[heartShape, extrudeSettings]} />
                     <meshPhysicalMaterial
@@ -50,8 +84,11 @@ export default function Heart3D() {
                         metalness={0.1}
                         clearcoat={1}
                         clearcoatRoughness={0.1}
+                        emissive="#be123c"
+                        emissiveIntensity={hovered ? 0.5 : 0.2}
                     />
                 </mesh>
+                <Particles />
             </Float>
         </group>
     );

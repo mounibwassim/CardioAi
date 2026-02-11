@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { Canvas, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 import { Users, AlertCircle, Activity, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -43,6 +45,40 @@ const riskData = [
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
+// Blood Flow Particles Component
+const BloodParticles = () => {
+    const count = 50;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mesh = useRef<any>(null);
+    const dummy = new THREE.Object3D();
+    const particles = useRef(new Array(count).fill(0).map(() => ({
+        position: [Math.random() * 20 - 10, Math.random() * 10 - 5, Math.random() * 10 - 10],
+        speed: Math.random() * 0.05 + 0.02,
+        scale: Math.random() * 0.3 + 0.1
+    })));
+
+    useFrame(() => {
+        if (!mesh.current) return;
+        particles.current.forEach((particle, i) => {
+            particle.position[0] += particle.speed;
+            if (particle.position[0] > 10) particle.position[0] = -10;
+
+            dummy.position.set(particle.position[0], particle.position[1], particle.position[2] as number);
+            dummy.scale.set(particle.scale, particle.scale, particle.scale);
+            dummy.updateMatrix();
+            mesh.current.setMatrixAt(i, dummy.matrix);
+        });
+        mesh.current.instanceMatrix.needsUpdate = true;
+    });
+
+    return (
+        <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+            <sphereGeometry args={[1, 16, 16]} />
+            <meshStandardMaterial color="#ef4444" transparent opacity={0.4} roughness={0.5} />
+        </instancedMesh>
+    );
+};
+
 export default function Dashboard() {
     const [year, setYear] = useState(2025);
     const currentData = monthlyData[year as keyof typeof monthlyData] || monthlyData[2024];
@@ -66,18 +102,36 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-10 py-8">
-            {/* Header Section with improved spacing */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center pt-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Medical Overview</h1>
-                    <p className="text-slate-500 mt-1">Hospital Administration Dashboard</p>
+            {/* Header Section with improved spacing and 3D Visual */}
+            <div className="relative bg-slate-900 rounded-2xl p-8 overflow-hidden mb-8">
+                <div className="absolute inset-0 z-0">
+                    <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
+                        <ambientLight intensity={0.5} />
+                        <pointLight position={[10, 10, 10]} intensity={1} color="#ef4444" />
+                        <BloodParticles />
+                    </Canvas>
                 </div>
-                <div className="mt-4 md:mt-0 flex items-center space-x-2 bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-sm">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    <span className="text-sm font-medium text-slate-600">System Live</span>
+
+                <div className="absolute inset-0 z-0 opacity-20">
+                    <img
+                        src="/assets/images/medical abstract background blue.jpg"
+                        alt="Background"
+                        className="w-full h-full object-cover mix-blend-overlay"
+                    />
+                </div>
+
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white">Medical Overview</h1>
+                        <p className="text-slate-300 mt-1">Hospital Administration Dashboard</p>
+                    </div>
+                    <div className="mt-4 md:mt-0 flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-md border border-white/20 backdrop-blur-md">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        <span className="text-sm font-medium text-white">System Live</span>
+                    </div>
                 </div>
             </div>
 

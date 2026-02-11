@@ -175,15 +175,7 @@ def get_patients():
     conn.close()
     return {"patients": [dict(p) for p in patients]}
 
-@app.post("/feedbacks")
-def create_feedback(feedback: FeedbackCreate):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute("INSERT INTO feedbacks (patient_id, rating, comment) VALUES (?, ?, ?)",
-              (feedback.patient_id, feedback.rating, feedback.comment))
-    conn.commit()
-    conn.close()
-    return {"message": "Feedback submitted successfully"}
+
 
 @app.get("/feedbacks")
 def get_feedbacks():

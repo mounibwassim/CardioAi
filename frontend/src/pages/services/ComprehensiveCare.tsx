@@ -5,7 +5,7 @@ export default function ComprehensiveCare() {
         <ServicePageTemplate
             title="Comprehensive Cardiac Care"
             description="Holistic heart health management tailored to your unique physiology."
-            imageSrc="/assets/images/hero_assessment.webp" // User promised image
+            imageSrc="/assets/images/medical clinic patient consultation.jpg"
             benefits={[
                 "Full spectrum cardiovascular assessment",
                 "Personalized treatment plans utilizing AI insights",

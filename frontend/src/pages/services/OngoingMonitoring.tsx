@@ -5,7 +5,7 @@ export default function OngoingMonitoring() {
         <ServicePageTemplate
             title="Continuous Health Monitoring"
             description="Stay ahead of your health with 24/7 remote monitoring."
-            imageSrc="/assets/images/monitoring.webp"
+            imageSrc="/assets/images/healthcare technology AI illustration.jpg"
             benefits={[
                 "Real-time integration with smartwatches & medical devices",
                 "Alerts for abnormal heart rate or rhythm",
