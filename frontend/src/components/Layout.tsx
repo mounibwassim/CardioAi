@@ -28,7 +28,7 @@ export default function Layout({ children }: LayoutProps) {
                                 <img
                                     src="/assets/images/logo.png"
                                     alt="CardioAI Logo"
-                                    className="h-10 w-auto mr-3 transition-transform duration-300 group-hover:scale-105"
+                                    className="h-14 w-auto mr-3 transition-transform duration-300 group-hover:scale-105"
                                 />
                                 <div>
                                     <span className="text-2xl font-bold text-slate-900 tracking-tight">CardioAI</span>

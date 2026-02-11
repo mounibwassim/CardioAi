@@ -5,14 +5,14 @@ import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain,
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Heart3D from '../components/Three/Heart3D';
-import NeuralPulseField from '../components/Three/NeuralPulseField';
+
 
 export default function PatientPortal() {
     const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
     const [bgIndex, setBgIndex] = useState(0);
 
     const backgrounds = [
-        "/assets/images/medical abstract background blue.jpg",
+        "/assets/images/cardiology clinic.jpg",
         "/assets/images/cardiology clinic modern interior.jpg"
     ];
 
@@ -105,7 +105,6 @@ export default function PatientPortal() {
                                 <pointLight position={[10, 10, 10]} intensity={1.5} color="#fbbf24" />
                                 <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
                                 <Heart3D />
-                                <NeuralPulseField />
                                 <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
                             </Canvas>
 
@@ -173,21 +172,21 @@ export default function PatientPortal() {
                                 desc: "Holistic heart health management tailored to your unique lifestyle.",
                                 icon: Activity,
                                 link: "/services/comprehensive-care",
-                                image: "/assets/images/clinic_trust.jpg"
+                                image: "/assets/images/Comprehensive Care.jpg"
                             },
                             {
                                 title: "AI Risk Analysis",
                                 desc: "Advanced predictive analytics for early detection of potential risks.",
                                 icon: Brain,
                                 link: "/services/ai-risk-analysis",
-                                image: "/assets/images/ai_analysis.jpg"
+                                image: "/assets/images/AI Risk Analysis.jpg"
                             },
                             {
                                 title: "Expert Consultation",
                                 desc: "Direct access to world-class cardiologists for personalized advice.",
                                 icon: Stethoscope,
                                 link: "/services/expert-consultation",
-                                image: "/assets/images/doctor cardiologist consultation.jpg"
+                                image: "/assets/images/Expert Consultation.jpg"
                             },
                             {
                                 title: "Ongoing Monitoring",
@@ -235,8 +234,16 @@ export default function PatientPortal() {
             </div>
 
             {/* Specialists Section */}
-            <section className="py-24 bg-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-slate-50 skew-x-12 transform translate-x-20 z-0" />
+            <section className="py-24 relative overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src="/assets/images/medical abstract background blue.jpg"
+                        alt="Background"
+                        className="w-full h-full object-cover opacity-20"
+                    />
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px]" />
+                </div>
+                {/* Removed skewed bg */}
 
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center max-w-3xl mx-auto mb-16">
@@ -441,7 +448,7 @@ export default function PatientPortal() {
                         </div>
                         <div className="relative lg:w-1/2 min-h-[400px]">
                             <img
-                                src="/assets/images/medical clinic patient consultation.jpg"
+                                src="/assets/images/cardiology clinic modern interior.jpg"
                                 alt="Medical Interior"
                                 className="absolute inset-0 w-full h-full object-cover"
                             />
