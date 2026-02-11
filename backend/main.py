@@ -401,6 +401,14 @@ def send_contact_email(request: ContactRequest):
 
     return {"message": "Message sent successfully"}
 
+@app.get("/debug/users")
+def get_all_users():
+    """Temporary debug endpoint to verify seeded users."""
+    conn = get_db_connection()
+    users = conn.execute("SELECT id, username, role, created_at FROM users").fetchall()
+    conn.close()
+    return {"users": [dict(u) for u in users], "note": "Password hashes are hidden."}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
