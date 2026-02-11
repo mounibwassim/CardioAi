@@ -80,12 +80,14 @@ export default function Heart3D() {
                     <extrudeGeometry args={[heartShape, extrudeSettings]} />
                     <meshPhysicalMaterial
                         color="#e11d48"
-                        roughness={0.4}
+                        roughness={0.2}
                         metalness={0.1}
                         clearcoat={1}
                         clearcoatRoughness={0.1}
                         emissive="#be123c"
-                        emissiveIntensity={hovered ? 0.5 : 0.2}
+                        emissiveIntensity={hovered ? 0.8 : 0.3}
+                        transmission={0.2} // Subsurface scattering simulation
+                        thickness={2}
                     />
                 </mesh>
                 <Particles />

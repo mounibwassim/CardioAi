@@ -6,6 +6,8 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Heart3D from '../components/Three/Heart3D';
 
+import BloodDroplets from '../components/Three/BloodDroplets';
+
 export default function PatientPortal() {
     const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
 
@@ -76,6 +78,7 @@ export default function PatientPortal() {
                                 <pointLight position={[10, 10, 10]} intensity={1.5} color="#fbbf24" />
                                 <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
                                 <Heart3D />
+                                <BloodDroplets />
                                 <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
                             </Canvas>
 
@@ -246,7 +249,7 @@ export default function PatientPortal() {
                             >
                                 <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-br from-primary-50 to-white rounded-t-3xl z-0" />
 
-                                <div className="relative z-10 pt-4">
+                                <div className="relative z-10 pt-4 pb-6">
                                     <div className="relative mb-6 inline-block">
                                         <div className="absolute -inset-1 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full opacity-75 blur group-hover:opacity-100 transition duration-500" />
                                         <img
@@ -256,14 +259,17 @@ export default function PatientPortal() {
                                         />
                                     </div>
 
-                                    <h3 className="text-2xl font-bold text-slate-900 mb-1">{doc.name}</h3>
-                                    <p className="text-secondary-500 font-bold uppercase text-xs tracking-wider mb-4">{doc.role}</p>
+                                    {/* Name Logic Fix: Ensure visibility above image or clearly below */}
+                                    <div className="px-4">
+                                        <h3 className="text-2xl font-bold text-slate-900 mb-1">{doc.name}</h3>
+                                        <p className="text-secondary-500 font-bold uppercase text-xs tracking-wider mb-4">{doc.role}</p>
 
-                                    <p className="text-slate-500 italic mb-6 px-4">"{doc.quote}"</p>
+                                        <p className="text-slate-500 italic mb-6">"{doc.quote}"</p>
 
-                                    <button className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 transition-all active:scale-95">
-                                        View Profile
-                                    </button>
+                                        <button className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 transition-all active:scale-95">
+                                            View Profile
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}

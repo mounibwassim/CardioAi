@@ -29,3 +29,17 @@
     @apply bg-slate-50 text-slate-900 antialiased;
   }
 }
+
+@layer utilities {
+  .global-bg {
+    background-image: url('/assets/images/medical abstract background blue.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+}

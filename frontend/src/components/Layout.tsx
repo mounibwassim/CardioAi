@@ -1,5 +1,4 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { HeartPulse } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface LayoutProps {
@@ -26,9 +25,11 @@ export default function Layout({ children }: LayoutProps) {
                     <div className="flex justify-between h-20">
                         <div className="flex items-center">
                             <Link to={isDoctor ? "/doctor/dashboard" : "/"} className="flex-shrink-0 flex items-center group">
-                                <div className="bg-primary-50 p-2 rounded-xl mr-3 group-hover:bg-primary-100 transition-colors">
-                                    <HeartPulse className="h-8 w-8 text-primary-600" />
-                                </div>
+                                <img
+                                    src="/assets/images/logo.png"
+                                    alt="CardioAI Logo"
+                                    className="h-10 w-auto mr-3 transition-transform duration-300 group-hover:scale-105"
+                                />
                                 <div>
                                     <span className="text-2xl font-bold text-slate-900 tracking-tight">CardioAI</span>
                                     {isDoctor && <span className="block text-xs font-semibold text-primary-600 uppercase tracking-wider">Doctor Portal</span>}
