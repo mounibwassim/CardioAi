@@ -176,7 +176,33 @@ class ContactRequest(BaseModel):
     email: EmailStr
     message: str
 
+class RegisterRequest(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+
 # Endpoints
+
+@app.post("/register")
+def register_user(user: RegisterRequest):
+    conn = get_db_connection()
+    c = conn.cursor()
+    
+    # Check if user exists
+    existing_user = c.execute("SELECT * FROM users WHERE username = ?", (user.username,)).fetchone()
+    if existing_user:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    # Create new user
+    hashed_password = get_password_hash(user.password)
+    c.execute("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+              (user.username, hashed_password, "doctor"))
+    conn.commit()
+    conn.close()
+    
+    logger.info(f"New doctor registered: {user.username}")
+    return {"message": "Registration successful. You can now login."}
 
 @app.post("/doctor/login")
 def doctor_login(creds: LoginRequest):
