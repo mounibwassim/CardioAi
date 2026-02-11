@@ -20,11 +20,14 @@ app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart D
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://cardio-ai-frontend.vercel.app", # Add Vercel domain
+    "https://cardio-ai.vercel.app",
+    "*" # Temporary for debugging if needed, but specific is better
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"], # Allow all for now to rule out CORS issues
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

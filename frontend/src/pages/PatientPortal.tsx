@@ -5,6 +5,7 @@ import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain,
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import NeuralPulseField from '../components/Three/NeuralPulseField';
+import HealthTechBackground from '../components/HealthTechBackground';
 
 
 export default function PatientPortal() {
@@ -368,10 +369,7 @@ export default function PatientPortal() {
 
             {/* CTA Section - Ready for Assessment */}
             <div className="relative py-32 overflow-hidden">
-                <div
-                    className="absolute inset-0 z-0 bg-cover bg-fixed bg-center"
-                    style={{ backgroundImage: 'url(/assets/images/medical_team_consult.jpg)' }}
-                />
+                <HealthTechBackground />
 
                 <div className="absolute inset-0 z-0 bg-slate-900" />
                 <img
@@ -467,9 +465,7 @@ export default function PatientPortal() {
                             <p className="text-sm">&copy; {new Date().getFullYear()} Professional Medical Intelligence. All rights reserved.</p>
                         </div>
                         <div className="flex space-x-6">
-                            <Link to="/doctor/login" className="text-sm text-slate-500 hover:text-primary-400 transition-colors">
-                                Doctor Portal Login
-                            </Link>
+
                         </div>
                     </div>
                 </div>

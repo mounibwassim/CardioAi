@@ -9,22 +9,33 @@ export default function DoctorLogin() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [attempts, setAttempts] = useState(0);
+    const [isLocked, setIsLocked] = useState(false);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
+        if (isLocked) return;
+
         setError('');
         setIsLoading(true);
 
         // Simulated secure login
-        // In a real app, this would hit an endpoint like /api/auth/login
         setTimeout(() => {
             if (email === 'doctor@cardioai.com' && password === 'admin123') {
                 localStorage.setItem('user_role', 'doctor');
                 localStorage.setItem('auth_token', 'mock_secure_token_' + Date.now());
                 navigate('/doctor/dashboard');
             } else {
-                setError('Invalid credentials. Access denied.');
+                const newAttempts = attempts + 1;
+                setAttempts(newAttempts);
                 setIsLoading(false);
+
+                if (newAttempts >= 3) {
+                    setIsLocked(true);
+                    setError('Maximum attempts exceeded. Access locked.');
+                } else {
+                    setError(`Invalid credentials. ${3 - newAttempts} attempts remaining.`);
+                }
             }
         }, 1000);
     };

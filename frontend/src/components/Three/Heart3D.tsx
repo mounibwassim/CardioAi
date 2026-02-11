@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, memo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-export default function Heart3D() {
+const Heart3D = memo(function Heart3D() {
     const meshRef = useRef<THREE.Mesh>(null);
     const [hovered, setHover] = useState(false);
 
@@ -109,4 +109,6 @@ export default function Heart3D() {
             </Float>
         </group>
     );
-}
+});
+
+export default Heart3D;
