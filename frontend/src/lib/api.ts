@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+console.log('🔌 Application API URL:', API_URL); // Debug logging
 
 export interface PatientData {
     age: number;
