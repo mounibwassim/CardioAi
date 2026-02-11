@@ -94,3 +94,8 @@ export const loginDoctor = async (username: string, password: string) => {
     const response = await api.post('/doctor/login', { username, password });
     return response.data;
 };
+
+export const registerDoctor = async (username: string, email: string, password: string) => {
+    const response = await api.post('/register', { username, email, password });
+    return response.data;
+};
