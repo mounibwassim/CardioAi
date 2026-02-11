@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain, HeartPulse, Stethoscope, CheckCircle, X } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import Heart3D from '../components/Three/Heart3D';
+import NeuralPulseField from '../components/Three/NeuralPulseField';
 
 
 export default function PatientPortal() {
@@ -104,7 +104,7 @@ export default function PatientPortal() {
                                 <ambientLight intensity={0.6} />
                                 <pointLight position={[10, 10, 10]} intensity={1.5} color="#fbbf24" />
                                 <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
-                                <Heart3D />
+                                <NeuralPulseField />
                                 <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
                             </Canvas>
 
@@ -239,9 +239,9 @@ export default function PatientPortal() {
                     <img
                         src="/assets/images/medical abstract background blue.jpg"
                         alt="Background"
-                        className="w-full h-full object-cover opacity-20"
+                        className="w-full h-full object-cover opacity-100"
                     />
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px]" />
+                    <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
                 </div>
                 {/* Removed skewed bg */}
 

@@ -5,7 +5,7 @@ export default function AIRiskAnalysis() {
         <ServicePageTemplate
             title="AI-Powered Risk Analysis"
             description="Next-generation predictive analytics for early detection."
-            imageSrc="/assets/images/ai_analysis.jpg"
+            imageSrc="/assets/images/AI Risk Analysis.jpg"
             benefits={[
                 "Machine Learning prediction with 85%+ accuracy",
                 "Instant processing of clinical markers",

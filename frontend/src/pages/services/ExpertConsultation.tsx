@@ -5,7 +5,7 @@ export default function ExpertConsultation() {
         <ServicePageTemplate
             title="Expert Specialist Consultation"
             description="World-class cardiologists at your service, in-person or virtual."
-            imageSrc="/assets/images/doctor cardiologist consultation.jpg"
+            imageSrc="/assets/images/Expert Consultation.jpg"
             benefits={[
                 "Access to top-tier board-certified cardiologists",
                 "Virtual consultations for your convenience",
