@@ -45,9 +45,7 @@ export default function Layout({ children }: LayoutProps) {
                                     <Link to="/reviews" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/reviews') ? "text-primary-600" : "text-slate-600")}>Reviews</Link>
                                     <Link to="/contact" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/contact') ? "text-primary-600" : "text-slate-600")}>Contact</Link>
 
-                                    <Link to="/doctor-secure-access-portal" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
-                                        Doctor Portal
-                                    </Link>
+
 
                                     <Link
                                         to="/feedback"
@@ -80,10 +78,19 @@ export default function Layout({ children }: LayoutProps) {
                 {children || <Outlet />}
             </main>
             <footer className="bg-white border-t border-slate-200 mt-auto">
-                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 relative">
                     <p className="text-center text-sm text-slate-500">
                         &copy; {new Date().getFullYear()} CardioAI. Professional Medical Intelligence System.
                     </p>
+
+                    {/* Hidden Doctor Portal Access */}
+                    {!isDoctor && (
+                        <div className="absolute right-4 bottom-4 opacity-50 hover:opacity-100 transition-opacity">
+                            <Link to="/doctor-secure-access-portal" className="text-xs text-slate-300 hover:text-primary-400">
+                                Staff Access
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </footer>
         </div>
