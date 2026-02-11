@@ -70,3 +70,8 @@ export const resetSystem = async () => {
 export const sendContact = async (data: { name: string, email: string, message: string }) => {
     await axios.post(`${API_URL}/contact`, data);
 };
+
+export const loginDoctor = async (email: string, password: string) => {
+    const response = await axios.post(`${API_URL}/doctor/login`, { email, password });
+    return response.data;
+};

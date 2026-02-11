@@ -7,10 +7,7 @@ interface Feedback {
     id: number;
     name: string;
     rating: number;
-    message: string; // The backend returns 'message' or 'comment'? Checking main.py... it selects * from feedbacks.
-    // Wait, submitFeedback sends 'comment'. Let's check schema.
-    // main.py: c.execute("INSERT INTO feedbacks ... (name, rating, message, patient_id) VALUES (?, ?, ?, ?)"
-    // So column is 'message'.
+    comment: string;
     created_at?: string;
 }
 
@@ -104,7 +101,7 @@ export default function PatientReviews() {
                                     </div>
                                     <div className="relative">
                                         <Quote className="absolute -top-1 -left-1 h-6 w-6 text-slate-100 transform -scale-x-100" />
-                                        <p className="text-slate-600 italic pl-6">{review.message}</p>
+                                        <p className="text-slate-600 italic pl-6">{review.comment}</p>
                                     </div>
                                 </motion.div>
                             ))}

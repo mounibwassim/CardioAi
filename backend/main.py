@@ -16,19 +16,18 @@ logger = logging.getLogger(__name__)
 # Initialize App
 app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart Disease Prediction System")
 
-# CORS
+# CORS - Strict Allow List
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://cardio-ai-frontend.vercel.app", # Add Vercel domain
-    "https://cardio-ai.vercel.app",
-    "*" # Temporary for debugging if needed, but specific is better
+    "https://cardio-ai-frontend.vercel.app",
+    "https://cardio-ai.vercel.app"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all for now to rule out CORS issues
-    allow_credentials=True,
+    allow_origins=origins, # Explicit origins
+    allow_credentials=True, # Allow cookies/headers
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -41,6 +40,9 @@ SCALER_PATH = os.path.join(MODELS_DIR, "scaler.pkl")
 
 model = None
 scaler = None
+
+# Rate Limiting for Login
+login_attempts = {}
 
 @app.on_event("startup")
 async def startup_event():
@@ -91,25 +93,77 @@ class FeedbackCreate(BaseModel):
     comment: str
     patient_id: Optional[int] = None
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+@app.post("/doctor/login")
+def doctor_login(creds: LoginRequest):
+    # Rate Limiting (Simple In-Memory)
+    # In production, use Redis
+    import time
+    user_ip = "127.0.0.1" # In real app, get from request.client.host
+    
+    current_time = time.time()
+    if user_ip in login_attempts:
+        attempts, last_time = login_attempts[user_ip]
+        if current_time - last_time < 60: # 1 minute window
+            if attempts >= 3:
+                logger.warning(f"Login lockout for {creds.email}")
+                raise HTTPException(status_code=429, detail="Too many failed attempts. Try again in 1 minute.")
+        else:
+            login_attempts[user_ip] = (0, current_time) # Reset
+    
+    # Verify Credentials (Env var or Hardcoded for now, but Server-Side)
+    # In real app, verify against DB hash
+    valid_email = "doctor@cardioai.com"
+    valid_pass = "admin123" 
+    
+    if creds.email == valid_email and creds.password == valid_pass:
+        # Reset attempts on success
+        if user_ip in login_attempts:
+             del login_attempts[user_ip]
+             
+        return {
+            "token": "fake-jwt-token-for-demo", 
+            "role": "doctor",
+            "name": "Dr. Aminah"
+        }
+    
+    # Increment failures
+    attempts = login_attempts.get(user_ip, (0, current_time))[0]
+    login_attempts[user_ip] = (attempts + 1, current_time)
+    
+    logger.warning(f"Failed login attempt for {creds.email}")
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
 @app.post("/feedbacks")
 def create_feedback(feedback: FeedbackCreate):
-    conn = get_db_connection()
-    c = conn.cursor()
-    # Ensure table has name column if it was created before
     try:
-        c.execute("ALTER TABLE feedbacks ADD COLUMN name TEXT")
-    except:
-        pass # Column likely exists
+        conn = get_db_connection()
+        c = conn.cursor()
         
-    c.execute("INSERT INTO feedbacks (patient_id, name, rating, comment) VALUES (?, ?, ?, ?)",
-              (feedback.patient_id, feedback.name, feedback.rating, feedback.comment))
-    conn.commit()
-    conn.close()
-    return {"message": "Feedback submitted successfully"}
+        # Ensure schema correctness dynamically
+        try:
+            # Check if name column exists
+            c.execute("SELECT name FROM feedbacks LIMIT 1")
+        except:
+            logger.info("Migrating DB: Adding name column to feedbacks")
+            c.execute("ALTER TABLE feedbacks ADD COLUMN name TEXT")
+            
+        c.execute("INSERT INTO feedbacks (patient_id, name, rating, comment) VALUES (?, ?, ?, ?)",
+                  (feedback.patient_id, feedback.name, feedback.rating, feedback.comment))
+        conn.commit()
+        conn.close()
+        logger.info(f"Feedback saved for {feedback.name}")
+        return {"message": "Feedback submitted successfully"}
+    except Exception as e:
+        logger.error(f"Feedback Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to save feedback")
 
 class ContactRequest(BaseModel):
     name: str
-    email: str # Relaxed from EmailStr to prevent validation errors if package missing
+    email: str 
     message: str
 
 # Endpoints

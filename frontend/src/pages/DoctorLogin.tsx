@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import * as api from '../lib/api';
 
 export default function DoctorLogin() {
     const navigate = useNavigate();
@@ -12,32 +13,35 @@ export default function DoctorLogin() {
     const [attempts, setAttempts] = useState(0);
     const [isLocked, setIsLocked] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isLocked) return;
 
         setError('');
         setIsLoading(true);
 
-        // Simulated secure login
-        setTimeout(() => {
-            if (email === 'doctor@cardioai.com' && password === 'admin123') {
-                localStorage.setItem('user_role', 'doctor');
-                localStorage.setItem('auth_token', 'mock_secure_token_' + Date.now());
-                navigate('/doctor/dashboard');
+        try {
+            // Real Backend Authentication
+            const data = await api.loginDoctor(email, password);
+
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('user_role', data.role);
+            localStorage.setItem('doctor_name', data.name);
+
+            navigate('/doctor/dashboard');
+        } catch (err: any) {
+            const msg = err.response?.data?.detail || "Login failed.";
+            setError(msg);
+
+            if (err.response?.status === 429) {
+                setIsLocked(true);
             } else {
                 const newAttempts = attempts + 1;
                 setAttempts(newAttempts);
-                setIsLoading(false);
-
-                if (newAttempts >= 3) {
-                    setIsLocked(true);
-                    setError('Maximum attempts exceeded. Access locked.');
-                } else {
-                    setError(`Invalid credentials. ${3 - newAttempts} attempts remaining.`);
-                }
             }
-        }, 1000);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

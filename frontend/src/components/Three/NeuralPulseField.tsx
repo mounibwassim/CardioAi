@@ -1,10 +1,10 @@
 
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, memo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import Heart3D from './Heart3D';
 
-export default function NeuralPulseField() {
+const NeuralPulseField = memo(function NeuralPulseField() {
     const groupRef = useRef<THREE.Group>(null);
     const { mouse } = useThree();
     const [hovered, setHover] = useState(false);
@@ -12,7 +12,7 @@ export default function NeuralPulseField() {
     // Dynamic "AI Cloud" Particle System
     // Goal: Wide, horizontal, irregular, "expensive" medical look
     const { particles, linesGeometry } = useMemo(() => {
-        const count = 350; // Balanced for performance vs density
+        const count = 150; // Optimized for performance (<200)
         const positions = new Float32Array(count * 3);
         const sizes = new Float32Array(count);
 
@@ -156,4 +156,6 @@ export default function NeuralPulseField() {
             </group>
         </group>
     );
-}
+});
+
+export default NeuralPulseField;
