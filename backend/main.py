@@ -51,8 +51,13 @@ login_attempts = {}
 
 # Auth Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey123") # Change in production!
+ACCESS_PIN = os.getenv("ACCESS_PIN", "Mounib$7") # PIN for quick access
+
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 360 # 6 hours for PIN session
+
+class PinRequest(BaseModel):
+    pin: str
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -84,19 +89,29 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
+        role: str = payload.get("role")
+        if role != "doctor":
+             raise credentials_exception
+        return {"role": role}
     except JWTError:
         raise credentials_exception
-        
-    conn = get_db_connection()
-    user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-    conn.close()
+
+@app.post("/pin-login")
+def pin_login(data: PinRequest):
+    if data.pin != ACCESS_PIN:
+        raise HTTPException(status_code=401, detail="Invalid PIN")
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": "doctor_user", "role": "doctor"}, # Generic sub for PIN user
+        expires_delta=access_token_expires
+    )
     
-    if user is None:
-        raise credentials_exception
-    return user
+    return {
+        "access_token": access_token, 
+        "role": "doctor",
+        "name": "Doctor"
+    }
 
 @app.on_event("startup")
 async def startup_event():
