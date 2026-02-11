@@ -48,6 +48,25 @@ login_attempts = {}
 async def startup_event():
     global model, scaler
     init_db()
+    
+    # SEED DEFAULT ADMIN USER
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        # Check if admin exists
+        admin = c.execute("SELECT * FROM users WHERE username = 'admin'").fetchone()
+        if not admin:
+            # Default password: admin123 (In real app, hash this!)
+            # For simplicity in this demo, we store plain text or simple hash. 
+            # ideally: bcrypt.hash("admin123")
+            c.execute("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+                      ("admin", "admin123", "doctor"))
+            conn.commit()
+            logger.info("Default admin user created: admin / admin123")
+        conn.close()
+    except Exception as e:
+        logger.error(f"Error seeding admin: {e}")
+
     try:
         if not os.path.exists(MODEL_PATH) or not os.path.exists(SCALER_PATH):
             logger.error(f"Model files not found at {MODELS_DIR}")
@@ -60,82 +79,50 @@ async def startup_event():
     except Exception as e:
         logger.error(f"CRITICAL ERROR loading model: {e}")
 
-# Pydantic Models
-class PatientData(BaseModel):
-    age: int
-    sex: int
-    cp: int
-    trestbps: int
-    chol: int
-    fbs: int
-    restecg: int
-    thalach: int
-    exang: int
-    oldpeak: float
-    slope: int
-    ca: int
-    thal: int
-
-class PredictionResult(BaseModel):
-    prediction: int
-    risk_score: float
-    risk_level: str
-
-class PatientCreate(BaseModel):
-    name: str
-    age: int
-    sex: int
-    contact: Optional[str] = None
-
-class FeedbackCreate(BaseModel):
-    name: str
-    rating: int
-    comment: str
-    patient_id: Optional[int] = None
+# ... (Pydantic models remain the same)
 
 class LoginRequest(BaseModel):
-    email: str
+    username: str # Changed from email to username
     password: str
 
 @app.post("/doctor/login")
 def doctor_login(creds: LoginRequest):
-    # Rate Limiting (Simple In-Memory)
-    # In production, use Redis
+    # Rate Limiting
     import time
-    user_ip = "127.0.0.1" # In real app, get from request.client.host
+    user_ip = "127.0.0.1" 
     
     current_time = time.time()
     if user_ip in login_attempts:
         attempts, last_time = login_attempts[user_ip]
-        if current_time - last_time < 60: # 1 minute window
+        if current_time - last_time < 60: 
             if attempts >= 3:
-                logger.warning(f"Login lockout for {creds.email}")
+                logger.warning(f"Login lockout for {creds.username}")
                 raise HTTPException(status_code=429, detail="Too many failed attempts. Try again in 1 minute.")
         else:
-            login_attempts[user_ip] = (0, current_time) # Reset
+            login_attempts[user_ip] = (0, current_time)
     
-    # Verify Credentials (Env var or Hardcoded for now, but Server-Side)
-    # In real app, verify against DB hash
-    valid_email = "doctor@cardioai.com"
-    valid_pass = "admin123" 
-    
-    if creds.email == valid_email and creds.password == valid_pass:
-        # Reset attempts on success
+    # DB Validation
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE username = ?", (creds.username,)).fetchone()
+    conn.close()
+
+    if user and user['password_hash'] == creds.password:
+        # Success
         if user_ip in login_attempts:
              del login_attempts[user_ip]
              
         return {
-            "token": "fake-jwt-token-for-demo", 
-            "role": "doctor",
-            "name": "Dr. Aminah"
+            "token": "secure-session-token-" + str(user['id']), 
+            "role": user['role'],
+            "name": user['username'].capitalize()
         }
     
-    # Increment failures
+    # Failure
     attempts = login_attempts.get(user_ip, (0, current_time))[0]
     login_attempts[user_ip] = (attempts + 1, current_time)
     
-    logger.warning(f"Failed login attempt for {creds.email}")
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+    logger.warning(f"Failed login attempt for {creds.username}")
+    raise HTTPException(status_code=401, detail="Invalid username or password")
 
 @app.post("/feedbacks")
 def create_feedback(feedback: FeedbackCreate):

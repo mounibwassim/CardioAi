@@ -44,6 +44,11 @@ export default function Layout({ children }: LayoutProps) {
                                     <a href="/#services" className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Services</a>
                                     <Link to="/reviews" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/reviews') ? "text-primary-600" : "text-slate-600")}>Reviews</Link>
                                     <Link to="/contact" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/contact') ? "text-primary-600" : "text-slate-600")}>Contact</Link>
+
+                                    <Link to="/doctor-secure-access-portal" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+                                        Doctor Portal
+                                    </Link>
+
                                     <Link
                                         to="/feedback"
                                         className={cn(

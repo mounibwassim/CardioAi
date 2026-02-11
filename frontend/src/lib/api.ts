@@ -71,7 +71,7 @@ export const sendContact = async (data: { name: string, email: string, message: 
     await axios.post(`${API_URL}/contact`, data);
 };
 
-export const loginDoctor = async (email: string, password: string) => {
-    const response = await axios.post(`${API_URL}/doctor/login`, { email, password });
+export const loginDoctor = async (username: string, password: string) => {
+    const response = await axios.post(`${API_URL}/doctor/login`, { username, password });
     return response.data;
 };
