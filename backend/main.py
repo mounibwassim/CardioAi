@@ -83,9 +83,26 @@ class PatientCreate(BaseModel):
     contact: Optional[str] = None
 
 class FeedbackCreate(BaseModel):
+    name: str
     rating: int
     comment: str
     patient_id: Optional[int] = None
+
+@app.post("/feedbacks")
+def create_feedback(feedback: FeedbackCreate):
+    conn = get_db_connection()
+    c = conn.cursor()
+    # Ensure table has name column if it was created before
+    try:
+        c.execute("ALTER TABLE feedbacks ADD COLUMN name TEXT")
+    except:
+        pass # Column likely exists
+        
+    c.execute("INSERT INTO feedbacks (patient_id, name, rating, comment) VALUES (?, ?, ?, ?)",
+              (feedback.patient_id, feedback.name, feedback.rating, feedback.comment))
+    conn.commit()
+    conn.close()
+    return {"message": "Feedback submitted successfully"}
 
 class ContactRequest(BaseModel):
     name: str

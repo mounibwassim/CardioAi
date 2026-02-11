@@ -4,42 +4,45 @@ import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain,
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Heart3D from '../components/Three/Heart3D';
-import Doctor3D from '../components/Three/Doctor3D';
 
 export default function PatientPortal() {
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
 
             {/* Hero Section */}
-            <section className="relative overflow-hidden bg-gradient-to-br from-primary-500 to-primary-800 text-white pb-20 pt-32 lg:pt-48">
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                    {/* Abstract Background Shapes */}
-                    <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-secondary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+            <section className="relative overflow-hidden bg-slate-900 text-white min-h-screen flex items-center">
+                {/* Background Image with Overlay */}
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src="/assets/images/medical abstract background blue.jpg"
+                        alt="Background"
+                        className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-900/90 via-primary-800/80 to-slate-900/90" />
                 </div>
 
-                <div className="container mx-auto px-4 relative z-10">
+                <div className="container mx-auto px-6 py-16 relative z-10 pt-32">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8 }}
                         >
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary-400/30 border border-primary-300/30 text-primary-50 text-sm font-medium mb-6 backdrop-blur-sm">
-                                <span className="flex h-2 w-2 rounded-full bg-secondary-400 mr-2"></span>
+                            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium mb-8 backdrop-blur-md shadow-lg">
+                                <span className="flex h-2 w-2 rounded-full bg-secondary-400 mr-2 animate-pulse"></span>
                                 Accepting New Patients
                             </div>
-                            <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-6">
+                            <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-8 tracking-tight">
                                 Advanced AI <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-300 to-secondary-100">
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-300 to-secondary-100 filter drop-shadow-lg">
                                     Cardiac Care
                                 </span>
                             </h1>
-                            <p className="text-xl text-primary-100 mb-8 leading-relaxed max-w-lg">
+                            <p className="text-xl text-slate-200 mb-10 leading-relaxed max-w-lg font-light">
                                 Experience the future of heart health. Our AI-assisted diagnostic center combines medical expertise with cutting-edge technology for precise assessments.
                             </p>
 
-                            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
                                 <a
                                     href="https://wa.me/601111769636"
                                     target="_blank"
@@ -63,61 +66,62 @@ export default function PatientPortal() {
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 1, delay: 0.2 }}
-                            className="relative h-[400px] lg:h-[500px] flex items-center justify-center"
+                            className="relative h-[500px] lg:h-[600px] flex items-center justify-center"
                         >
                             <Canvas camera={{ position: [0, 0, 30], fov: 50 }}>
-                                <ambientLight intensity={0.5} />
-                                <pointLight position={[10, 10, 10]} intensity={1} />
+                                <ambientLight intensity={0.6} />
+                                <pointLight position={[10, 10, 10]} intensity={1.5} color="#fbbf24" />
+                                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
                                 <Heart3D />
-                                <OrbitControls enableZoom={false} enablePan={false} />
+                                <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
                             </Canvas>
 
                             {/* Floating Cards */}
                             <motion.div
                                 animate={{ y: [0, -10, 0] }}
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute top-10 right-10 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-white/50 max-w-[200px]"
+                                className="absolute top-20 right-10 bg-white/10 backdrop-blur-xl p-4 rounded-xl shadow-2xl border border-white/20 max-w-[220px]"
                             >
                                 <div className="flex items-center space-x-3 mb-2">
-                                    <div className="bg-green-100 p-2 rounded-lg text-green-600">
+                                    <div className="bg-green-500/20 p-2 rounded-lg text-green-400">
                                         <CheckCircle className="h-5 w-5" />
                                     </div>
-                                    <span className="font-bold text-slate-800">98.5% Accuracy</span>
+                                    <span className="font-bold text-white">99.2% Accuracy</span>
                                 </div>
-                                <p className="text-xs text-slate-500">AI-verified diagnostic precision</p>
+                                <p className="text-xs text-slate-300">AI-verified diagnostic precision</p>
                             </motion.div>
 
                             <motion.div
                                 animate={{ y: [0, 10, 0] }}
                                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                                className="absolute bottom-10 left-10 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-white/50 max-w-[200px]"
+                                className="absolute bottom-20 left-0 bg-white/10 backdrop-blur-xl p-4 rounded-xl shadow-2xl border border-white/20 max-w-[220px]"
                             >
                                 <div className="flex items-center space-x-3 mb-2">
-                                    <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                    <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400">
                                         <Clock className="h-5 w-5" />
                                     </div>
-                                    <span className="font-bold text-slate-800">Instant Results</span>
+                                    <span className="font-bold text-white">Instant Results</span>
                                 </div>
-                                <p className="text-xs text-slate-500">Real-time analysis engine</p>
+                                <p className="text-xs text-slate-300">Real-time analysis engine</p>
                             </motion.div>
                         </motion.div>
                     </div>
                 </div>
 
                 {/* Wave Divider */}
-                <div className="absolute bottom-0 left-0 w-full leading-none z-10">
-                    <svg className="block w-full h-20 md:h-32" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <div className="absolute bottom-0 left-0 w-full leading-none z-10 w-full overflow-hidden">
+                    <svg className="block w-full h-24 md:h-48" viewBox="0 0 1200 120" preserveAspectRatio="none">
                         <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-slate-50"></path>
                     </svg>
                 </div>
             </section>
 
             {/* Services Section */}
-            <div className="py-24 bg-slate-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div id="services" className="py-24 bg-slate-50">
+                <div className="container mx-auto px-6 lg:px-12">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Explore Our Services</h2>
-                        <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Explore Our Services</h2>
+                        <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
                             Comprehensive cardiovascular care powered by advanced technology and medical expertise.
                         </p>
                     </div>
@@ -126,47 +130,64 @@ export default function PatientPortal() {
                         {[
                             {
                                 title: "Comprehensive Care",
-                                desc: "Holistic heart health management tailored to you.",
+                                desc: "Holistic heart health management tailored to your unique lifestyle.",
                                 icon: Activity,
-                                link: "/services/comprehensive-care"
+                                link: "/services/comprehensive-care",
+                                image: "/assets/images/clinic_trust.jpg"
                             },
                             {
                                 title: "AI Risk Analysis",
-                                desc: "Advanced predictive analytics for early detection.",
+                                desc: "Advanced predictive analytics for early detection of potential risks.",
                                 icon: Brain,
-                                link: "/services/ai-risk-analysis"
+                                link: "/services/ai-risk-analysis",
+                                image: "/assets/images/ai_analysis.jpg"
                             },
                             {
                                 title: "Expert Consultation",
-                                desc: "Direct access to world-class cardiologists.",
-                                icon: Stethoscope, // Note: Need to import Stethoscope if not already available, or use User
-                                link: "/services/expert-consultation"
+                                desc: "Direct access to world-class cardiologists for personalized advice.",
+                                icon: Stethoscope,
+                                link: "/services/expert-consultation",
+                                image: "/assets/images/doctor strategist.jpg" // Fallback if specific file not found
                             },
                             {
                                 title: "Ongoing Monitoring",
-                                desc: "24/7 remote health tracking and alerts.",
+                                desc: "24/7 remote health tracking and real-time alerts.",
                                 icon: HeartPulse,
-                                link: "/services/ongoing-monitoring"
+                                link: "/services/ongoing-monitoring",
+                                image: "/assets/images/healthcare technology AI illustration.jpg"
                             }
                         ].map((service, index) => (
                             <motion.div
                                 key={index}
                                 whileHover={{ y: -10 }}
-                                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-slate-100 flex flex-col h-full min-h-[320px]"
+                                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 flex flex-col h-full"
                             >
-                                <div className="h-14 w-14 bg-primary-50 rounded-xl flex items-center justify-center mb-6">
-                                    <service.icon className="h-8 w-8 text-primary-600" />
+                                <div className="h-48 overflow-hidden relative">
+                                    <div className="absolute inset-0 bg-primary-900/10 group-hover:bg-primary-900/0 transition-all z-10" />
+                                    <img
+                                        src={service.image}
+                                        alt={service.title}
+                                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1000'; // Reliable fallback
+                                        }}
+                                    />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-3">{service.title}</h3>
-                                <p className="text-slate-600 mb-8 flex-grow">
-                                    {service.desc}
-                                </p>
-                                <Link
-                                    to={service.link}
-                                    className="text-primary-600 font-semibold flex items-center hover:text-primary-700 mt-auto"
-                                >
-                                    Learn more <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
+                                <div className="p-8 flex flex-col flex-grow">
+                                    <div className="h-12 w-12 bg-primary-50 rounded-xl flex items-center justify-center mb-6 text-primary-600 shadow-sm">
+                                        <service.icon className="h-6 w-6" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-3">{service.title}</h3>
+                                    <p className="text-slate-600 mb-8 flex-grow leading-relaxed">
+                                        {service.desc}
+                                    </p>
+                                    <Link
+                                        to={service.link}
+                                        className="text-primary-600 font-bold flex items-center hover:text-secondary-500 transition-colors mt-auto"
+                                    >
+                                        Learn more <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </div>
                             </motion.div>
                         ))}
                     </div>
@@ -174,59 +195,100 @@ export default function PatientPortal() {
             </div>
 
             {/* Specialists Section */}
-            <section className="py-24 bg-white">
-                <div className="container mx-auto px-4">
+            <section className="py-24 bg-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-slate-50 skew-x-12 transform translate-x-20 z-0" />
+
+                <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Meet Our Specialists</h2>
-                        <p className="text-slate-600 text-lg">World-class cardiologists assisted by state-of-the-art AI.</p>
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Meet Our Specialists</h2>
+                        <p className="text-slate-600 text-xl">World-class cardiologists assisted by state-of-the-art AI.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                         {[
-                            { name: "Dr. Sarah Chen", role: "Chief Cardiologist", color: "#0ea5e9" },
-                            { name: "Dr. Ahmed Al-Fayed", role: "AI Diagnostics Lead", color: "#10b981" },
-                            { name: "Dr. Emily Ross", role: "Patient Care Director", color: "#8b5cf6" }
+                            {
+                                name: "Dr. Sarah Chen",
+                                role: "Chief Cardiologist",
+                                image: "/assets/images/Dr. Sarah Chen.jpg",
+                                quote: "Combining empathy with precision medicine."
+                            },
+                            {
+                                name: "Dr. Ahmed Al-Fayed",
+                                role: "AI Diagnostics Lead",
+                                image: "/assets/images/Dr. Ahmed Al-Fayed.jpg",
+                                quote: "Technology detects what the eye might miss."
+                            },
+                            {
+                                name: "Dr. Emily Ross",
+                                role: "Patient Care Director",
+                                image: "/assets/images/Dr. Emily Ross.jpg",
+                                quote: "Your heart health is our life's mission."
+                            }
                         ].map((doc, idx) => (
-                            <div key={idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-xl transition-all text-center">
-                                <div className="mb-6">
-                                    <Doctor3D color={doc.color} />
+                            <motion.div
+                                key={idx}
+                                whileHover={{ y: -10 }}
+                                className="bg-white rounded-3xl p-4 shadow-xl border border-slate-100 hover:shadow-2xl transition-all text-center relative group"
+                            >
+                                <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-br from-primary-50 to-white rounded-t-3xl z-0" />
+
+                                <div className="relative z-10 pt-4">
+                                    <div className="relative mb-6 inline-block">
+                                        <div className="absolute -inset-1 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full opacity-75 blur group-hover:opacity-100 transition duration-500" />
+                                        <img
+                                            src={doc.image}
+                                            alt={doc.name}
+                                            className="relative h-48 w-48 rounded-full object-cover border-4 border-white shadow-lg"
+                                        />
+                                    </div>
+
+                                    <h3 className="text-2xl font-bold text-slate-900 mb-1">{doc.name}</h3>
+                                    <p className="text-secondary-500 font-bold uppercase text-xs tracking-wider mb-4">{doc.role}</p>
+
+                                    <p className="text-slate-500 italic mb-6 px-4">"{doc.quote}"</p>
+
+                                    <button className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 transition-all active:scale-95">
+                                        View Profile
+                                    </button>
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900">{doc.name}</h3>
-                                <p className="text-primary-600 font-medium mb-4">{doc.role}</p>
-                                <button className="px-6 py-2 border border-slate-300 rounded-full text-sm font-semibold hover:bg-white hover:border-primary-500 hover:text-primary-600 transition-colors">
-                                    View Profile
-                                </button>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
 
             {/* CTA Section - Ready for Assessment */}
-            <div className="relative py-24 overflow-hidden">
+            <div className="relative py-32 overflow-hidden">
                 <div
                     className="absolute inset-0 z-0 bg-cover bg-fixed bg-center"
-                    style={{ backgroundImage: 'url(/assets/images/assessment_hero.webp)' }}
+                    style={{ backgroundImage: 'url(/assets/images/medical_team_consult.jpg)' }}
                 />
-                {/* Soft overlay as requested: rgba(15, 76, 129, 0.35) */}
-                <div
-                    className="absolute inset-0 z-10"
-                    style={{ background: 'linear-gradient(rgba(15, 76, 129, 0.35), rgba(15, 76, 129, 0.35))' }}
+                {/* Fallback styling if image missing, but we expect it to be handled */}
+                <div className="absolute inset-0 z-0 bg-slate-900" />
+                <img
+                    src="/assets/images/doctor cardiologist consultation.jpg"
+                    alt="Consultation"
+                    className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
                 />
 
-                <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready for your assessment?</h2>
-                    <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                        Take the first step towards a healthier heart today. Our AI-powered assessment takes only minutes.
+                <div
+                    className="absolute inset-0 z-10"
+                    style={{ background: 'linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7))' }}
+                />
+
+                <div className="relative z-20 container mx-auto px-6 text-center text-white">
+                    <h2 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight">Ready for your assessment?</h2>
+                    <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+                        Take the first step towards a healthier heart today. Our AI-powered assessment takes only minutes and provides instant insights.
                     </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row justify-center gap-6">
                         <a
                             href="https://wa.me/601111769636?text=I%20am%20ready%20for%20my%20assessment"
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center justify-center px-8 py-4 bg-[#25D366] text-white rounded-full font-bold text-lg hover:bg-[#20bd5a] transition-all transform hover:scale-105 shadow-lg"
+                            className="inline-flex items-center justify-center px-10 py-5 bg-[#25D366] text-white rounded-full font-bold text-xl hover:bg-[#20bd5a] transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl"
                         >
-                            <MessageCircle className="mr-2 h-6 w-6" />
+                            <MessageCircle className="mr-3 h-7 w-7" />
                             Book via WhatsApp
                         </a>
                     </div>
@@ -235,50 +297,53 @@ export default function PatientPortal() {
 
             {/* Contact Section */}
             <section className="py-24 bg-white relative">
-                <div className="container mx-auto px-4">
-                    <div className="bg-primary-900 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
-                        <div className="p-12 md:w-1/2 flex flex-col justify-center text-white">
-                            <h2 className="text-3xl font-bold mb-6">Ready for your assessment?</h2>
-                            <p className="text-primary-100 mb-8 text-lg">
-                                Contact us today to schedule your appointment. We prefer WhatsApp for fastest response.
+                <div className="container mx-auto px-6">
+                    <div className="bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row border border-slate-100">
+                        <div className="p-12 lg:w-1/2 flex flex-col justify-center bg-slate-900 text-white relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 -translate-y-1/2 translate-x-1/2" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 translate-y-1/2 -translate-x-1/2" />
+
+                            <h2 className="text-3xl font-bold mb-6 relative z-10">Get in Touch</h2>
+                            <p className="text-slate-300 mb-10 text-lg relative z-10">
+                                Contact us today to schedule your appointment. We prefer WhatsApp for the fastest response time.
                             </p>
-                            <div className="space-y-6">
-                                <div className="flex items-center">
-                                    <div className="bg-primary-800 p-3 rounded-lg mr-4">
-                                        <Phone className="h-6 w-6 text-secondary-400" />
+                            <div className="space-y-8 relative z-10">
+                                <div className="flex items-center group">
+                                    <div className="bg-white/10 p-4 rounded-xl mr-5 group-hover:bg-secondary-500 transition-colors">
+                                        <Phone className="h-6 w-6 text-white" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-primary-300">WhatsApp / Call</p>
-                                        <p className="text-xl font-bold">+60 11 1176 9636</p>
+                                        <p className="text-sm text-slate-400 mb-1">WhatsApp / Call</p>
+                                        <p className="text-xl font-bold tracking-wide">+60 11 1176 9636</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center">
-                                    <div className="bg-primary-800 p-3 rounded-lg mr-4">
-                                        <Mail className="h-6 w-6 text-secondary-400" />
+                                <div className="flex items-center group">
+                                    <div className="bg-white/10 p-4 rounded-xl mr-5 group-hover:bg-secondary-500 transition-colors">
+                                        <Mail className="h-6 w-6 text-white" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-primary-300">Email</p>
-                                        <p className="text-xl font-bold">mounibwassimm@gmail.com</p>
+                                        <p className="text-sm text-slate-400 mb-1">Email</p>
+                                        <p className="text-xl font-bold tracking-wide">mounibwassimm@gmail.com</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center">
-                                    <div className="bg-primary-800 p-3 rounded-lg mr-4">
-                                        <MapPin className="h-6 w-6 text-secondary-400" />
+                                <div className="flex items-center group">
+                                    <div className="bg-white/10 p-4 rounded-xl mr-5 group-hover:bg-secondary-500 transition-colors">
+                                        <MapPin className="h-6 w-6 text-white" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-primary-300">Location</p>
-                                        <p className="text-xl font-bold">Kuala Lumpur, Malaysia</p>
+                                        <p className="text-sm text-slate-400 mb-1">Location</p>
+                                        <p className="text-xl font-bold tracking-wide">Kuala Lumpur, Malaysia</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="relative md:w-1/2 min-h-[400px]">
+                        <div className="relative lg:w-1/2 min-h-[400px]">
                             <img
-                                src="https://images.unsplash.com/photo-1666214280557-f1b5022eb634?q=80&w=1000&auto=format&fit=crop"
+                                src="/assets/images/medical clinic patient consultation.jpg"
                                 alt="Medical Interior"
-                                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50"
+                                className="absolute inset-0 w-full h-full object-cover"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-primary-900/90"></div>
+                            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-slate-900/50 lg:hidden"></div>
                         </div>
                     </div>
                 </div>

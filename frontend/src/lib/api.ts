@@ -54,8 +54,8 @@ export const createPatient = async (patient: { name: string, age: number, sex: n
     return response.data;
 };
 
-export const submitFeedback = async (rating: number, comment: string, patient_id?: number) => {
-    await axios.post(`${API_URL}/feedbacks`, { rating, comment, patient_id });
+export const submitFeedback = async (name: string, rating: number, comment: string, patient_id?: number) => {
+    await axios.post(`${API_URL}/feedbacks`, { name, rating, comment, patient_id });
 };
 
 export const resetSystem = async () => {

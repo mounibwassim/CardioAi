@@ -4,6 +4,7 @@ import QRCode from 'react-qr-code';
 import { submitFeedback } from '../lib/api';
 
 export default function Feedback() {
+    const [name, setName] = useState('');
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
     const [comment, setComment] = useState('');
@@ -12,9 +13,9 @@ export default function Feedback() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (rating === 0) return;
+        if (rating === 0 || !name.trim()) return;
         try {
-            await submitFeedback(rating, comment);
+            await submitFeedback(name, rating, comment);
             setSubmitted(true);
         } catch (error) {
             alert("Failed to submit feedback");
@@ -29,10 +30,22 @@ export default function Feedback() {
                 {!submitted ? (
                     <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
                         <h1 className="text-3xl font-bold text-slate-900 mb-4">We Value Your Feedback</h1>
-                        <p className="text-slate-500 mb-8">Please rate your experience with CardioAI.</p>
+                        <p className="text-slate-500 mb-8">Please enter your name and rate your experience.</p>
 
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="flex justify-center space-x-2">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="text-left">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="John Doe"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex justify-center space-x-2 py-4">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                         key={star}
@@ -55,6 +68,7 @@ export default function Feedback() {
                             <textarea
                                 className="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
                                 rows={4}
+                                required
                                 placeholder="Tell us about your experience..."
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
@@ -62,7 +76,7 @@ export default function Feedback() {
 
                             <button
                                 type="submit"
-                                disabled={rating === 0}
+                                disabled={rating === 0 || !name.trim() || !comment.trim()}
                                 className="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-500/30"
                             >
                                 Submit Review

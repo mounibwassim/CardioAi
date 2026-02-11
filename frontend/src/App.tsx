@@ -14,10 +14,13 @@ import ExpertConsultation from './pages/services/ExpertConsultation';
 import OngoingMonitoring from './pages/services/OngoingMonitoring';
 import PatientReviews from './pages/PatientReviews';
 
-// Mock Guard for Doctor Routes
+import DoctorLogin from './pages/DoctorLogin';
+
+// Protected Route Guard
 const DoctorRoute = ({ children }: { children: React.ReactNode }) => {
-  const isDoctor = true; // Mock Authentication
-  return isDoctor ? <>{children}</> : <Navigate to="/" />;
+  const userRole = localStorage.getItem('user_role');
+  const isAuthenticated = userRole === 'doctor';
+  return isAuthenticated ? <>{children}</> : <Navigate to="/doctor/login" replace />;
 };
 
 function App() {
@@ -29,6 +32,9 @@ function App() {
         <Route path="/contact" element={<Layout><Contact /></Layout>} />
         <Route path="/feedback" element={<Layout><Feedback /></Layout>} />
         <Route path="/reviews" element={<Layout><PatientReviews /></Layout>} />
+
+        {/* Doctor Login - Separate Layout */}
+        <Route path="/doctor/login" element={<DoctorLogin />} />
 
         {/* Service Pages */}
         <Route path="/services/comprehensive-care" element={<Layout><ComprehensiveCare /></Layout>} />

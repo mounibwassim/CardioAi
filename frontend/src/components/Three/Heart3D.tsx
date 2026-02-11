@@ -45,11 +45,11 @@ export default function Heart3D() {
                 >
                     <extrudeGeometry args={[heartShape, extrudeSettings]} />
                     <meshPhysicalMaterial
-                        color="#ef4444"
-                        roughness={0.2}
+                        color="#e11d48"
+                        roughness={0.4}
                         metalness={0.1}
-                        clearcoat={0.8}
-                        clearcoatRoughness={0.2}
+                        clearcoat={1}
+                        clearcoatRoughness={0.1}
                     />
                 </mesh>
             </Float>

@@ -41,6 +41,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS feedbacks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     patient_id INTEGER,
+                    name TEXT,
                     rating INTEGER,
                     comment TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
