@@ -86,7 +86,7 @@ export default function Layout({ children }: LayoutProps) {
                         {!isDoctor && (
                             <Link
                                 to="/doctor-secure-access-portal"
-                                className="text-xs text-slate-300 hover:text-primary-500 transition-colors opacity-50 hover:opacity-100 ml-2"
+                                className="text-xs font-semibold text-slate-400 hover:text-primary-600 transition-colors ml-4 uppercase tracking-wider"
                                 title="Staff Access"
                             >
                                 ●

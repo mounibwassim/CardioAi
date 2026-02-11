@@ -101,10 +101,14 @@ export default function Contact() {
                             </button>
 
                             {status === 'success' && (
-                                <p className="text-green-600 text-center">Message sent successfully!</p>
+                                <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center font-semibold animate-pulse">
+                                    ✅ Message sent successfully! We will contact you shortly.
+                                </div>
                             )}
                             {status === 'error' && (
-                                <p className="text-red-600 text-center">Failed to send message. Please try again.</p>
+                                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center font-semibold">
+                                    ❌ Failed to send message. Please try again or email us directly at mounibwassimm@gmail.com.
+                                </div>
                             )}
                         </form>
                     </div>
