@@ -3,6 +3,6 @@ dist
 .env
 __pycache__
 *.pyc
-*.pkl
+
 .DS_Store
 cardioai.db
