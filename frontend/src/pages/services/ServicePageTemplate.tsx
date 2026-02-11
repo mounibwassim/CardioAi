@@ -22,7 +22,7 @@ export default function ServicePage({ title, description, imageSrc, benefits, de
             <div className="relative h-[60vh] bg-slate-900 overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${imageSrc})` }}
+                    style={{ backgroundImage: `url('/assets/images/medical abstract background blue.jpg')` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
 

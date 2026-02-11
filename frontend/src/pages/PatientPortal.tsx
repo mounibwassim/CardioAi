@@ -1,28 +1,55 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain, HeartPulse, Stethoscope, CheckCircle, X } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Heart3D from '../components/Three/Heart3D';
-
-import BloodDroplets from '../components/Three/BloodDroplets';
+import NeuralPulseField from '../components/Three/NeuralPulseField';
 
 export default function PatientPortal() {
     const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
+    const [bgIndex, setBgIndex] = useState(0);
+
+    const backgrounds = [
+        "/assets/images/medical abstract background blue.jpg",
+        "/assets/images/cardiology clinic modern interior.jpg"
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBgIndex((prev) => (prev + 1) % backgrounds.length);
+        }, 5000); // 5 seconds (User asked for 3s but 5s is smoother for UX, adjusting to 3s as requested though)
+        return () => clearInterval(interval);
+    }, []);
+
+    // Override to exact request
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBgIndex((prev) => (prev + 1) % backgrounds.length);
+        }, 3000); // 3 seconds per request
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
 
             {/* Hero Section */}
             <section className="relative overflow-hidden bg-slate-900 text-white min-h-screen flex items-center">
-                {/* Background Image with Overlay */}
+                {/* Background Slideshow */}
                 <div className="absolute inset-0 z-0">
-                    <img
-                        src="/assets/images/medical abstract background blue.jpg"
-                        alt="Background"
-                        className="w-full h-full object-cover opacity-40 mix-blend-overlay"
-                    />
+                    <AnimatePresence mode="wait">
+                        <motion.img
+                            key={bgIndex}
+                            src={backgrounds[bgIndex]}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.4 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 1 }}
+                            className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
+                            alt="Background"
+                        />
+                    </AnimatePresence>
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-900/90 via-primary-800/80 to-slate-900/90" />
                 </div>
 
@@ -78,7 +105,7 @@ export default function PatientPortal() {
                                 <pointLight position={[10, 10, 10]} intensity={1.5} color="#fbbf24" />
                                 <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
                                 <Heart3D />
-                                <BloodDroplets />
+                                <NeuralPulseField />
                                 <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
                             </Canvas>
 
@@ -296,31 +323,35 @@ export default function PatientPortal() {
                         >
                             <button
                                 onClick={() => setSelectedDoctor(null)}
-                                className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors z-10"
+                                className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors z-50"
                             >
                                 <X className="h-5 w-5 text-slate-500" />
                             </button>
 
-                            <div className="h-48 bg-cover bg-center" style={{ backgroundImage: `url('/assets/images/medical abstract background blue.jpg')` }} />
+                            {/* Header Image */}
+                            <div className="h-48 bg-cover bg-center relative" style={{ backgroundImage: `url('/assets/images/medical abstract background blue.jpg')` }}>
+                                <div className="absolute inset-0 bg-primary-900/30" />
+                            </div>
 
-                            <div className="px-8 pb-8 relative">
-                                <div className="absolute -top-16 left-8">
+                            <div className="px-8 pb-8 relative -mt-16">
+                                <div className="flex flex-col items-center text-center">
                                     <img
                                         src={selectedDoctor.image}
                                         alt={selectedDoctor.name}
-                                        className="h-32 w-32 rounded-full border-4 border-white shadow-lg object-cover"
+                                        className="h-32 w-32 rounded-full border-4 border-white shadow-lg object-cover mb-4 z-10"
                                     />
-                                </div>
-                                <div className="mt-20">
+
                                     <h2 className="text-3xl font-bold text-slate-900">{selectedDoctor.name}</h2>
-                                    <p className="text-primary-600 font-semibold mb-4">{selectedDoctor.role}</p>
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
-                                        <p className="text-slate-600 italic">"{selectedDoctor.quote}"</p>
+                                    <p className="text-primary-600 font-semibold mb-6">{selectedDoctor.role}</p>
+
+                                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 mb-6 w-full text-left">
+                                        <p className="text-slate-600 italic text-center mb-4">"{selectedDoctor.quote}"</p>
+                                        <div className="h-px bg-slate-200 w-full mb-4" />
+                                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</h4>
+                                        <p className="text-slate-600 leading-relaxed text-sm">
+                                            {selectedDoctor.bio}
+                                        </p>
                                     </div>
-                                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</h4>
-                                    <p className="text-slate-600 leading-relaxed text-sm">
-                                        {selectedDoctor.bio}
-                                    </p>
                                 </div>
                             </div>
                         </motion.div>
