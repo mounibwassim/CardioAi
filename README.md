@@ -46,8 +46,24 @@ CardioAI is a comprehensive clinical cardiovascular health system connecting pat
 
 ## Deployment
 
-- **Frontend**: Vercel (Recommended)
-- **Backend**: Render (Recommended)
+### Backend (Render)
+1.  Connect your GitHub repository to Render.
+2.  Render will automatically detect the `render.yaml` file and configure the service.
+3.  Alternatively, create a new **Web Service**:
+    - **Root Directory**: `backend`
+    - **Environment**: Python 3
+    - **Build Command**: `pip install -r requirements.txt`
+    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+    - **Environment Variables**: Add `MAIL_USERNAME`, `MAIL_PASSWORD`, etc.
+
+### Frontend (Vercel)
+1.  Import the repository into Vercel.
+2.  Set the **Root Directory** to `frontend`.
+3.  Vercel should automatically detect Vite.
+    - **Build Command**: `npm run build`
+    - **Output Directory**: `dist`
+4.  Add Environment Variables:
+    - **`VITE_API_URL`** (Required): URL of your deployed Render backend (e.g., `https://cardioai-backend.onrender.com`). **Do not add a trailing slash.**
 
 ## Contact
 
