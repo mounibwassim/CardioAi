@@ -99,3 +99,7 @@ export const registerDoctor = async (username: string, email: string, password: 
     const response = await api.post('/register', { username, email, password });
     return response.data;
 };
+export const verifyPin = async (pin: string) => {
+    const response = await api.post('/pin-login', { pin });
+    return response.data;
+};

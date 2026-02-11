@@ -36,11 +36,7 @@ export default function DoctorLogin() {
                     <div className="h-24 w-24 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-lg border border-slate-700">
                         <Lock className="h-10 w-10 text-primary-400" />
                     </div>
-                    <img
-                        src="/assets/images/logo.png"
-                        alt="CardioAI"
-                        className="h-12 w-auto mb-8 opacity-90"
-                    />
+
                     <h2 className="text-3xl font-bold text-white tracking-tight">
                         Secure Access
                     </h2>
@@ -83,8 +79,8 @@ export default function DoctorLogin() {
                             type="submit"
                             disabled={isLoading || pin.length < 4}
                             className={`group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-medium rounded-lg text-white ${isLoading || pin.length < 4
-                                    ? 'bg-slate-700 cursor-not-allowed'
-                                    : 'bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-900/20'
+                                ? 'bg-slate-700 cursor-not-allowed'
+                                : 'bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-900/20'
                                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-primary-500 transition-all duration-200`}
                         >
                             {isLoading ? (
