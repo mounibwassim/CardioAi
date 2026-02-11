@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain, HeartPulse, Stethoscope, CheckCircle } from 'lucide-react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import Heart3D from '../components/Three/Heart3D';
 import Doctor3D from '../components/Three/Doctor3D';
 
@@ -63,7 +65,12 @@ export default function PatientPortal() {
                             transition={{ duration: 1, delay: 0.2 }}
                             className="relative h-[400px] lg:h-[500px] flex items-center justify-center"
                         >
-                            <Heart3D />
+                            <Canvas camera={{ position: [0, 0, 30], fov: 50 }}>
+                                <ambientLight intensity={0.5} />
+                                <pointLight position={[10, 10, 10]} intensity={1} />
+                                <Heart3D />
+                                <OrbitControls enableZoom={false} enablePan={false} />
+                            </Canvas>
 
                             {/* Floating Cards */}
                             <motion.div
