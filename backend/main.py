@@ -79,7 +79,38 @@ async def startup_event():
     except Exception as e:
         logger.error(f"CRITICAL ERROR loading model: {e}")
 
-# ... (Pydantic models remain the same)
+# Pydantic Models
+class PatientData(BaseModel):
+    age: int
+    sex: int
+    cp: int
+    trestbps: int
+    chol: int
+    fbs: int
+    restecg: int
+    thalach: int
+    exang: int
+    oldpeak: float
+    slope: int
+    ca: int
+    thal: int
+
+class PredictionResult(BaseModel):
+    prediction: int
+    risk_score: float
+    risk_level: str
+
+class PatientCreate(BaseModel):
+    name: str
+    age: int
+    sex: int
+    contact: Optional[str] = None
+
+class FeedbackCreate(BaseModel):
+    name: str
+    rating: int
+    comment: str
+    patient_id: Optional[int] = None
 
 class LoginRequest(BaseModel):
     username: str # Changed from email to username
