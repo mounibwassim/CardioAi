@@ -199,7 +199,7 @@ def send_contact_email(request: ContactRequest):
     smtp_server = os.getenv("MAIL_SERVER", "smtp.gmail.com")
     smtp_port = int(os.getenv("MAIL_PORT", "587"))
     
-    receiver_email = "admin@cardioai.com" # Replace with actual admin email
+    receiver_email = "mounibwassimm@gmail.com" # Updated admin email
 
     message = f"""\
 Subject: New Contact Request: {request.name}

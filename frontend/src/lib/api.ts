@@ -58,6 +58,11 @@ export const submitFeedback = async (name: string, rating: number, comment: stri
     await axios.post(`${API_URL}/feedbacks`, { name, rating, comment, patient_id });
 };
 
+export const getFeedbacks = async () => {
+    const response = await axios.get(`${API_URL}/feedbacks`);
+    return response.data;
+};
+
 export const resetSystem = async () => {
     await axios.post(`${API_URL}/reset`);
 };

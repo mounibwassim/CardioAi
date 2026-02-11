@@ -11,8 +11,15 @@ export default function HealthTechBackground() {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
+        // Performance: Cap DPI at 2 for high-res screens
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        let width = canvas.width = window.innerWidth * dpr;
+        let height = canvas.height = window.innerHeight * dpr;
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+
+        ctx.scale(dpr, dpr);
 
         const particles: Particle[] = [];
         const particleCount = 100;
@@ -107,8 +114,12 @@ export default function HealthTechBackground() {
         animate();
 
         const handleResize = () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            width = canvas.width = window.innerWidth * dpr;
+            height = canvas.height = window.innerHeight * dpr;
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            ctx.scale(dpr, dpr);
         };
 
         window.addEventListener('resize', handleResize);

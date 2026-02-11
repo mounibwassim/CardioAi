@@ -101,7 +101,7 @@ export default function PatientPortal() {
                             transition={{ duration: 1, delay: 0.2 }}
                             className="relative h-[500px] lg:h-[600px] flex items-center justify-center"
                         >
-                            <Canvas camera={{ position: [0, 0, 30], fov: 50 }}>
+                            <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 30], fov: 50 }}>
                                 <ambientLight intensity={0.6} />
                                 <pointLight position={[10, 10, 10]} intensity={1.5} color="#fbbf24" />
                                 <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />

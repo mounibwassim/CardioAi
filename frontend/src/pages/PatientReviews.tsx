@@ -1,9 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star, ChevronDown, ChevronUp, Quote } from 'lucide-react';
+import { getFeedbacks } from '../lib/api';
+
+interface Feedback {
+    id: number;
+    name: string;
+    rating: number;
+    message: string; // The backend returns 'message' or 'comment'? Checking main.py... it selects * from feedbacks.
+    // Wait, submitFeedback sends 'comment'. Let's check schema.
+    // main.py: c.execute("INSERT INTO feedbacks ... (name, rating, message, patient_id) VALUES (?, ?, ?, ?)"
+    // So column is 'message'.
+    created_at?: string;
+}
 
 export default function PatientReviews() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const [reviews, setReviews] = useState<Feedback[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchFeedbacks = async () => {
+            try {
+                const data = await getFeedbacks();
+                setReviews(data.feedbacks);
+            } catch (error) {
+                console.error("Failed to load feedbacks:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFeedbacks();
+    }, []);
 
     const faqs = [
         {
@@ -24,27 +53,6 @@ export default function PatientReviews() {
         }
     ];
 
-    const reviews = [
-        {
-            name: "Sarah L.",
-            rating: 5,
-            date: "Jan 15, 2024",
-            text: "The AI assessment was incredibly quick, and the follow-up consultation gave me peace of mind I haven't had in years. Highly professional team."
-        },
-        {
-            name: "Michael R.",
-            rating: 5,
-            date: "Dec 03, 2023",
-            text: "I appreciated the clear layout of the patient portal. Tracking my recovery has never been easier. The doctor avatars are a nice touch too!"
-        },
-        {
-            name: "Emily C.",
-            rating: 4,
-            date: "Feb 10, 2024",
-            text: "Very futuristic clinic. The waiting times were minimal, and Dr. Aminah really took the time to explain my risk factors."
-        }
-    ];
-
     return (
         <div className="min-h-screen bg-slate-50 py-24">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,38 +69,47 @@ export default function PatientReviews() {
                         <Star className="text-yellow-400 fill-yellow-400 mr-2 h-6 w-6" />
                         Patient Reviews
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {reviews.map((review, idx) => (
-                            <motion.div
-                                key={idx}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center">
-                                        <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold mr-3">
-                                            {review.name.charAt(0)}
+
+                    {loading ? (
+                        <div className="flex justify-center p-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                        </div>
+                    ) : reviews.length === 0 ? (
+                        <p className="text-center text-slate-500">No reviews yet. Be the first to leave feedback!</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {reviews.map((review, idx) => (
+                                <motion.div
+                                    key={review.id || idx}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center">
+                                            <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold mr-3">
+                                                {review.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className="font-semibold text-slate-900">{review.name}</div>
+                                                <div className="text-xs text-slate-400">{review.created_at ? new Date(review.created_at).toLocaleDateString() : 'Recently'}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="font-semibold text-slate-900">{review.name}</div>
-                                            <div className="text-xs text-slate-400">{review.date}</div>
+                                        <div className="flex">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'}`} />
+                                            ))}
                                         </div>
                                     </div>
-                                    <div className="flex">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'}`} />
-                                        ))}
+                                    <div className="relative">
+                                        <Quote className="absolute -top-1 -left-1 h-6 w-6 text-slate-100 transform -scale-x-100" />
+                                        <p className="text-slate-600 italic pl-6">{review.message}</p>
                                     </div>
-                                </div>
-                                <div className="relative">
-                                    <Quote className="absolute -top-1 -left-1 h-6 w-6 text-slate-100 transform -scale-x-100" />
-                                    <p className="text-slate-600 italic pl-6">{review.text}</p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* FAQ Section */}
