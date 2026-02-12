@@ -492,7 +492,7 @@ async def get_dashboard_stats():
             {"doctor": "Dr. Michael Torres", "patients": 0, "criticalCases": 0}
         ]
 
-        conn.close()
+        # Close connection AFTER all queries complete
 
         return {
             "total_patients": total_patients,
