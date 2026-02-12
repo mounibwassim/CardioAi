@@ -114,6 +114,19 @@ export default function Dashboard() {
         } catch (error) {
             if (signal?.aborted) return; // Ignore errors from aborted requests
             console.error("Failed to fetch dashboard data", error);
+
+            // CRITICAL: Reset ALL state to safe defaults on error
+            setSummary({ critical_cases: 0, avg_accuracy: 0, total_assessments: 0, monthly_growth: 0 });
+            setMonthlyTrends([]);
+            setRiskDist([]);
+            setDoctorPerf([]);
+            setPatients([]);
+            setStats({
+                gender_distribution: [],
+                age_distribution: [],
+                assessment_trends: [],
+                risk_trends: []
+            });
         } finally {
             if (showLoading && !signal?.aborted) setLoading(false);
         }
