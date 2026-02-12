@@ -202,35 +202,6 @@ export default function PatientPortal() {
                                 whileHover={{ y: -10 }}
                                 className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 flex flex-col h-full"
                             >
-                                {/* This is a placeholder for where the dropdown might go if this were a patient list item */}
-                                {/* The original instruction's code snippet was syntactically incorrect for this location. */}
-                                {/* Assuming 'patient' and 'showActions' are defined elsewhere for a patient list context. */}
-                                {/* For demonstration, I'm placing it in a hypothetical patient card structure. */}
-                                {/* If this is not a patient card, this block should be removed or placed in the correct component. */}
-                                {false && showActions === "some-patient-id" && ( // Added 'false &&' to disable it as it's out of context here
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-2xl border border-slate-200 py-2 z-[9999] ring-1 ring-black ring-opacity-5">
-                                        <button
-                                            onClick={() => {
-                                                navigate(`/patient/${"some-patient-id"}`);
-                                                setShowActions(null);
-                                            }}
-                                            className="w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors"
-                                        >
-                                            <Eye className="w-4 h-4" />
-                                            View Details
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedPatient({ id: "some-patient-id", name: "Patient Name" }); // Dummy patient data
-                                                setShowActions(null);
-                                            }}
-                                            className="w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors"
-                                        >
-                                            <Edit className="w-4 h-4" />
-                                            Add Note
-                                        </button>
-                                    </div>
-                                )}
                                 <div className="h-48 overflow-hidden relative">
                                     <div className="absolute inset-0 bg-primary-900/10 group-hover:bg-primary-900/0 transition-all z-10" />
                                     <img
