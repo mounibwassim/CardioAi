@@ -135,47 +135,60 @@ export default function PatientManagement() {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
                                         <button
                                             onClick={() => setOpenMenuId(openMenuId === patient.id ? null : patient.id)}
-                                            onClick={() => setShowActions(showActions === patient.id ? null : patient.id)}
                                             className="text-slate-400 hover:text-slate-600 transition-colors"
                                         >
                                             <MoreVertical className="h-5 w-5" />
                                         </button>
 
                                         {/* Dropdown Menu */}
-                                        onClick={() => handleDownloadReport(patient)}
-                                        className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                                        {openMenuId === patient.id && (
+                                            <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-2xl bg-white ring-2 ring-slate-200 z-[9999] border-2 border-slate-300">
+                                                <div className="py-1" role="menu">
+                                                    <button
+                                                        onClick={() => handleViewDetails(patient.id)}
+                                                        className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                                     >
-                                        <Download className="h-4 w-4 mr-2" />
-                                        Download Report
-                                    </button>
-                                </div>
+                                                        <Eye className="h-4 w-4 mr-2" />
+                                                        View Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleAddNote(patient.id)}
+                                                        className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                                    >
+                                                        <Edit3 className="h-4 w-4 mr-2" />
+                                                        Add Note
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDownloadReport(patient)}
+                                                        className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                                    >
+                                                        <Download className="h-4 w-4 mr-2" />
+                                                        Download Report
+                                                    </button>
+                                                </div>
                                             </div>
                                         )}
-                </td>
-            </tr>
-            ))
-            ) : (
-            <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
-                    <User className="mx-auto h-12 w-12 text-slate-300 mb-4" />
-                    <p className="text-lg font-medium">No patients found</p>
-                    <p className="text-sm mt-1">Patients will appear here automatically after assessments</p>
-                </td>
-            </tr>
+                                        <tr>
+                                            <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                                                <User className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+                                                <p className="text-lg font-medium">No patients found</p>
+                                                <p className="text-sm mt-1">Patients will appear here automatically after assessments</p>
+                                            </td>
+                                        </tr>
                         )}
-        </tbody>
-                </table >
+                                    </tbody>
+                                </table >
             </div >
 
-        {/* Click outside to close menu */ }
-    {
-        openMenuId && (
-            <div
-                className="fixed inset-0 z-0"
-                onClick={() => setOpenMenuId(null)}
-            />
-        )
-    }
-        </div >
-    );
+                    {/* Click outside to close menu */}
+                    {
+                        openMenuId && (
+                            <div
+                                className="fixed inset-0 z-0"
+                                onClick={() => setOpenMenuId(null)}
+                            />
+                        )
+                    }
+            </div >
+            );
 }
