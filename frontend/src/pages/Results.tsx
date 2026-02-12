@@ -52,12 +52,41 @@ export default function Results() {
             setIsDownloading(true);
             console.log('Starting PDF generation...');
 
+            // Create a clean copy of the element for PDF generation
+            const clonedElement = element.cloneNode(true) as HTMLElement;
+
+            // Remove any oklch colors and replace with standard colors
+            const allElements = clonedElement.querySelectorAll('*');
+            allElements.forEach((el) => {
+                const htmlEl = el as HTMLElement;
+                const computedStyle = window.getComputedStyle(htmlEl);
+
+                // Force standard color values
+                if (computedStyle.color) {
+                    htmlEl.style.color = computedStyle.color;
+                }
+                if (computedStyle.backgroundColor) {
+                    htmlEl.style.backgroundColor = computedStyle.backgroundColor;
+                }
+            });
+
             // Capture the element as canvas
-            const canvas = await html2canvas(element, {
+            const canvas = await html2canvas(clonedElement, {
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                onclone: (clonedDoc) => {
+                    // Ensure all colors are converted to RGB
+                    const style = clonedDoc.createElement('style');
+                    style.textContent = `
+                        * {
+                            color: rgb(0, 0, 0) !important;
+                            background-color: rgb(255, 255, 255) !important;
+                        }
+                    `;
+                    clonedDoc.head.appendChild(style);
+                }
             });
 
             console.log('Canvas created successfully');
@@ -67,13 +96,96 @@ export default function Results() {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            // Add content to PDF
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            let currentY = 0;
+
+            // Header
+            pdf.setFillColor(15, 76, 129);
+            pdf.rect(0, 0, pdfWidth, 25, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(18);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('CardioAI Clinical Report', pdfWidth / 2, 15, { align: 'center' });
+            currentY = 30;
+
+            // Patient Information
+            pdf.setTextColor(0, 0, 0);
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Patient Information', 15, currentY);
+            currentY += 7;
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(10);
+            pdf.text(`Name: ${data.name}`, 15, currentY);
+            currentY += 5;
+            pdf.text(`Age: ${data.age} years | Gender: ${data.sex === 1 ? 'Male' : 'Female'}`, 15, currentY);
+            currentY += 5;
+            pdf.text(`Assessment Date: ${new Date().toLocaleDateString()}`, 15, currentY);
+            currentY += 5;
+            pdf.text(`Doctor: ${selectedDoctor}`, 15, currentY);
+            currentY += 10;
+
+            // Risk Assessment
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.text('Risk Assessment', 15, currentY);
+            currentY += 7;
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(10);
+            const riskColor = result.risk_level === 'High' ? [220, 38, 38] :
+                result.risk_level === 'Medium' ? [234, 179, 8] : [34, 197, 94];
+            pdf.setTextColor(...riskColor);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Risk Level: ${result.risk_level}`, 15, currentY);
+            pdf.setTextColor(0, 0, 0);
+            pdf.setFont('helvetica', 'normal');
+            currentY += 5;
+            pdf.text(`Risk Score: ${(result.risk_score * 100).toFixed(1)}%`, 15, currentY);
+            currentY += 10;
+
+            // AI Analysis (if available)
+            if (result.explanation) {
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(12);
+                pdf.text('AI Analysis Summary', 15, currentY);
+                currentY += 7;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(9);
+                const analysisLines = pdf.splitTextToSize(result.explanation, pdfWidth - 30);
+                pdf.text(analysisLines, 15, currentY);
+                currentY += analysisLines.length * 4 + 5;
+            }
+
+            // Doctor Notes (if available - would need to be passed from patient record)
+            // This would require fetching patient notes from the database
+            // For now, we'll add a placeholder section
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.text('Clinical Notes', 15, currentY);
+            currentY += 7;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.text('Notes will be added by the attending physician.', 15, currentY);
+            currentY += 10;
+
+            // Digital Signature (placeholder)
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.text('Digital Signature', 15, currentY);
+            currentY += 7;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.text(`Signed by: ${selectedDoctor}`, 15, currentY);
+            currentY += 5;
+            pdf.text(`Date: ${new Date().toLocaleDateString()}`, 15, currentY);
 
             // Footer
-            pdf.setFontSize(10);
+            pdf.setFontSize(8);
             pdf.setTextColor(100);
-            pdf.text(`Generated on: ${new Date().toLocaleString()}`, 10, pdf.internal.pageSize.getHeight() - 10);
+            pdf.text(`Generated on: ${new Date().toLocaleString()}`, 15, pdf.internal.pageSize.getHeight() - 10);
+            pdf.text('CardioAI - AI-Powered Heart Disease Prediction', pdfWidth - 15, pdf.internal.pageSize.getHeight() - 10, { align: 'right' });
 
             // Generate filename
             const fileName = `CardioAI_Report_${data.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -85,7 +197,7 @@ export default function Results() {
             alert('Report downloaded successfully!');
         } catch (err) {
             console.error("PDF Generation failed:", err);
-            alert('Failed to generate PDF. Please try again or contact support if the issue persists.');
+            alert(`Failed to generate PDF: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again or contact support.`);
         } finally {
             setIsDownloading(false);
         }
