@@ -4,75 +4,45 @@ Utility functions for generating AI-powered system notes based on patient risk a
 
 def generate_system_notes(risk_level: str, risk_score: float, patient_data: dict) -> str:
     """
-    Generate AI-powered system notes based on risk analysis.
-    
-    Args:
-        risk_level: Risk level (Low, Medium, High)
-        risk_score: Risk score (0-1)
-        patient_data: Dictionary containing patient clinical data
-    
-    Returns:
-        Formatted system notes string
+    Generate professional medical AI analysis summary.
     """
-    notes = []
+    prob_percent = risk_score * 100
     
-    # Risk-based primary message
-    if risk_level == "High":
-        notes.append("⚠️ **High cardiovascular risk detected.** Immediate consultation with a cardiologist is strongly recommended.")
-        notes.append(f"AI Confidence: {risk_score * 100:.1f}%")
-    elif risk_level == "Medium":
-        notes.append("⚡ **Moderate risk indicators present.** Follow-up assessment recommended within 2-4 weeks.")
-        notes.append(f"AI Confidence: {risk_score * 100:.1f}%")
-    else:
-        notes.append("✅ **Low cardiovascular risk.** No immediate alarming indicators detected.")
-        notes.append(f"AI Confidence: {risk_score * 100:.1f}%")
+    # Professional Medical Format
+    summary = [
+        f"AI Analysis Summary",
+        f"The patient presents a calculated cardiovascular risk probability of {prob_percent:.1f}%. "
+        f"Clinical indicators including specific cardiac markers significantly contribute to the overall risk profile. "
+        f"The model classifies this case as {risk_level} Risk based on a threshold ≥{'70%' if risk_level == 'High' else '40%' if risk_level == 'Medium' else 'standard clinical bounds'}."
+    ]
     
-    # Analyze specific risk factors
+    # Specific Indications
     concerns = []
-    
-    # Blood Pressure
     if patient_data.get('trestbps', 0) > 140:
-        concerns.append(f"Elevated blood pressure ({patient_data['trestbps']} mm Hg)")
-    
-    # Cholesterol
-    if patient_data.get('chol', 0) > 240:
-        concerns.append(f"High cholesterol ({patient_data['chol']} mg/dl)")
-    elif patient_data.get('chol', 0) > 200:
-        concerns.append(f"Borderline high cholesterol ({patient_data['chol']} mg/dl)")
-    
-    # Exercise Angina
-    if patient_data.get('exang', 0) == 1:
-        concerns.append("Exercise-induced angina detected")
-    
-    # Heart Rate
-    max_hr = patient_data.get('thalach', 0)
-    age = patient_data.get('age', 50)
-    expected_max_hr = 220 - age
-    if max_hr < expected_max_hr * 0.7:
-        concerns.append(f"Lower than expected max heart rate ({max_hr} bpm)")
-    
-    # ST Depression
-    if patient_data.get('oldpeak', 0) > 2:
+        concerns.append(f"Elevated systolic blood pressure ({patient_data['trestbps']} mm Hg)")
+    if patient_data.get('chol', 0) > 200:
+        concerns.append(f"Elevated cholesterol levels ({patient_data['chol']} mg/dl)")
+    if patient_data.get('oldpeak', 0) > 2.0:
         concerns.append(f"Significant ST depression ({patient_data['oldpeak']})")
-    
+        
     if concerns:
-        notes.append("\n**Key Concerns:**")
-        for concern in concerns:
-            notes.append(f"• {concern}")
-    
+        summary.append("\nContributing Factors:")
+        for c in concerns:
+            summary.append(f"- {c}")
+
     # Recommendations
-    notes.append("\n**Recommendations:**")
+    summary.append("\nClinical Recommendations:")
     if risk_level == "High":
-        notes.append("• Schedule immediate cardiology consultation")
-        notes.append("• Consider stress test and echocardiogram")
-        notes.append("• Monitor blood pressure and cholesterol levels closely")
+        summary.append("- Schedule immediate cardiology consultation")
+        summary.append("- Stress test and echocardiogram recommended")
     elif risk_level == "Medium":
-        notes.append("• Schedule follow-up assessment in 2-4 weeks")
-        notes.append("• Monitor blood pressure and lifestyle factors")
-        notes.append("• Consider lifestyle modifications (diet, exercise)")
+        summary.append("- Follow-up lipid profile in 3-6 months")
+        summary.append("- Monitor daily blood pressure readings")
     else:
-        notes.append("• Continue routine health monitoring")
-        notes.append("• Maintain healthy lifestyle practices")
-        notes.append("• Annual cardiovascular screening recommended")
+        summary.append("- Continue routine health monitoring")
+        summary.append("- Annual cardiovascular screening recommended")
+        
+    final_text = "\n".join(summary)
     
-    return "\n".join(notes)
+    # Remove markdown stars for production stability
+    return final_text.replace("**", "")

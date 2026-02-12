@@ -3,9 +3,9 @@
 
 # Probability Thresholds (Based on Model Output)
 RISK_THRESHOLDS = {
-    "high": 0.75,     # >75% probability → High Risk (Immediate clinical attention)
-    "medium": 0.45,   # 45-75% probability → Medium Risk (Monitoring required)
-    "low": 0.45       # <45% probability → Low Risk (Standard follow-up)
+    "high": 0.70,     # >=70% probability → High Risk
+    "medium": 0.40,   # >=40% probability → Medium Risk
+    "low": 0.40       # <40% probability → Low Risk
 }
 
 # Clinical Justification:

@@ -26,7 +26,7 @@ import RiskTrends3D from '../components/charts/RiskTrends3D';
 import DoctorPerformance3D from '../components/charts/DoctorPerformance3D';
 import Monthly3DChart from '../components/charts/Monthly3DChart';
 import RiskDistribution3D from '../components/charts/RiskDistribution3D';
-import { safeArray, safeNumber } from '../lib/utils';
+import { safeArray, safeNumber } from '../lib/utils'; // Keep existing utils import
 
 // Define StatCard with Glassmorphism
 const StatCard = ({ title, value, icon: Icon, color, delay, onClick }: { title: string, value: string | number, icon: any, color: string, delay: number, onClick?: () => void }) => (
@@ -291,40 +291,135 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Total Patients"
-                    value={computedMetrics.total}
+                    value={String(computedMetrics.total)}
+                    subtitle="Registered patients"
+                    type="primary"
                     icon={Users}
-                    color="bg-blue-500"
-                    delay={0.1}
                     onClick={() => navigate('/doctor/patients')}
                 />
                 <StatCard
                     title="Critical Cases"
-                    value={computedMetrics.critical}
-                    icon={AlertCircle}
-                    color="bg-red-500"
-                    delay={0.2}
+                    value={String(computedMetrics.critical)}
+                    subtitle="High risk detected"
+                    type="danger"
+                    icon={AlertTriangle}
                     onClick={() => navigate('/doctor/patients?filter=critical')}
                 />
                 <StatCard
                     title="Avg. Accuracy"
                     value={computedMetrics.accuracy}
+                    subtitle="Model performance"
+                    type="success"
                     icon={Activity}
-                    color="bg-green-500"
-                    delay={0.3}
                     onClick={() => navigate('/doctor/analytics')}
                 />
                 <StatCard
                     title="Monthly Growth"
                     value={computedMetrics.growth}
+                    subtitle="Volume increase"
+                    type="warning"
                     icon={TrendingUp}
-                    color="bg-purple-500"
-                    delay={0.4}
                     onClick={() => navigate('/doctor/analytics?view=monthly')}
                 />
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Assessment Trends */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-2">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5 text-indigo-600" />
+                            Monthly Assessment Trends
+                        </h3>
+                        <div className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded">2026 Full Year View</div>
+                    </div>
+                    <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={monthlyTrends}>
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    cursor={{ fill: '#f1f5f9' }}
+                                />
+                                <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} name="Assessments" />
+                                <Bar dataKey="high_risk" fill="#ef4444" radius={[4, 4, 0, 0]} name="High Risk" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Doctor Performance Redesign */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                        <Users className="w-5 h-5 text-indigo-600" />
+                        Doctor Performance
+                    </h3>
+                    <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={safeArray(doctorPerf).map((d: DoctorPerformance) => ({
+                                doctor: d?.name || 'Unknown',
+                                patients: safeNumber(d?.assessments)
+                            }))}>
+                                <XAxis
+                                    dataKey="doctor"
+                                    tick={{ fontSize: 14, fontWeight: 600, fill: '#475569' }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <YAxis axisLine={false} tickLine={false} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                />
+                                <Bar dataKey="patients" radius={[6, 6, 0, 0]}>
+                                    {safeArray(doctorPerf).map((_, index) => (
+                                        <Cell key={index} fill={`hsl(${index * 70}, 70%, 50%)`} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Risk Distribution Optimized */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-red-600" />
+                        Risk Distribution
+                    </h3>
+                    <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={safeArray(riskDist).map((r: RiskDistribution) => ({
+                                        name: r?.level || 'Unknown',
+                                        value: safeNumber(r?.count)
+                                    }))}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    paddingAngle={8}
+                                    innerRadius={80}
+                                    outerRadius={120}
+                                    activeOuterRadius={130}
+                                    isAnimationActive={false}
+                                    label={({ name, percent }: { name: string, percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                >
+                                    {safeArray(riskDist).map((entry: RiskDistribution, index: number) => {
+                                        const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
+                                        return <Cell key={index} fill={COLORS[index % COLORS.length]} />;
+                                    })}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
             {/* 3D Risk Distribution - Full Width */}
-            <ChartParallaxWrapper className="grid grid-cols-1 gap-8 dashboard-column mt-8">
+            {/* <ChartParallaxWrapper className="grid grid-cols-1 gap-8 dashboard-column mt-8">
                 <ErrorBoundary fallbackTitle="3D Chart Display Failed">
                     <RiskDistribution3D
                         data={safeArray(riskDist).map((r: any) => ({
@@ -333,7 +428,7 @@ export default function Dashboard() {
                         }))}
                     />
                 </ErrorBoundary>
-            </ChartParallaxWrapper>
+            </ChartParallaxWrapper> */}
 
             {/* Additional Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 dashboard-column mt-8">
@@ -369,9 +464,9 @@ export default function Dashboard() {
                 <ChartParallaxWrapper>
                     <ErrorBoundary fallbackTitle="Assessment Trend Error">
                         <AssessmentTrendsGlow
-                            data={safeArray(stats?.assessment_trends).map((d: any) => ({
+                            data={safeArray(stats?.assessment_trends).map((d: { date: string; total: number }) => ({
                                 date: d?.date || 'N/A',
-                                assessments: safeNumber(d?.total || d?.assessments || d?.count)
+                                assessments: safeNumber(d?.total)
                             }))}
                         />
                     </ErrorBoundary>
@@ -380,7 +475,7 @@ export default function Dashboard() {
                 <ChartParallaxWrapper>
                     <ErrorBoundary fallbackTitle="Risk Trend Error">
                         <RiskTrends3D
-                            data={safeArray(stats?.risk_trends).map((d: any) => ({
+                            data={safeArray(stats?.risk_trends).map((d: { date: string; low: number; medium: number; high: number }) => ({
                                 date: d?.date || 'N/A',
                                 low: safeNumber(d?.low),
                                 medium: safeNumber(d?.medium),
@@ -395,7 +490,7 @@ export default function Dashboard() {
             <ChartParallaxWrapper className="mt-8">
                 <ErrorBoundary fallbackTitle="Doctor Performance Error">
                     <DoctorPerformance3D
-                        data={safeArray(doctorPerf).map((d: any) => ({
+                        data={safeArray(doctorPerf).map((d: DoctorPerformance) => ({
                             doctor: d?.name || 'Unknown',
                             patients: safeNumber(d?.assessments),
                             criticalCases: safeNumber(d?.high_risk_cases)

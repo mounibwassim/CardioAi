@@ -32,14 +32,14 @@ export const generatePDF = async (
     }
 
     // Header - Clinical Assessment Report
-    pdf.setFontSize(20);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(22);
+    pdf.setFont('Times-Roman', 'bold');
     pdf.setTextColor(15, 23, 42); // slate-900
-    pdf.text('Clinical Assessment Report', 10, 32);
+    pdf.text('Cardiovascular Risk Assessment Report', 10, 32);
 
     // Date and Report ID (top right)
     pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('Times-Roman', 'normal');
     pdf.setTextColor(100, 116, 139); // slate-500
     const assessmentDate = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
@@ -66,12 +66,12 @@ export const generatePDF = async (
     // Risk text
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(24);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('Times-Roman', 'bold');
     pdf.text(`${result.risk_level} Risk Detected`, pdfWidth / 2, currentY + 20, { align: 'center' });
 
     pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`AI Confidence Score: ${(result.risk_score * 100).toFixed(1)}%`, pdfWidth / 2, currentY + 30, { align: 'center' });
+    pdf.setFont('Times-Roman', 'normal');
+    pdf.text(`AI Confidence Probability: ${(result.risk_score * 100).toFixed(1)}%`, pdfWidth / 2, currentY + 30, { align: 'center' });
 
     currentY += 50;
 
@@ -81,23 +81,23 @@ export const generatePDF = async (
 
     pdf.setTextColor(15, 23, 42);
     pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('Times-Roman', 'bold');
     pdf.text('Patient Information', 15, currentY + 8);
 
     pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('Times-Roman', 'normal');
     pdf.setTextColor(100, 116, 139);
     pdf.text('Full Name', 15, currentY + 15);
     pdf.setTextColor(15, 23, 42);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('Times-Roman', 'bold');
     pdf.text(data.name, 15, currentY + 20);
 
     if (data.contact) {
-        pdf.setFont('helvetica', 'normal');
+        pdf.setFont('Times-Roman', 'normal');
         pdf.setTextColor(100, 116, 139);
-        pdf.text('Contact', pdfWidth / 2 + 5, currentY + 15);
+        pdf.text('Contact Detail', pdfWidth / 2 + 5, currentY + 15);
         pdf.setTextColor(15, 23, 42);
-        pdf.setFont('helvetica', 'bold');
+        pdf.setFont('Times-Roman', 'bold');
         pdf.text(data.contact, pdfWidth / 2 + 5, currentY + 20);
     }
 
@@ -109,9 +109,9 @@ export const generatePDF = async (
 
     // Patient Profile (Left Column)
     pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('Times-Roman', 'bold');
     pdf.setTextColor(15, 23, 42);
-    pdf.text('Patient Profile', leftColX, currentY);
+    pdf.text('Clinical Profile', leftColX, currentY);
     pdf.setLineWidth(0.5);
     pdf.setDrawColor(226, 232, 240);
     pdf.line(leftColX, currentY + 1, leftColX + 80, currentY + 1);
@@ -119,18 +119,18 @@ export const generatePDF = async (
     currentY += 8;
 
     const profileData = [
-        ['Age', `${data.age} years`],
-        ['Sex', data.sex === 1 ? 'Male' : 'Female'],
+        ['Patient Age', `${data.age} years`],
+        ['Patient Sex', data.sex === 1 ? 'Male' : 'Female'],
         ['Blood Pressure', `${data.trestbps} mm Hg`],
-        ['Cholesterol', `${data.chol} mg/dl`]
+        ['Serum Chol.', `${data.chol} mg/dl`]
     ];
 
     profileData.forEach(([label, value]) => {
         pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'normal');
+        pdf.setFont('Times-Roman', 'normal');
         pdf.setTextColor(100, 116, 139);
         pdf.text(label, leftColX, currentY);
-        pdf.setFont('helvetica', 'bold');
+        pdf.setFont('Times-Roman', 'bold');
         pdf.setTextColor(15, 23, 42);
         pdf.text(value, leftColX + 70, currentY, { align: 'right' });
         currentY += 6;
@@ -140,10 +140,11 @@ export const generatePDF = async (
     currentY -= (profileData.length * 6 + 8); // Reset to top for right column
 
     pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('Times-Roman', 'bold');
     pdf.setTextColor(15, 23, 42);
-    pdf.text('Clinical Indicators', rightColX, currentY);
+    pdf.text('Diagnostic Indicators', rightColX, currentY);
     pdf.line(rightColX, currentY + 1, rightColX + 80, currentY + 1);
+
 
     currentY += 8;
 

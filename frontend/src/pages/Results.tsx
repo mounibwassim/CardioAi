@@ -170,15 +170,43 @@ export default function Results() {
                     </div>
 
                     {/* AI Analysis Summary */}
-                    <div className="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-8">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-3">AI Analysis Summary</h3>
-                        <p className="text-slate-600 leading-relaxed">
-                            The patient exhibits <strong>{result.risk_level.toLowerCase()} risk</strong> markers based on the provided clinical data.
-                            {result.risk_score > 0.5
-                                ? " Immediate consultation with a cardiologist is recommended to verify these findings and discuss potential intervention strategies."
-                                : " Routine monitoring and lifestyle maintenance are advised. No immediate alarming indicators were detected."
-                            }
-                        </p>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-8 break-words whitespace-pre-wrap">
+                        <h3 className="text-lg font-semibold text-slate-900 mb-3 underline decoration-primary-500/30">AI Analysis Summary</h3>
+                        <div className="text-slate-700 leading-relaxed text-sm font-medium">
+                            {result.explanation ? result.explanation.replace(/\*\*/g, "") : (
+                                `The patient presents a cardiovascular risk probability of ${(result.risk_score * 100).toFixed(1)}%. ` +
+                                `Model classifies this case as ${result.risk_level} Risk based on clinical thresholds.`
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Clinical Recommendations */}
+                    <div className="mb-8 p-6 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                        <h3 className="text-lg font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                            <Activity className="w-5 h-5" />
+                            Clinical Recommendations
+                        </h3>
+                        <div className="text-sm text-slate-700 space-y-2">
+                            {result.risk_level === "High" ? (
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>Immediate cardiology consultation required for diagnostic confirmation.</li>
+                                    <li>Conduct immediate 12-lead ECG and cardiac enzyme profiling.</li>
+                                    <li>Initiate aggressive lifestyle intervention and pharmacological therapy as indicated.</li>
+                                </ul>
+                            ) : result.risk_level === "Medium" ? (
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>Schedule follow-up assessment with lipid profile and stress testing.</li>
+                                    <li>Implement dietary modifications and daily blood pressure monitoring.</li>
+                                    <li>Review risk factors in 4-6 weeks for progression.</li>
+                                </ul>
+                            ) : (
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>Continue standard primary care monitoring and annual screenings.</li>
+                                    <li>Maintain current healthy lifestyle and preventative measures.</li>
+                                    <li>Re-assess risk if new symptoms or significant age/weight changes occur.</li>
+                                </ul>
+                            )}
+                        </div>
                     </div>
 
                     {/* Doctor Information */}

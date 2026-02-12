@@ -369,9 +369,10 @@ async def get_dashboard_stats():
 
         # 4. Recent Activity
         recent_activity = conn.execute("""
-            SELECT r.id, p.name, p.age, p.sex, r.risk_level, r.created_at, r.risk_score
+            SELECT r.id, p.name, p.age, p.sex, r.risk_level, r.created_at, r.risk_score, d.name as doctor_name
             FROM records r
             JOIN patients p ON r.patient_id = p.id
+            LEFT JOIN doctors d ON r.doctor_id = d.id
             ORDER BY r.created_at DESC
             LIMIT 5
         """).fetchall()
@@ -393,7 +394,7 @@ async def get_dashboard_stats():
                 "sex": row['sex'],
                 "risk_level": row['risk_level'],
                 "date": row['created_at'],
-                "doctor": "Dr. Sarah Chen"
+                "doctor": row['doctor_name'] or "Dr. Sarah Chen"
             } for row in recent_activity
         ]
 
@@ -581,27 +582,39 @@ async def get_analytics_summary(doctor_id: Optional[int] = Query(None)):
 
 @app.get("/analytics/monthly-trends")
 async def get_monthly_trends(doctor_id: Optional[int] = Query(None)):
-    """Get monthly assessment trends (YYYY-MM aggregation)"""
+    """Get monthly assessment trends (Always 12 months for current year)"""
     try:
+        current_year = datetime.now().year
+        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        
         conn = get_db_connection()
         doctor_filter = f" AND doctor_id = {doctor_id}" if doctor_id else ""
         
         query = f"""
             SELECT 
-                strftime('%Y-%m', created_at) as month,
+                strftime('%m', created_at) as month_num,
                 COUNT(*) as count,
                 SUM(CASE WHEN risk_level = 'High' THEN 1 ELSE 0 END) as high_risk
             FROM records
-            WHERE 1=1{doctor_filter}
-            GROUP BY strftime('%Y-%m', created_at)
-            ORDER BY month DESC
-            LIMIT 12
+            WHERE strftime('%Y', created_at) = '{current_year}' {doctor_filter}
+            GROUP BY month_num
         """
         
         results = conn.execute(query).fetchall()
         conn.close()
         
-        return [{"month": row['month'], "count": row['count'], "high_risk": row['high_risk']} for row in reversed(list(results))]
+        month_map = {row['month_num']: {"count": row['count'], "high_risk": row['high_risk']} for row in results}
+        
+        final_data = []
+        for i in range(1, 13):
+            m_str = f"{i:02d}"
+            final_data.append({
+                "month": months[i-1],
+                "count": month_map.get(m_str, {}).get("count", 0),
+                "high_risk": month_map.get(m_str, {}).get("high_risk", 0)
+            })
+            
+        return final_data
     except Exception as e:
         logger.error(f"Monthly trends error: {str(e)}")
         return []
@@ -735,6 +748,10 @@ def predict_heart_disease(data: PatientData):
         patient_id = None
         existing_patient = c.execute("SELECT id FROM patients WHERE name = ?", (data.name,)).fetchone()
         
+        # Get doctor name for the result
+        doc_res = c.execute("SELECT name FROM doctors WHERE id = ?", (data.doctor_id,)).fetchone()
+        assigned_doctor = doc_res['name'] if doc_res else "Dr. Sarah Chen"
+
         if existing_patient:
             patient_id = existing_patient['id']
             # Update patient risk level and system notes
