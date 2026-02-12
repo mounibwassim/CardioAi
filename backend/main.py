@@ -402,13 +402,105 @@ async def get_dashboard_stats():
             elif level == "Medium": formatted_risks[1]["value"] = count
             elif level == "High": formatted_risks[2]["value"] = count
 
+        # 6. Gender Distribution
+        gender_counts = conn.execute("""
+            SELECT sex, COUNT(*) as count 
+            FROM patients 
+            GROUP BY sex
+        """).fetchall()
+        
+        gender_distribution = [
+            {"name": "Male", "value": 0},
+            {"name": "Female", "value": 0}
+        ]
+        for row in gender_counts:
+            if row['sex'] == 1:
+                gender_distribution[0]["value"] = row['count']
+            else:
+                gender_distribution[1]["value"] = row['count']
+
+        # 7. Age Distribution (grouped)
+        age_groups_data = conn.execute("""
+            SELECT 
+                CASE 
+                    WHEN age < 30 THEN '< 30'
+                    WHEN age BETWEEN 30 AND 39 THEN '30-39'
+                    WHEN age BETWEEN 40 AND 49 THEN '40-49'
+                    WHEN age BETWEEN 50 AND 59 THEN '50-59'
+                    WHEN age >= 60 THEN '60+'
+                END as age_group,
+                COUNT(*) as count
+            FROM patients
+            GROUP BY age_group
+            ORDER BY age_group
+        """).fetchall()
+        
+        age_distribution = [
+            {"ageGroup": row['age_group'], "count": row['count']} 
+            for row in age_groups_data
+        ]
+
+        # 8. Assessment Trends (last 7 days)
+        from datetime import datetime, timedelta
+        trends_data = []
+        for i in range(6, -1, -1):
+            date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+            count = conn.execute("""
+                SELECT COUNT(*) FROM records 
+                WHERE DATE(created_at) = ?
+            """, (date,)).fetchone()[0]
+            trends_data.append({
+                "date": (datetime.now() - timedelta(days=i)).strftime('%m/%d'),
+                "assessments": count
+            })
+
+        # 9. Risk Trends (last 7 days)
+        risk_trends_data = []
+        for i in range(6, -1, -1):
+            date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+            risk_counts_day = conn.execute("""
+                SELECT risk_level, COUNT(*) as count 
+                FROM records 
+                WHERE DATE(created_at) = ?
+                GROUP BY risk_level
+            """, (date,)).fetchall()
+            
+            day_data = {
+                "date": (datetime.now() - timedelta(days=i)).strftime('%m/%d'),
+                "low": 0,
+                "medium": 0,
+                "high": 0
+            }
+            for row in risk_counts_day:
+                if row['risk_level'] == 'Low':
+                    day_data['low'] = row['count']
+                elif row['risk_level'] == 'Medium':
+                    day_data['medium'] = row['count']
+                elif row['risk_level'] == 'High':
+                    day_data['high'] = row['count']
+            risk_trends_data.append(day_data)
+
+        # 10. Doctor Performance (hardcoded for now, will be dynamic with multi-doctor system)
+        doctor_performance = [
+            {"doctor": "Dr. Sarah Chen", "patients": total_patients, "criticalCases": critical_cases},
+            {"doctor": "Dr. Emily Ross", "patients": 0, "criticalCases": 0},
+            {"doctor": "Dr. Michael Torres", "patients": 0, "criticalCases": 0}
+        ]
+
+        conn.close()
+
         return {
             "total_patients": total_patients,
             "critical_cases": critical_cases,
             "avg_accuracy": "0%", # No ground truth feedback loop yet
             "monthly_growth": monthly_growth,
             "recent_activity": formatted_activity,
-            "risk_distribution": formatted_risks
+            "risk_distribution": formatted_risks,
+            "gender_distribution": gender_distribution,
+            "age_distribution": age_distribution,
+            "assessment_trends": trends_data,
+            "risk_trends": risk_trends_data,
+            "doctor_performance": doctor_performance
         }
 
     except Exception as e:
@@ -419,7 +511,12 @@ async def get_dashboard_stats():
             "avg_accuracy": "0%",
             "monthly_growth": "0%",
             "recent_activity": [],
-            "risk_distribution": []
+            "risk_distribution": [],
+            "gender_distribution": [],
+            "age_distribution": [],
+            "assessment_trends": [],
+            "risk_trends": [],
+            "doctor_performance": []
         }
 
 @app.post("/predict", response_model=PredictionResult)

@@ -6,6 +6,11 @@ import {
 } from 'recharts';
 import { Users, AlertCircle, Activity, TrendingUp, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { getDashboardStats, resetSystem } from '../lib/api';
+import GenderDistributionChart from '../components/charts/GenderDistributionChart';
+import AgeDistributionChart from '../components/charts/AgeDistributionChart';
+import AssessmentTrendsChart from '../components/charts/AssessmentTrendsChart';
+import RiskTrendsChart from '../components/charts/RiskTrendsChart';
+import DoctorPerformanceChart from '../components/charts/DoctorPerformanceChart';
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
@@ -37,7 +42,12 @@ export default function Dashboard() {
             { name: "Low Risk", value: 0 },
             { name: "Medium Risk", value: 0 },
             { name: "High Risk", value: 0 }
-        ]
+        ],
+        gender_distribution: [],
+        age_distribution: [],
+        assessment_trends: [],
+        risk_trends: [],
+        doctor_performance: []
     });
 
     useEffect(() => {
@@ -172,6 +182,53 @@ export default function Dashboard() {
                 </motion.div>
             </div>
 
+            {/* Additional Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <GenderDistributionChart data={stats.gender_distribution} />
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <AgeDistributionChart data={stats.age_distribution} />
+                </motion.div>
+            </div>
+
+            {/* Trends Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                >
+                    <AssessmentTrendsChart data={stats.assessment_trends} />
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                >
+                    <RiskTrendsChart data={stats.risk_trends} />
+                </motion.div>
+            </div>
+
+            {/* Doctor Performance Chart - Full Width */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+            >
+                <DoctorPerformanceChart data={stats.doctor_performance} />
+            </motion.div>
+
             {/* Recent Activity Table */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                 <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
@@ -203,7 +260,7 @@ export default function Dashboard() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${item.risk_level === 'Low' ? 'bg-green-100 text-green-800' :
-                                                    item.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                                                item.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                                                 }`}>
                                                 {item.risk_level} Risk
                                             </span>
