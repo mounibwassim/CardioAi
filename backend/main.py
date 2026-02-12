@@ -243,6 +243,7 @@ def doctor_login(creds: LoginRequest):
             login_attempts[user_ip] = (0, current_time)
     
     # DB Validation
+    logger.info(f"Login attempt for username: {creds.username}")
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE username = ?", (creds.username,)).fetchone()
     conn.close()
@@ -250,8 +251,10 @@ def doctor_login(creds: LoginRequest):
     # Verify Password
     authenticated = False
     if user:
+        logger.info(f"User '{creds.username}' found in database")
         if verify_password(creds.password, user['password_hash']):
             authenticated = True
+            logger.info(f"Password verified successfully for {creds.username}")
         elif user['password_hash'] == creds.password:
             # Auto-upgrade to bcrypt
             logger.info(f"Upgrading password for {creds.username} to bcrypt")
