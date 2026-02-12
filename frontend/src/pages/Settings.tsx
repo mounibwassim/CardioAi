@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, Trash2, Key, Info, Moon, Sun, LogOut } from 'lucide-react';
+import { Shield, AlertTriangle, Trash2, Key, Info, Moon, LogOut } from 'lucide-react';
 import { resetSystem } from '../lib/api';
 
 export default function Settings() {
