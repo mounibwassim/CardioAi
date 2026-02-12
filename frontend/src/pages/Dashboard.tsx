@@ -26,6 +26,7 @@ import AssessmentTrendsChart from '../components/charts/AssessmentTrendsChart';
 import RiskTrendsChart from '../components/charts/RiskTrendsChart';
 import DoctorPerformanceChart from '../components/charts/DoctorPerformanceChart';
 import Monthly3DChart from '../components/charts/Monthly3DChart';
+import { safeArray, safeNumber } from '../lib/utils';
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
@@ -65,7 +66,9 @@ export default function Dashboard() {
         gender_distribution: [],
         age_distribution: [],
         assessment_trends: [],
-        risk_trends: []
+        risk_trends: [],
+        recent_activity: [],
+        monthly_stats: []
     });
 
     // PHASE 3: Fetch using new standardized analytics endpoints
@@ -104,12 +107,14 @@ export default function Dashboard() {
             setDoctorPerf(Array.isArray(perfData) ? perfData : []);
             setPatients(Array.isArray(patientsData) ? patientsData : []);
 
-            // Keep legacy charts data temporarily
+            // Keep legacy charts data temporarily with BULLETPROOF safe arrays
             setStats({
-                gender_distribution: Array.isArray(legacyStats?.gender_distribution) ? legacyStats.gender_distribution : [],
-                age_distribution: Array.isArray(legacyStats?.age_distribution) ? legacyStats.age_distribution : [],
-                assessment_trends: Array.isArray(legacyStats?.assessment_trends) ? legacyStats.assessment_trends : [],
-                risk_trends: Array.isArray(legacyStats?.risk_trends) ? legacyStats.risk_trends : []
+                gender_distribution: safeArray(legacyStats?.gender_distribution),
+                age_distribution: safeArray(legacyStats?.age_distribution),
+                assessment_trends: safeArray(legacyStats?.assessment_trends),
+                risk_trends: safeArray(legacyStats?.risk_trends),
+                recent_activity: safeArray(legacyStats?.recent_activity),
+                monthly_stats: safeArray(legacyStats?.monthly_stats)
             });
         } catch (error) {
             if (signal?.aborted) return; // Ignore errors from aborted requests
@@ -125,7 +130,9 @@ export default function Dashboard() {
                 gender_distribution: [],
                 age_distribution: [],
                 assessment_trends: [],
-                risk_trends: []
+                risk_trends: [],
+                recent_activity: [],
+                monthly_stats: []
             });
         } finally {
             if (showLoading && !signal?.aborted) setLoading(false);
@@ -270,7 +277,10 @@ export default function Dashboard() {
                             <ResponsiveContainer width="100%" height={350}>
                                 <PieChart>
                                     <Pie
-                                        data={riskDist.map(r => ({ name: r.level, value: r.count }))}
+                                        data={safeArray(riskDist).map((r: any) => ({
+                                            name: r?.level || 'Unknown',
+                                            value: safeNumber(r?.count)
+                                        }))}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={80}
@@ -323,7 +333,7 @@ export default function Dashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
                     >
-                        <AssessmentTrendsChart data={stats.assessment_trends} />
+                        <AssessmentTrendsChart data={safeArray(stats?.assessment_trends)} />
                     </motion.div>
                 </ErrorBoundary>
 
@@ -333,7 +343,7 @@ export default function Dashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 }}
                     >
-                        <RiskTrendsChart data={stats.risk_trends} />
+                        <RiskTrendsChart data={safeArray(stats?.risk_trends)} />
                     </motion.div>
                 </ErrorBoundary>
             </div>
@@ -344,10 +354,10 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
             >
-                <DoctorPerformanceChart data={doctorPerf.map(d => ({
-                    doctor: d.name,
-                    patients: d.assessments,
-                    criticalCases: d.high_risk_cases
+                <DoctorPerformanceChart data={safeArray(doctorPerf).map((d: any) => ({
+                    doctor: d?.name || 'Unknown',
+                    patients: safeNumber(d?.assessments),
+                    criticalCases: safeNumber(d?.high_risk_cases)
                 }))} />
             </motion.div>
 
@@ -357,7 +367,10 @@ export default function Dashboard() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7, duration: 0.5 }}
             >
-                <Monthly3DChart data={stats.monthly_stats || []} />
+                <Monthly3DChart data={safeArray(stats?.monthly_stats).map((d: any) => ({
+                    month: d?.month || 'N/A',
+                    assessments: safeNumber(d?.assessments || d?.value)
+                }))} />
             </motion.div>
 
             {/* Recent Activity Table */}
@@ -380,23 +393,30 @@ export default function Dashboard() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-200">
-                            {stats.recent_activity.length > 0 ? (
-                                stats.recent_activity.map((item: any) => (
-                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">#REC-{item.id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(item.date).toLocaleDateString()}</td>
+                            {safeArray(stats?.recent_activity).length > 0 ? (
+                                safeArray(stats?.recent_activity).map((item: any) => (
+                                    <tr key={item?.id || Math.random()} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">#REC-{item?.id || 'N/A'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                            <div className="font-medium text-slate-900">{item.name}</div>
-                                            <div className="text-xs">{item.age} yrs / {item.sex === 1 ? 'M' : 'F'}</div>
+                                            {item?.date ? new Date(item.date).toLocaleDateString() : 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                            <div className="font-medium text-slate-900">{item?.name || 'Unknown'}</div>
+                                            <div className="text-xs">
+                                                {item?.age || 'N/A'} yrs / {item?.sex === 1 ? 'M' : 'F'}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${item.risk_level === 'Low' ? 'bg-green-100 text-green-800' :
-                                                item.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                                            <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${item?.risk_level === 'Low' ? 'bg-green-100 text-green-800' :
+                                                item?.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
                                                 }`}>
-                                                {item.risk_level} Risk
+                                                {item?.risk_level || 'Unknown'} Risk
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{item.doctor}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                            {item?.doctor || 'N/A'}
+                                        </td>
                                     </tr>
                                 ))
                             ) : (

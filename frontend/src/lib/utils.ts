@@ -39,6 +39,20 @@ export const safeDivide = (numerator: number, denominator: number): number => {
 };
 
 /**
+ * Ensures input is a safe array, never undefined/null
+ * CRITICAL: Prevents "Cannot read properties of undefined (reading 'length')" crashes
+ */
+export const safeArray = <T>(arr: any): T[] => Array.isArray(arr) ? arr : [];
+
+/**
+ * Safely extracts a number from any value with fallback
+ * Returns fallback if value is undefined, null, NaN, or Infinity
+ */
+export const safeNumber = (val: any, fallback: number = 0): number => {
+    return (typeof val === 'number' && isFinite(val)) ? val : fallback;
+};
+
+/**
  * Sanitize an array of objects for chart consumption
  * Specifically targets keys named 'value', 'count', or 'score'
  */

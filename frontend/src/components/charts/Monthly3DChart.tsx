@@ -151,7 +151,18 @@ interface Monthly3DChartProps {
 }
 
 const Monthly3DChart = ({ data }: Monthly3DChartProps) => {
-    if (!data || data.length === 0) {
+    // BULLETPROOF: Filter and validate data to prevent WebGL crashes
+    const safeData = (data || []).filter((d: any) =>
+        d &&
+        typeof d === 'object' &&
+        (d.month || d.name) &&
+        typeof (d.assessments || d.value) === 'number'
+    ).map((d: any) => ({
+        month: String(d.month || d.name || 'N/A').substring(0, 10), // Truncate long labels
+        assessments: Number(d.assessments || d.value || 0)
+    }));
+
+    if (safeData.length === 0) {
         return (
             <div className="h-96 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl flex items-center justify-center">
                 <p className="text-slate-400 text-sm">No monthly data available</p>
@@ -175,7 +186,7 @@ const Monthly3DChart = ({ data }: Monthly3DChartProps) => {
             >
                 <color attach="background" args={['#0f172a']} />
                 <fog attach="fog" args={['#0f172a', 5, 20]} />
-                <Scene data={data} />
+                <Scene data={safeData} />
             </Canvas>
 
             {/* Legend */}
