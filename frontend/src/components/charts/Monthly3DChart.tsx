@@ -18,10 +18,9 @@ interface Bar3DProps {
     maxValue: number;
 }
 
-const Bar3D = ({ position, height, color, label, value, maxValue }: Bar3DProps) => {
+const Bar3D = ({ position, height, color, label, value }: Omit<Bar3DProps, 'maxValue'>) => {
     const [hovered, setHovered] = useState(false);
     const meshRef = useRef<THREE.Mesh>(null);
-    const targetScale = useRef({ y: height });
 
     useFrame(() => {
         if (meshRef.current) {
@@ -123,7 +122,6 @@ const Scene = ({ data }: { data: MonthlyData[] }) => {
                         color="#6366f1"
                         label={item.month}
                         value={item.assessments}
-                        maxValue={maxValue}
                     />
                 );
             })}
