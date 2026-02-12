@@ -92,18 +92,24 @@ export default function Dashboard() {
             // Check if request was aborted before updating state
             if (signal?.aborted) return;
 
-            setSummary(summaryData || { critical_cases: 0, avg_accuracy: 0, total_assessments: 0, monthly_growth: 0 });
-            setMonthlyTrends(trendsData || []);
-            setRiskDist(riskData || []);
-            setDoctorPerf(perfData || []);
-            setPatients(patientsData || []);
+            // BULLETPROOF: Use Array.isArray instead of || for type safety
+            setSummary(summaryData && typeof summaryData === 'object' ? summaryData : {
+                critical_cases: 0,
+                avg_accuracy: 0,
+                total_assessments: 0,
+                monthly_growth: 0
+            });
+            setMonthlyTrends(Array.isArray(trendsData) ? trendsData : []);
+            setRiskDist(Array.isArray(riskData) ? riskData : []);
+            setDoctorPerf(Array.isArray(perfData) ? perfData : []);
+            setPatients(Array.isArray(patientsData) ? patientsData : []);
 
             // Keep legacy charts data temporarily
             setStats({
-                gender_distribution: legacyStats.gender_distribution || [],
-                age_distribution: legacyStats.age_distribution || [],
-                assessment_trends: legacyStats.assessment_trends || [],
-                risk_trends: legacyStats.risk_trends || []
+                gender_distribution: Array.isArray(legacyStats?.gender_distribution) ? legacyStats.gender_distribution : [],
+                age_distribution: Array.isArray(legacyStats?.age_distribution) ? legacyStats.age_distribution : [],
+                assessment_trends: Array.isArray(legacyStats?.assessment_trends) ? legacyStats.assessment_trends : [],
+                risk_trends: Array.isArray(legacyStats?.risk_trends) ? legacyStats.risk_trends : []
             });
         } catch (error) {
             if (signal?.aborted) return; // Ignore errors from aborted requests
