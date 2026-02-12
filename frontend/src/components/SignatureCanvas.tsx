@@ -5,7 +5,6 @@ import { X, RotateCcw } from 'lucide-react';
 interface SignatureCanvasComponentProps {
     onSave: (signature: string) => void;
     onClose: () => void;
-    initialSignature?: string;
 }
 
 export interface SignatureCanvasRef {
