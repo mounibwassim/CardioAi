@@ -49,6 +49,7 @@ export interface PredictionResult {
 }
 
 
+
 export interface Patient {
     id: number;
     name: string;
@@ -56,6 +57,23 @@ export interface Patient {
     sex: number;
     contact?: string;
     status: string;
+    risk_level: string;
+    doctor_name: string;
+    doctor_notes?: string;
+    system_notes?: string;
+    created_at: string;
+    last_updated: string;
+    assessment_count: number;
+}
+
+export interface Record {
+    id: number;
+    patient_id: number;
+    input_data: string;
+    prediction_result: number;
+    risk_score: number;
+    risk_level: string;
+    doctor_name: string;
     created_at: string;
 }
 
@@ -114,3 +132,17 @@ export const getDashboardStats = async () => {
     const response = await api.get('/dashboard/stats');
     return response.data;
 };
+
+export const updatePatientNotes = async (patientId: number, doctorNotes: string, doctorName: string) => {
+    const response = await api.put(`/patients/${patientId}/notes`, {
+        doctor_notes: doctorNotes,
+        doctor_name: doctorName
+    });
+    return response.data;
+};
+
+export const getPatientRecords = async (patientId: number): Promise<{ patient: Patient; records: Record[] }> => {
+    const response = await api.get(`/patients/${patientId}/records`);
+    return response.data;
+};
+
