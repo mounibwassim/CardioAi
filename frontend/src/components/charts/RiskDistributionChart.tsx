@@ -15,7 +15,10 @@ interface RiskDistributionChartProps {
 }
 
 const RiskDistributionChart = ({ data }: RiskDistributionChartProps) => {
+    console.log('🥧 RiskDistributionChart received data:', data);
+
     if (!data || data.length === 0) {
+        console.warn('⚠️ RiskDistributionChart: No data available');
         return (
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-80 flex flex-col">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Patient Risk Distribution</h3>
@@ -28,6 +31,19 @@ const RiskDistributionChart = ({ data }: RiskDistributionChartProps) => {
     }
 
     const chartData = safeDoughnutData(data);
+    console.log('🎨 RiskDistributionChart chart data after sanitization:', chartData);
+
+    // Debug: Test with hardcoded data if needed
+    // Uncomment to test if Chart.js works independently of backend data
+    // const testData = {
+    //     labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+    //     datasets: [{
+    //         data: [10, 15, 5],
+    //         backgroundColor: ['#16a34a', '#ca8a04', '#dc2626'],
+    //         borderWidth: 2,
+    //         borderColor: '#ffffff'
+    //     }]
+    // };
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 dashboard-column">
