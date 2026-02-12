@@ -147,6 +147,12 @@ export const getDashboardStats = async () => {
     return response.data;
 };
 
+export const getMonthlyStats = async () => {
+    const response = await api.get('/dashboard/monthly-stats');
+    return response.data.monthly_stats;
+};
+
+
 export const updatePatientNotes = async (patientId: number, doctorNotes: string, doctorName: string) => {
     const response = await api.put(`/patients/${patientId}/notes`, {
         doctor_notes: doctorNotes,

@@ -164,6 +164,7 @@ class PatientData(BaseModel):
     age: int
     sex: int
     contact: Optional[str] = None # NEW
+    doctor_name: str = "Dr. Sarah Chen"  # Default doctor, can be changed
     cp: int
     trestbps: int
     chol: int
@@ -589,7 +590,7 @@ def predict_heart_disease(data: PatientData):
         c.execute("""
             INSERT INTO records (patient_id, input_data, prediction_result, risk_score, risk_level, doctor_name)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (patient_id, json.dumps(record_data), int(prediction), float(risk_score), risk_level, 'Dr. Sarah Chen'))
+        """, (patient_id, json.dumps(record_data), int(prediction), float(risk_score), risk_level, data.doctor_name or 'Dr. Sarah Chen'))
         
         record_id = c.lastrowid
         conn.commit()

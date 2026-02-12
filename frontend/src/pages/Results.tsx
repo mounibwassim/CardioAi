@@ -108,6 +108,11 @@ export default function Results() {
                                 <span className="text-sm text-slate-500">Full Name</span>
                                 <p className="font-semibold text-slate-900">{data.name}</p>
                             </div>
+                            {/* Doctor Selection */}
+                            <div>
+                                <span className="block text-sm text-slate-500">Assigned Doctor</span>
+                                <p className="font-semibold text-slate-900">{selectedDoctor}</p>
+                            </div>
                             {data.contact && (
                                 <div>
                                     <span className="text-sm text-slate-500">Contact</span>
