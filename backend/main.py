@@ -8,6 +8,7 @@ import json
 import logging
 from typing import List, Optional
 from database import init_db, wipe_data, get_db_connection
+from utils import generate_system_notes
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -202,6 +203,10 @@ class RegisterRequest(BaseModel):
     username: str
     email: EmailStr
     password: str
+
+class PatientNotesUpdate(BaseModel):
+    doctor_notes: str
+    doctor_name: str
 
 # Endpoints
 
@@ -443,40 +448,48 @@ def predict_heart_disease(data: PatientData):
         elif risk_score > 0.3:
             risk_level = "Medium"
 
+        # Generate AI system notes
+        system_notes = generate_system_notes(risk_level, risk_score, data.dict())
+
         # --- SAVE TO DATABASE ---
         conn = get_db_connection()
         c = conn.cursor()
         
         # 1. Find or Create Patient
-        # We assume unique name/age might identify patient for now, or just create new
-        # User requested: "add patients i can add his info to be saved in database"
-        
-        # Check if patient exists by name (simple logic for now)
         patient_id = None
         existing_patient = c.execute("SELECT id FROM patients WHERE name = ?", (data.name,)).fetchone()
         
         if existing_patient:
             patient_id = existing_patient['id']
-            # Update info if needed?
+            # Update patient risk level and system notes
+            c.execute("""
+                UPDATE patients 
+                SET risk_level = ?, system_notes = ?, last_updated = CURRENT_TIMESTAMP, age = ?, sex = ?, contact = ?
+                WHERE id = ?
+            """, (risk_level, system_notes, data.age, data.sex, data.contact, patient_id))
         else:
-            c.execute("INSERT INTO patients (name, age, sex, contact) VALUES (?, ?, ?, ?)",
-                      (data.name, data.age, data.sex, data.contact))
+            # Create new patient with system notes
+            c.execute("""
+                INSERT INTO patients (name, age, sex, contact, risk_level, system_notes, last_updated) 
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """, (data.name, data.age, data.sex, data.contact, risk_level, system_notes))
             patient_id = c.lastrowid
             
         # 2. Save Record
-        # Remove name/contact from data dict before saving as JSON source 
         record_data = data.dict()
         record_data.pop('name', None)
         record_data.pop('contact', None)
         
         c.execute("""
-            INSERT INTO records (patient_id, input_data, prediction_result, risk_score, risk_level)
-            VALUES (?, ?, ?, ?, ?)
-        """, (patient_id, json.dumps(record_data), int(prediction), float(risk_score), risk_level))
+            INSERT INTO records (patient_id, input_data, prediction_result, risk_score, risk_level, doctor_name)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (patient_id, json.dumps(record_data), int(prediction), float(risk_score), risk_level, 'Dr. Sarah Chen'))
         
         record_id = c.lastrowid
         conn.commit()
         conn.close()
+
+        logger.info(f"Prediction saved: Patient ID {patient_id}, Record ID {record_id}, Risk: {risk_level}")
 
         return {
             "prediction": int(prediction),
@@ -503,9 +516,79 @@ def create_patient(patient: PatientCreate):
 @app.get("/patients")
 def get_patients():
     conn = get_db_connection()
-    patients = conn.execute("SELECT * FROM patients ORDER BY created_at DESC").fetchall()
+    # Get patients with assessment count, ordered by most recent update
+    patients = conn.execute("""
+        SELECT p.*, 
+               COUNT(r.id) as assessment_count
+        FROM patients p
+        LEFT JOIN records r ON p.id = r.patient_id
+        GROUP BY p.id
+        ORDER BY p.last_updated DESC, p.created_at DESC
+    """).fetchall()
     conn.close()
     return {"patients": [dict(p) for p in patients]}
+
+@app.put("/patients/{patient_id}/notes")
+def update_patient_notes(patient_id: int, notes: PatientNotesUpdate):
+    """Update doctor notes for a specific patient"""
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        
+        # Check if patient exists
+        patient = c.execute("SELECT id FROM patients WHERE id = ?", (patient_id,)).fetchone()
+        if not patient:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Patient not found")
+        
+        # Update notes and doctor
+        c.execute("""
+            UPDATE patients 
+            SET doctor_notes = ?, doctor_name = ?, last_updated = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (notes.doctor_notes, notes.doctor_name, patient_id))
+        
+        conn.commit()
+        conn.close()
+        
+        logger.info(f"Notes updated for patient {patient_id} by {notes.doctor_name}")
+        return {"message": "Notes updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating notes: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update notes")
+
+@app.get("/patients/{patient_id}/records")
+def get_patient_records(patient_id: int):
+    """Get all assessment records for a specific patient"""
+    try:
+        conn = get_db_connection()
+        
+        # Check if patient exists
+        patient = conn.execute("SELECT * FROM patients WHERE id = ?", (patient_id,)).fetchone()
+        if not patient:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Patient not found")
+        
+        # Get all records for this patient
+        records = conn.execute("""
+            SELECT * FROM records 
+            WHERE patient_id = ? 
+            ORDER BY created_at DESC
+        """, (patient_id,)).fetchall()
+        
+        conn.close()
+        
+        return {
+            "patient": dict(patient),
+            "records": [dict(r) for r in records]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching patient records: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch records")
 
 @app.get("/feedbacks")
 def get_feedbacks():

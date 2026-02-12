@@ -25,6 +25,37 @@ def init_db():
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )''')
     
+    # Migration: Add new columns to patients table if they don't exist
+    try:
+        c.execute("SELECT doctor_name FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating patients table: Adding doctor_name column")
+        c.execute("ALTER TABLE patients ADD COLUMN doctor_name TEXT DEFAULT 'Dr. Sarah Chen'")
+    
+    try:
+        c.execute("SELECT doctor_notes FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating patients table: Adding doctor_notes column")
+        c.execute("ALTER TABLE patients ADD COLUMN doctor_notes TEXT")
+    
+    try:
+        c.execute("SELECT system_notes FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating patients table: Adding system_notes column")
+        c.execute("ALTER TABLE patients ADD COLUMN system_notes TEXT")
+    
+    try:
+        c.execute("SELECT risk_level FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating patients table: Adding risk_level column")
+        c.execute("ALTER TABLE patients ADD COLUMN risk_level TEXT DEFAULT 'Unknown'")
+    
+    try:
+        c.execute("SELECT last_updated FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating patients table: Adding last_updated column")
+        c.execute("ALTER TABLE patients ADD COLUMN last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    
     # Records/Assessments Table
     c.execute('''CREATE TABLE IF NOT EXISTS records (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +67,13 @@ def init_db():
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (patient_id) REFERENCES patients (id)
                 )''')
+    
+    # Migration: Add doctor_name to records table
+    try:
+        c.execute("SELECT doctor_name FROM records LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating records table: Adding doctor_name column")
+        c.execute("ALTER TABLE records ADD COLUMN doctor_name TEXT DEFAULT 'Dr. Sarah Chen'")
     
     # Feedbacks Table
     c.execute('''CREATE TABLE IF NOT EXISTS feedbacks (
