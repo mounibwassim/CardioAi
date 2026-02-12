@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useState } from 'react';
+import DoctorLoginModal from './DoctorLoginModal';
 
 interface LayoutProps {
     children?: React.ReactNode;
@@ -17,29 +18,23 @@ export default function Layout({ children }: LayoutProps) {
 
     const isDoctor = isDoctorAuth && isDoctorSection; // Only show doctor UI if auth AND in doctor section
 
-    // Secret Access State
-    const [clickCount, setClickCount] = useState(0);
+    // Modal State
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
     const handleLogout = () => {
         localStorage.removeItem('user_role');
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_name');
         window.location.href = '/';
-    };
-
-    const handleSecretClick = () => {
-        if (isDoctor) return;
-
-        const newCount = clickCount + 1;
-        setClickCount(newCount);
-
-        if (newCount >= 5) {
-            navigate('/doctor-secure-access-portal');
-            setClickCount(0);
-        }
     };
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
+            <DoctorLoginModal
+                isOpen={isLoginModalOpen}
+                onClose={() => setIsLoginModalOpen(false)}
+            />
+
             <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-20">
@@ -98,13 +93,17 @@ export default function Layout({ children }: LayoutProps) {
             <footer className="bg-white border-t border-slate-200 mt-auto">
                 <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-center items-center gap-2 text-sm text-slate-500">
-                        <p
-                            onClick={handleSecretClick}
-                            className="cursor-default select-none transition-colors hover:text-slate-600"
-                            title="CardioAI System"
-                        >
+                        <p>
                             &copy; {new Date().getFullYear()} CardioAI. Professional Medical Intelligence System. All rights reserved.
                         </p>
+                        {!isDoctor && (
+                            <button
+                                onClick={() => setIsLoginModalOpen(true)}
+                                className="text-xs text-slate-300 hover:text-slate-500 transition-colors ml-4 cursor-pointer focus:outline-none"
+                            >
+                                Doctor Access
+                            </button>
+                        )}
                     </div>
                 </div>
             </footer>
