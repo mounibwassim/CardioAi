@@ -45,45 +45,6 @@ export default function Results() {
             setIsDownloading(true);
             console.log('Starting PDF generation...');
 
-            // Create a clean copy of the element for PDF generation
-            const clonedElement = element.cloneNode(true) as HTMLElement;
-
-            // Remove any oklch colors and replace with standard colors
-            const allElements = clonedElement.querySelectorAll('*');
-            allElements.forEach((el) => {
-                const htmlEl = el as HTMLElement;
-                const computedStyle = window.getComputedStyle(htmlEl);
-
-                // Force standard color values
-                if (computedStyle.color) {
-                    htmlEl.style.color = computedStyle.color;
-                }
-                if (computedStyle.backgroundColor) {
-                    htmlEl.style.backgroundColor = computedStyle.backgroundColor;
-                }
-            });
-
-            // Capture the element as canvas
-            const canvas = await html2canvas(clonedElement, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff',
-                onclone: (clonedDoc) => {
-                    // Ensure all colors are converted to RGB
-                    const style = clonedDoc.createElement('style');
-                    style.textContent = `
-                        * {
-                            color: rgb(0, 0, 0) !important;
-                            background-color: rgb(255, 255, 255) !important;
-                        }
-                    `;
-                    clonedDoc.head.appendChild(style);
-                }
-            });
-
-            console.log('Canvas created successfully');
-
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
 
