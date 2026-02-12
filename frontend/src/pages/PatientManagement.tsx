@@ -104,9 +104,9 @@ export default function PatientManagement() {
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-200">
                         {filteredPatients.length > 0 ? (
-                            filteredPatients.map((patient) => (
+                            filteredPatients.map((patient, index) => (
                                 <tr key={patient.id} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">#{patient.id}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{index + 1}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-slate-900">{patient.name}</div>
                                         {patient.contact && (
@@ -142,7 +142,7 @@ export default function PatientManagement() {
 
                                         {/* Dropdown Menu */}
                                         {openMenuId === patient.id && (
-                                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                                                 <div className="py-1" role="menu">
                                                     <button
                                                         onClick={() => handleViewDetails(patient.id)}

@@ -3,16 +3,14 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 console.log('🔌 Application API URL:', API_URL);
 
-// Create axios instance with default config
 const api = axios.create({
     baseURL: API_URL,
-    withCredentials: true, // Important for cookies/sessions if used
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     }
 });
 
-// Add interceptor for auth token
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('auth_token');
     if (token) {
@@ -21,12 +19,27 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('doctor_name');
+            localStorage.removeItem('doctor_role');
+
+            if (window.location.pathname !== '/doctor-secure-access-portal') {
+                window.location.href = '/doctor-secure-access-portal';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 export interface PatientData {
-    name: string; // NEW
+    name: string;
     age: number;
     sex: number;
-    contact?: string; // NEW
+    contact?: string;
     cp: number;
     trestbps: number;
     chol: number;
@@ -46,9 +59,8 @@ export interface PredictionResult {
     risk_level: string;
     patient_id: number;
     record_id: number;
+    explanation?: string;
 }
-
-
 
 export interface Patient {
     id: number;
@@ -124,6 +136,7 @@ export const registerDoctor = async (username: string, email: string, password: 
     const response = await api.post('/register', { username, email, password });
     return response.data;
 };
+
 export const verifyPin = async (pin: string) => {
     const response = await api.post('/pin-login', { pin });
     return response.data;
@@ -153,4 +166,3 @@ export const updatePatientSignature = async (patientId: number, signature: strin
     });
     return response.data;
 };
-

@@ -2,6 +2,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy Load Pages for Performance
 const PatientPortal = lazy(() => import('./pages/PatientPortal'));
@@ -18,6 +19,7 @@ const ExpertConsultation = lazy(() => import('./pages/services/ExpertConsultatio
 const OngoingMonitoring = lazy(() => import('./pages/services/OngoingMonitoring'));
 const PatientReviews = lazy(() => import('./pages/PatientReviews'));
 const DoctorLogin = lazy(() => import('./pages/DoctorLogin'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 // Loading Screen
 const Loading = () => (
@@ -71,11 +73,16 @@ function App() {
             </DoctorRoute>
           }>
             <Route index element={<Navigate to="/doctor/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard" element={
+              <ErrorBoundary>
+                <Dashboard />
+              </ErrorBoundary>
+            } />
             <Route path="patients" element={<PatientManagement />} />
             <Route path="patient/:id" element={<PatientDetails />} />
             <Route path="predict" element={<Predict />} />
             <Route path="results" element={<Results />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
       </Suspense>

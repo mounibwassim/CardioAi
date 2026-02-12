@@ -74,6 +74,7 @@ export default function Layout({ children }: LayoutProps) {
                                     <Link to="/doctor/dashboard" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/dashboard') ? "text-primary-600" : "text-slate-600")}>Dashboard</Link>
                                     <Link to="/doctor/patients" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/patients') ? "text-primary-600" : "text-slate-600")}>Patients</Link>
                                     <Link to="/doctor/predict" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/predict') ? "text-primary-600" : "text-slate-600")}>New Assessment</Link>
+                                    <Link to="/doctor/settings" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/settings') ? "text-primary-600" : "text-slate-600")}>Settings</Link>
                                     <button
                                         onClick={handleLogout}
                                         className="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors"

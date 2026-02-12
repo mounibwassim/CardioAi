@@ -171,19 +171,38 @@ export const generatePDF = async (
     pdf.setFillColor(241, 245, 249); // slate-100
     pdf.rect(10, currentY, pdfWidth - 20, 30, 'F');
 
-    pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(15, 23, 42);
     pdf.text('AI Analysis Summary', 15, currentY + 8);
 
     pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('helvetica', 'italic');
     pdf.setTextColor(51, 65, 85);
-    const analysisText = `The patient exhibits ${result.risk_level.toLowerCase()} risk markers based on the provided clinical data. Routine monitoring and lifestyle maintenance are advised. No immediate alarming indicators were detected.`;
+    const analysisText = result.explanation || `The patient exhibits ${result.risk_level.toLowerCase()} risk markers based on provided clinical data. Professional review recommended.`;
     const splitText = pdf.splitTextToSize(analysisText, pdfWidth - 30);
     pdf.text(splitText, 15, currentY + 16);
 
     currentY += 40;
+
+    // Clinical Recommendations
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(15, 23, 42);
+    pdf.text('Clinical Recommendations', 15, currentY);
+
+    currentY += 6;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(71, 85, 105);
+    const recommendations = [
+        "- Schedule follow-up lipid profile in 3 months",
+        "- Monitor daily blood pressure readings",
+        "- Discuss low-sodium dietary adjustments"
+    ];
+    recommendations.forEach(rec => {
+        pdf.text(rec, 15, currentY);
+        currentY += 5;
+    });
+
+    currentY += 10;
 
     // Doctor Notes (if provided)
     if (doctorNotes && doctorNotes.trim()) {

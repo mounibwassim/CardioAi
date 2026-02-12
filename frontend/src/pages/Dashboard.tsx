@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, AlertCircle, Activity, TrendingUp, Plus, Trash2, RefreshCw } from 'lucide-react';
-import { getDashboardStats, resetSystem } from '../lib/api';
+import { Users, AlertCircle, Activity, TrendingUp, Plus, RefreshCw } from 'lucide-react';
+import { getDashboardStats, getPatients, type Patient } from '../lib/api';
+import ErrorBoundary from '../components/ErrorBoundary';
+import DashboardSkeleton from '../components/DashboardSkeleton';
 import GenderDistributionChart from '../components/charts/GenderDistributionChart';
 import AgeDistributionChart from '../components/charts/AgeDistributionChart';
 import AssessmentTrendsChart from '../components/charts/AssessmentTrendsChart';
@@ -32,6 +34,7 @@ const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: s
 export default function Dashboard() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [patients, setPatients] = useState<Patient[]>([]);
     const [stats, setStats] = useState<any>({
         total_patients: 0,
         critical_cases: 0,
@@ -50,48 +53,96 @@ export default function Dashboard() {
         doctor_performance: []
     });
 
-    useEffect(() => {
-        fetchStats();
+    // Fetch function with AbortController support for memory safety
+    const fetchAllData = useCallback(async (showLoading = false, signal?: AbortSignal) => {
+        if (showLoading) setLoading(true);
+        try {
+            const [statsData, patientsData] = await Promise.all([
+                getDashboardStats(),
+                getPatients()
+            ]);
+
+            // Check if request was aborted before updating state
+            if (signal?.aborted) return;
+
+            setStats(statsData);
+            setPatients(patientsData);
+        } catch (error) {
+            if (signal?.aborted) return; // Ignore errors from aborted requests
+            console.error("Failed to fetch dashboard data", error);
+        } finally {
+            if (showLoading && !signal?.aborted) setLoading(false);
+        }
     }, []);
 
-    const fetchStats = async () => {
-        setLoading(true);
-        try {
-            const data = await getDashboardStats();
-            setStats(data);
-        } catch (error) {
-            console.error("Failed to fetch dashboard stats", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        const controller = new AbortController();
 
-    const handleResetSystem = async () => {
-        if (confirm("WARNING: This will delete ALL data (patients, records, feedbacks). Are you sure?")) {
-            try {
-                await resetSystem();
-                await fetchStats();
-                alert("System has been reset.");
-            } catch (error) {
-                alert("Failed to reset system.");
+        // Initial load with loading indicator
+        fetchAllData(true, controller.signal);
+
+        // Auto-refresh metrics every 30 seconds (background sync)
+        const interval = setInterval(() => {
+            if (!controller.signal.aborted) {
+                fetchAllData(false, controller.signal);
             }
-        }
-    };
+        }, 30000);
+
+        // Cleanup: abort pending requests and clear interval
+        return () => {
+            controller.abort();
+            clearInterval(interval);
+        };
+    }, [fetchAllData]);
+
+    // Memoized Metrics Calculation (Production Guard)
+    const computedMetrics = useMemo(() => {
+        const total = patients.length;
+        const critical = patients.filter(p => p.risk_level === 'High').length;
+
+        // Calculate Gender Dist from real patients
+        const maleCount = patients.filter(p => p.sex === 1).length;
+        const femaleCount = patients.filter(p => p.sex === 0).length;
+        const genderDist = [
+            { name: "Male", value: maleCount },
+            { name: "Female", value: femaleCount }
+        ];
+
+        // Calculate Age Dist from real patients
+        const ageGroups = [
+            { ageGroup: '< 30', count: 0 },
+            { ageGroup: '30-39', count: 0 },
+            { ageGroup: '40-49', count: 0 },
+            { ageGroup: '50-59', count: 0 },
+            { ageGroup: '60+', count: 0 }
+        ];
+
+        patients.forEach(p => {
+            if (p.age < 30) ageGroups[0].count++;
+            else if (p.age < 40) ageGroups[1].count++;
+            else if (p.age < 50) ageGroups[2].count++;
+            else if (p.age < 60) ageGroups[3].count++;
+            else ageGroups[4].count++;
+        });
+
+        return {
+            total,
+            critical,
+            accuracy: stats.avg_accuracy || '0%',
+            growth: stats.monthly_growth || '0%',
+            genderDist,
+            ageGroups
+        };
+    }, [patients, stats]);
 
     const handleAddPatient = () => {
         // Navigating to Patient Management where the modal is
         navigate('/doctor/patients');
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                    <Activity className="h-10 w-10 text-primary-500 animate-spin mx-auto mb-4" />
-                    <p className="text-slate-500">Loading dashboard metrics...</p>
-                </div>
-            </div>
-        );
+    // Skeleton Loading State (Production Pattern)
+    if (loading && patients.length === 0) {
+        return <DashboardSkeleton />;
     }
 
     return (
@@ -112,15 +163,6 @@ export default function Dashboard() {
                         <p className="text-slate-300 mt-1">Hospital Administration Dashboard</p>
                     </div>
                     <div className="mt-4 md:mt-0 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
-
-                        <button
-                            onClick={handleResetSystem}
-                            className="flex items-center space-x-2 bg-red-600/20 hover:bg-red-600/30 text-red-100 px-4 py-2 rounded-lg backdrop-blur-md border border-red-500/30 transition-colors"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                            <span>Reset System</span>
-                        </button>
-
                         <button
                             onClick={handleAddPatient}
                             className="flex items-center space-x-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg shadow-lg shadow-primary-500/20 transition-all"
@@ -142,83 +184,92 @@ export default function Dashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Patients" value={stats.total_patients} icon={Users} color="bg-blue-500" />
-                <StatCard title="Critical Cases" value={stats.critical_cases} icon={AlertCircle} color="bg-red-500" />
-                <StatCard title="Avg. Accuracy" value={stats.avg_accuracy} icon={Activity} color="bg-green-500" />
-                <StatCard title="Monthly Growth" value={stats.monthly_growth} icon={TrendingUp} color="bg-purple-500" />
+                <StatCard title="Total Patients" value={computedMetrics.total} icon={Users} color="bg-blue-500" />
+                <StatCard title="Critical Cases" value={computedMetrics.critical} icon={AlertCircle} color="bg-red-500" />
+                <StatCard title="Avg. Accuracy" value={computedMetrics.accuracy} icon={Activity} color="bg-green-500" />
+                <StatCard title="Monthly Growth" value={computedMetrics.growth} icon={TrendingUp} color="bg-purple-500" />
             </div>
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 dashboard-column">
                 {/* Risk Distribution - Takes up full width */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col"
-                >
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">Patient Risk Distribution</h3>
-                    {/* Fixed Height Container to prevent width(-1) error */}
-                    <div className="flex-1 min-h-[300px] w-full h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={stats.risk_distribution}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={80}
-                                    outerRadius={120}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {stats.risk_distribution.map((_: any, index: number) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </motion.div>
+                <ErrorBoundary fallbackTitle="Chart Display Failed">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col"
+                    >
+                        <h3 className="text-lg font-bold text-slate-900 mb-6">Patient Risk Distribution</h3>
+                        <div className="chart-wrapper">
+                            <ResponsiveContainer width="100%" height={350}>
+                                <PieChart>
+                                    <Pie
+                                        data={stats.risk_distribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={80}
+                                        outerRadius={120}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {stats.risk_distribution.map((_: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+                </ErrorBoundary>
             </div>
 
             {/* Additional Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <GenderDistributionChart data={stats.gender_distribution} />
-                </motion.div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 dashboard-column">
+                <ErrorBoundary fallbackTitle="Gender Chart Error">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <GenderDistributionChart data={computedMetrics.genderDist} />
+                    </motion.div>
+                </ErrorBoundary>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <AgeDistributionChart data={stats.age_distribution} />
-                </motion.div>
+                <ErrorBoundary fallbackTitle="Age Chart Error">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <AgeDistributionChart data={computedMetrics.ageGroups} />
+                    </motion.div>
+                </ErrorBoundary>
             </div>
 
             {/* Trends Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                >
-                    <AssessmentTrendsChart data={stats.assessment_trends} />
-                </motion.div>
+                <ErrorBoundary fallbackTitle="Assessment Trend Error">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                    >
+                        <AssessmentTrendsChart data={stats.assessment_trends} />
+                    </motion.div>
+                </ErrorBoundary>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                >
-                    <RiskTrendsChart data={stats.risk_trends} />
-                </motion.div>
+                <ErrorBoundary fallbackTitle="Risk Trend Error">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <RiskTrendsChart data={stats.risk_trends} />
+                    </motion.div>
+                </ErrorBoundary>
             </div>
 
             {/* Doctor Performance Chart - Full Width */}
@@ -234,7 +285,7 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                 <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                     <h3 className="text-lg font-bold text-slate-900">Recent Patient Assessments</h3>
-                    <button onClick={fetchStats} className="text-slate-400 hover:text-primary-600 transition-colors">
+                    <button onClick={() => fetchAllData(false)} className="text-slate-400 hover:text-primary-600 transition-colors">
                         <RefreshCw className="h-5 w-5" />
                     </button>
                 </div>

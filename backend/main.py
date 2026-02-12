@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 import pickle
@@ -8,6 +8,7 @@ import json
 import logging
 from typing import List, Optional
 from database import init_db, wipe_data, get_db_connection
+from audit import log_audit
 from utils import generate_system_notes
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -91,9 +92,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         role: str = payload.get("role")
-        if role != "doctor":
-             raise credentials_exception
-        return {"role": role}
+        user_id: int = payload.get("user_id")  # Added for doctor_id isolation
+        username: str = payload.get("sub")
+        
+        if not role or not username:
+            raise credentials_exception
+            
+        return {"role": role, "username": username, "id": user_id}
     except JWTError:
         raise credentials_exception
 

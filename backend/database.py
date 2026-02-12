@@ -62,6 +62,21 @@ def init_db():
         print("Migrating patients table: Adding doctor_signature column")
         c.execute("ALTER TABLE patients ADD COLUMN doctor_signature TEXT")
     
+    # Phase 4.4: Add doctor_id column for data isolation
+    try:
+        c.execute("SELECT doctor_id FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Phase 4.4: Adding doctor_id to patients table")
+        c.execute("ALTER TABLE patients ADD COLUMN doctor_id INTEGER REFERENCES users(id)")
+        c.execute("UPDATE patients SET doctor_id = 1 WHERE doctor_id IS NULL")  # Backfill to admin
+    
+    # Phase 4.6: Add is_deleted column for soft delete
+    try:
+        c.execute("SELECT is_deleted FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Phase 4.6: Adding is_deleted to patients table")
+        c.execute("ALTER TABLE patients ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE")
+    
     # Records/Assessments Table
     c.execute('''CREATE TABLE IF NOT EXISTS records (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,6 +96,21 @@ def init_db():
         print("Migrating records table: Adding doctor_name column")
         c.execute("ALTER TABLE records ADD COLUMN doctor_name TEXT DEFAULT 'Dr. Sarah Chen'")
     
+    # Phase 4.4: Add doctor_id column to records
+    try:
+        c.execute("SELECT doctor_id FROM records LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Phase 4.4: Adding doctor_id to records table")
+        c.execute("ALTER TABLE records ADD COLUMN doctor_id INTEGER REFERENCES users(id)")
+        c.execute("UPDATE records SET doctor_id = 1 WHERE doctor_id IS NULL")  # Backfill to admin
+    
+    # Phase 4.6: Add is_deleted column to records
+    try:
+        c.execute("SELECT is_deleted FROM records LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Phase 4.6: Adding is_deleted to records table")
+        c.execute("ALTER TABLE records ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE")
+    
     # Feedbacks Table
     c.execute('''CREATE TABLE IF NOT EXISTS feedbacks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,8 +127,31 @@ def init_db():
                     username TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
                     role TEXT DEFAULT 'doctor',
+                    email TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )''')
+    
+    # Phase 4.5: Audit Logs Table
+    c.execute('''CREATE TABLE IF NOT EXISTS audit_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    doctor_id INTEGER NOT NULL,
+                    action TEXT NOT NULL,
+                    entity TEXT NOT NULL,
+                    entity_id INTEGER,
+                    details TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (doctor_id) REFERENCES users(id)
+                )''')
+    
+    # Phase 4.2: Create Performance Indexes
+    try:
+        c.execute("CREATE INDEX IF NOT EXISTS idx_patients_doctor_id ON patients(doctor_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_records_doctor_id ON records(doctor_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_records_patient_id ON records(patient_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_audit_doctor_id ON audit_logs(doctor_id)")
+        print("Phase 4.2: Database indexes created")
+    except sqlite3.OperationalError as e:
+        print(f"Index creation skipped: {e}")
     
     conn.commit()
     conn.close()
