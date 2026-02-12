@@ -56,7 +56,7 @@ export default function Dashboard() {
         total_assessments: 0,
         monthly_growth: 0
     });
-    const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
+    const [_monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
     const [riskDist, setRiskDist] = useState<RiskDistribution[]>([]);
     const [doctorPerf, setDoctorPerf] = useState<DoctorPerformance[]>([]);
 
@@ -324,7 +324,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
             >
-                <DoctorPerformanceChart data={stats.doctor_performance} />
+                <DoctorPerformanceChart data={doctorPerf} />
             </motion.div>
 
             {/* 3D Monthly Analytics Chart - NEW! */}
