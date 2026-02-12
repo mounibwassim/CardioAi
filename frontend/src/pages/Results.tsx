@@ -12,6 +12,7 @@ export default function Results() {
 
     // Doctor selection state
     const [selectedDoctor, setSelectedDoctor] = useState('Dr. Sarah Chen');
+    const [isDownloading, setIsDownloading] = useState(false);
     const doctorList = ['Dr. Sarah Chen', 'Dr. Emily Ross', 'Dr. Michael Torres'];
 
     if (!state) {
@@ -42,42 +43,51 @@ export default function Results() {
 
     const handlePrint = async () => {
         const element = document.getElementById('report-content');
-        if (!element) return;
+        if (!element) {
+            alert('Report content not found. Please refresh the page and try again.');
+            return;
+        }
 
         try {
-            const canvas = await html2canvas(element, { scale: 2 });
+            setIsDownloading(true);
+            console.log('Starting PDF generation...');
+
+            // Capture the element as canvas
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            console.log('Canvas created successfully');
+
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            // Header
-            pdf.setFillColor(15, 76, 129); // Primary Color
-            pdf.rect(0, 0, pdfWidth, 20, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(16);
-            pdf.text("CardioAI Clinical Report", 10, 13);
-
-            // Add Logo
-            try {
-                const logoImg = new Image();
-                logoImg.src = "/assets/images/logo.png";
-                pdf.addImage(logoImg, 'PNG', 160, 2, 40, 16);
-            } catch (e) {
-                console.warn("Logo add failed", e);
-            }
-
-            // Content
-            pdf.addImage(imgData, 'PNG', 0, 25, pdfWidth, pdfHeight);
+            // Add content to PDF
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
             // Footer
             pdf.setFontSize(10);
             pdf.setTextColor(100);
             pdf.text(`Generated on: ${new Date().toLocaleString()}`, 10, pdf.internal.pageSize.getHeight() - 10);
 
-            pdf.save(`CardioAI_Report_${data.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+            // Generate filename
+            const fileName = `CardioAI_Report_${data.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+            console.log('Saving PDF:', fileName);
+            pdf.save(fileName);
+
+            console.log('PDF downloaded successfully');
+            alert('Report downloaded successfully!');
         } catch (err) {
-            console.error("PDF Generation failed", err);
+            console.error("PDF Generation failed:", err);
+            alert('Failed to generate PDF. Please try again or contact support if the issue persists.');
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -235,10 +245,11 @@ export default function Results() {
             <div className="mt-12 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 justify-center">
                 <button
                     onClick={handlePrint}
-                    className="inline-flex items-center justify-center px-6 py-3 border border-slate-300 text-base font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-sm"
+                    disabled={isDownloading}
+                    className="inline-flex items-center justify-center px-6 py-3 border border-slate-300 text-base font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Report
+                    <Download className={`mr-2 h-5 w-5 ${isDownloading ? 'animate-bounce' : ''}`} />
+                    {isDownloading ? 'Generating PDF...' : 'Download Report'}
                 </button>
                 <Link
                     to="/doctor/predict"
