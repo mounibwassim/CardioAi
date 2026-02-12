@@ -31,8 +31,16 @@ const Loading = () => (
 // Protected Route Guard
 const DoctorRoute = ({ children }: { children: React.ReactNode }) => {
   const userRole = localStorage.getItem('user_role');
-  const isAuthenticated = userRole === 'doctor';
-  return isAuthenticated ? <>{children}</> : <Navigate to="/doctor/login" replace />;
+  const token = localStorage.getItem('auth_token');
+
+  const isAuthenticated = userRole === 'doctor' && !!token;
+
+  if (!isAuthenticated) {
+    // Redirect to Home (or secret login if we wanted, but for security simply deny access)
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 function App() {

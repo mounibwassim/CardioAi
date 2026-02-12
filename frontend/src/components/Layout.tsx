@@ -1,5 +1,6 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { useState } from 'react';
 
 interface LayoutProps {
     children?: React.ReactNode;
@@ -7,15 +8,31 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
     const location = useLocation();
+    const navigate = useNavigate();
     const isActive = (path: string) => location.pathname === path;
 
     const userRole = localStorage.getItem('user_role');
     const isDoctor = userRole === 'doctor';
 
+    // Secret Access State
+    const [clickCount, setClickCount] = useState(0);
+
     const handleLogout = () => {
         localStorage.removeItem('user_role');
         localStorage.removeItem('auth_token');
         window.location.href = '/';
+    };
+
+    const handleSecretClick = () => {
+        if (isDoctor) return;
+
+        const newCount = clickCount + 1;
+        setClickCount(newCount);
+
+        if (newCount >= 5) {
+            navigate('/doctor-secure-access-portal');
+            setClickCount(0);
+        }
     };
 
     return (
@@ -44,8 +61,6 @@ export default function Layout({ children }: LayoutProps) {
                                     <a href="/#services" className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Services</a>
                                     <Link to="/reviews" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/reviews') ? "text-primary-600" : "text-slate-600")}>Reviews</Link>
                                     <Link to="/contact" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/contact') ? "text-primary-600" : "text-slate-600")}>Contact</Link>
-
-
 
                                     <Link
                                         to="/feedback"
@@ -80,18 +95,13 @@ export default function Layout({ children }: LayoutProps) {
             <footer className="bg-white border-t border-slate-200 mt-auto">
                 <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-center items-center gap-2 text-sm text-slate-500">
-                        <p>
+                        <p
+                            onClick={handleSecretClick}
+                            className="cursor-default select-none transition-colors hover:text-slate-600"
+                            title="CardioAI System"
+                        >
                             &copy; {new Date().getFullYear()} CardioAI. Professional Medical Intelligence System. All rights reserved.
                         </p>
-                        {!isDoctor && (
-                            <Link
-                                to="/doctor-secure-access-portal"
-                                className="text-xs font-semibold text-slate-400 hover:text-primary-600 transition-colors ml-4 uppercase tracking-wider"
-                                title="Staff Access"
-                            >
-                                ●
-                            </Link>
-                        )}
                     </div>
                 </div>
             </footer>
