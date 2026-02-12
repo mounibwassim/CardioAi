@@ -3,7 +3,7 @@
  * Provides WebGL context management, cleanup, and validation utilities
  */
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 
 /**
@@ -127,7 +127,7 @@ export const calculateBarHeight = (value: number, maxValue: number, maxHeight: n
 /**
  * Generate color gradient
  */
-export const generateGradient = (startColor: string, endColor: string, steps: number): string[] => {
+export const generateGradient = (startColor: string, _endColor: string, steps: number): string[] => {
     // Simple gradient generator - in production use chroma.js or similar
     return Array(steps).fill(startColor); // Placeholder
 };

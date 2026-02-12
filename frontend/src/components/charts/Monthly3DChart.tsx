@@ -4,7 +4,7 @@ import { Text, OrbitControls } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
-import { calculateBarHeight, guardNaN } from '../../lib/3d-utils';
+import { calculateBarHeight } from '../../lib/3d-utils';
 
 interface MonthlyData {
     month: string;
