@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, MoreVertical, User, Download, FileText, Edit3, Eye } from 'lucide-react';
+import { Search, Filter, MoreVertical, User, Download, Edit3, Eye } from 'lucide-react';
 import { getPatients, type Patient } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 
