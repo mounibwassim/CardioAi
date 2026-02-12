@@ -92,11 +92,11 @@ export default function Dashboard() {
             // Check if request was aborted before updating state
             if (signal?.aborted) return;
 
-            setSummary(summaryData);
-            setMonthlyTrends(trendsData);
-            setRiskDist(riskData);
-            setDoctorPerf(perfData);
-            setPatients(patientsData);
+            setSummary(summaryData || { critical_cases: 0, avg_accuracy: 0, total_assessments: 0, monthly_growth: 0 });
+            setMonthlyTrends(trendsData || []);
+            setRiskDist(riskData || []);
+            setDoctorPerf(perfData || []);
+            setPatients(patientsData || []);
 
             // Keep legacy charts data temporarily
             setStats({
