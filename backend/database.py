@@ -56,6 +56,12 @@ def init_db():
         print("Migrating patients table: Adding last_updated column")
         c.execute("ALTER TABLE patients ADD COLUMN last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     
+    try:
+        c.execute("SELECT doctor_signature FROM patients LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating patients table: Adding doctor_signature column")
+        c.execute("ALTER TABLE patients ADD COLUMN doctor_signature TEXT")
+    
     # Records/Assessments Table
     c.execute('''CREATE TABLE IF NOT EXISTS records (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -208,6 +208,9 @@ class PatientNotesUpdate(BaseModel):
     doctor_notes: str
     doctor_name: str
 
+class PatientSignatureUpdate(BaseModel):
+    signature: str  # Base64 encoded image
+
 # Endpoints
 
 @app.post("/register")
@@ -589,6 +592,37 @@ def get_patient_records(patient_id: int):
     except Exception as e:
         logger.error(f"Error fetching patient records: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch records")
+
+@app.put("/patients/{patient_id}/signature")
+def update_patient_signature(patient_id: int, signature_data: PatientSignatureUpdate):
+    """Update digital signature for a specific patient"""
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        
+        # Check if patient exists
+        patient = c.execute("SELECT id FROM patients WHERE id = ?", (patient_id,)).fetchone()
+        if not patient:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Patient not found")
+        
+        # Update signature
+        c.execute("""
+            UPDATE patients 
+            SET doctor_signature = ?, last_updated = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (signature_data.signature, patient_id))
+        
+        conn.commit()
+        conn.close()
+        
+        logger.info(f"Signature updated for patient {patient_id}")
+        return {"message": "Signature updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating signature: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update signature")
 
 @app.get("/feedbacks")
 def get_feedbacks():

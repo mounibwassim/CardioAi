@@ -61,6 +61,7 @@ export interface Patient {
     doctor_name: string;
     doctor_notes?: string;
     system_notes?: string;
+    doctor_signature?: string;
     created_at: string;
     last_updated: string;
     assessment_count: number;
@@ -143,6 +144,13 @@ export const updatePatientNotes = async (patientId: number, doctorNotes: string,
 
 export const getPatientRecords = async (patientId: number): Promise<{ patient: Patient; records: Record[] }> => {
     const response = await api.get(`/patients/${patientId}/records`);
+    return response.data;
+};
+
+export const updatePatientSignature = async (patientId: number, signature: string) => {
+    const response = await api.put(`/patients/${patientId}/signature`, {
+        signature: signature
+    });
     return response.data;
 };
 

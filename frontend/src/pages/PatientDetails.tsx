@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft, User, Calendar, Activity, FileText,
-    Save, AlertCircle, TrendingUp, Heart
+    Save, AlertCircle, TrendingUp, Heart, PenTool
 } from 'lucide-react';
-import { getPatientRecords, updatePatientNotes, type Patient, type Record } from '../lib/api';
+import { getPatientRecords, updatePatientNotes, updatePatientSignature, type Patient, type Record } from '../lib/api';
+import SignatureCanvas from '../components/SignatureCanvas';
 
 export default function PatientDetails() {
     const { id } = useParams<{ id: string }>();
@@ -19,6 +20,10 @@ export default function PatientDetails() {
     const [doctorNotes, setDoctorNotes] = useState('');
     const [selectedDoctor, setSelectedDoctor] = useState('Dr. Sarah Chen');
     const [saving, setSaving] = useState(false);
+
+    // Signature state
+    const [showSignatureModal, setShowSignatureModal] = useState(false);
+    const [savingSignature, setSavingSignature] = useState(false);
 
     const doctorList = ['Dr. Sarah Chen', 'Dr. Emily Ross', 'Dr. Michael Torres'];
 
@@ -57,6 +62,24 @@ export default function PatientDetails() {
             alert('Failed to save notes. Please try again.');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleSaveSignature = async (signatureData: string) => {
+        if (!patient) return;
+
+        try {
+            setSavingSignature(true);
+            await updatePatientSignature(patient.id, signatureData);
+            // Refresh patient data
+            await fetchPatientData();
+            setShowSignatureModal(false);
+            alert('Signature saved successfully!');
+        } catch (error) {
+            console.error('Failed to save signature:', error);
+            alert('Failed to save signature. Please try again.');
+        } finally {
+            setSavingSignature(false);
         }
     };
 
@@ -163,8 +186,8 @@ export default function PatientDetails() {
                     <button
                         onClick={() => setActiveTab('overview')}
                         className={`${activeTab === 'overview'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-primary-500 text-primary-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                     >
                         <Activity className="h-4 w-4 mr-2" />
@@ -173,8 +196,8 @@ export default function PatientDetails() {
                     <button
                         onClick={() => setActiveTab('history')}
                         className={`${activeTab === 'history'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-primary-500 text-primary-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                     >
                         <Calendar className="h-4 w-4 mr-2" />
@@ -183,8 +206,8 @@ export default function PatientDetails() {
                     <button
                         onClick={() => setActiveTab('notes')}
                         className={`${activeTab === 'notes'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-primary-500 text-primary-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                     >
                         <FileText className="h-4 w-4 mr-2" />
@@ -350,7 +373,48 @@ export default function PatientDetails() {
                             * System notes are automatically generated based on AI analysis and cannot be edited.
                         </p>
                     </div>
+
+                    {/* Digital Signature */}
+                    <div className="bg-white shadow-sm rounded-lg border border-slate-200 p-6 lg:col-span-2">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-slate-900">Digital Signature</h3>
+                            <button
+                                onClick={() => setShowSignatureModal(true)}
+                                className="inline-flex items-center px-3 py-1.5 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+                            >
+                                <PenTool className="h-4 w-4 mr-1.5" />
+                                {patient.doctor_signature ? 'Update Signature' : 'Add Signature'}
+                            </button>
+                        </div>
+
+                        {patient.doctor_signature ? (
+                            <div className="border-2 border-slate-200 rounded-lg p-4 bg-white">
+                                <img
+                                    src={patient.doctor_signature}
+                                    alt="Doctor Signature"
+                                    className="max-h-32 mx-auto"
+                                />
+                                <p className="text-center text-xs text-slate-500 mt-2">
+                                    Signed by {patient.doctor_name}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
+                                <PenTool className="h-12 w-12 text-slate-300 mx-auto mb-2" />
+                                <p className="text-sm text-slate-500">No signature on file</p>
+                                <p className="text-xs text-slate-400 mt-1">Click "Add Signature" to sign digitally</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
+            )}
+
+            {/* Signature Modal */}
+            {showSignatureModal && (
+                <SignatureCanvas
+                    onSave={handleSaveSignature}
+                    onClose={() => setShowSignatureModal(false)}
+                />
             )}
         </div>
     );
