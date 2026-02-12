@@ -21,9 +21,12 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+
 export interface PatientData {
+    name: string; // NEW
     age: number;
     sex: number;
+    contact?: string; // NEW
     cp: number;
     trestbps: number;
     chol: number;
@@ -41,7 +44,10 @@ export interface PredictionResult {
     prediction: number;
     risk_score: number;
     risk_level: string;
+    patient_id: number;
+    record_id: number;
 }
+
 
 export interface Patient {
     id: number;
@@ -101,5 +107,10 @@ export const registerDoctor = async (username: string, email: string, password: 
 };
 export const verifyPin = async (pin: string) => {
     const response = await api.post('/pin-login', { pin });
+    return response.data;
+};
+
+export const getDashboardStats = async () => {
+    const response = await api.get('/dashboard/stats');
     return response.data;
 };

@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -6,46 +7,13 @@ import {
 } from 'recharts';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { Users, AlertCircle, Activity, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, AlertCircle, Activity, TrendingUp, ChevronLeft, ChevronRight, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { cn } from '../lib/utils';
-
-// Mock Data Structure
-const monthlyData = {
-    2024: [
-        { name: 'Jan', assessments: 45 }, { name: 'Feb', assessments: 52 },
-        { name: 'Mar', assessments: 48 }, { name: 'Apr', assessments: 61 },
-        { name: 'May', assessments: 55 }, { name: 'Jun', assessments: 67 },
-        { name: 'Jul', assessments: 72 }, { name: 'Aug', assessments: 65 },
-        { name: 'Sep', assessments: 59 }, { name: 'Oct', assessments: 80 },
-        { name: 'Nov', assessments: 85 }, { name: 'Dec', assessments: 91 },
-    ],
-    2025: [
-        { name: 'Jan', assessments: 88 }, { name: 'Feb', assessments: 95 },
-        { name: 'Mar', assessments: 110 }, { name: 'Apr', assessments: 0 },
-        { name: 'May', assessments: 0 }, { name: 'Jun', assessments: 0 },
-        { name: 'Jul', assessments: 0 }, { name: 'Aug', assessments: 0 },
-        { name: 'Sep', assessments: 0 }, { name: 'Oct', assessments: 0 },
-        { name: 'Nov', assessments: 0 }, { name: 'Dec', assessments: 0 },
-    ],
-    2023: [
-        { name: 'Jan', assessments: 10 }, { name: 'Feb', assessments: 15 },
-        { name: 'Mar', assessments: 20 }, { name: 'Apr', assessments: 25 },
-        { name: 'May', assessments: 30 }, { name: 'Jun', assessments: 35 },
-        { name: 'Jul', assessments: 40 }, { name: 'Aug', assessments: 42 },
-        { name: 'Sep', assessments: 38 }, { name: 'Oct', assessments: 45 },
-        { name: 'Nov', assessments: 50 }, { name: 'Dec', assessments: 48 },
-    ]
-};
-
-const riskData = [
-    { name: 'Low Risk', value: 65 },
-    { name: 'Medium Risk', value: 25 },
-    { name: 'High Risk', value: 10 },
-];
+import { getDashboardStats, resetSystem } from '../lib/api';
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
-// Blood Flow Particles Component
+// Blood Flow Particles Component (Unchanged)
 const BloodParticles = () => {
     const count = 50;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,13 +48,54 @@ const BloodParticles = () => {
 };
 
 export default function Dashboard() {
-    const [year, setYear] = useState(2025);
-    const currentData = monthlyData[year as keyof typeof monthlyData] || monthlyData[2024];
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState<any>({
+        total_patients: 0,
+        critical_cases: 0,
+        avg_accuracy: "98.5%",
+        monthly_growth: "+12.5%",
+        recent_activity: [],
+        risk_distribution: [
+            { name: "Low Risk", value: 0 },
+            { name: "Medium Risk", value: 0 },
+            { name: "High Risk", value: 0 }
+        ]
+    });
 
-    const handlePrevYear = () => setYear(prev => prev > 2023 ? prev - 1 : prev);
-    const handleNextYear = () => setYear(prev => prev < 2025 ? prev + 1 : prev);
+    useEffect(() => {
+        fetchStats();
+    }, []);
 
-    const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: string, icon: any, color: string }) => (
+    const fetchStats = async () => {
+        setLoading(true);
+        try {
+            const data = await getDashboardStats();
+            setStats(data);
+        } catch (error) {
+            console.error("Failed to fetch dashboard stats", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResetSystem = async () => {
+        if (confirm("WARNING: This will delete ALL data (patients, records, feedbacks). Are you sure?")) {
+            try {
+                await resetSystem();
+                await fetchStats(); // Refresh to show 0s
+                alert("System has been reset.");
+            } catch (error) {
+                alert("Failed to reset system.");
+            }
+        }
+    };
+
+    const handleAddPatient = () => {
+        navigate('/doctor/patients');
+    };
+
+    const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) => (
         <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
             <div className="flex items-center justify-between">
                 <div>
@@ -102,7 +111,7 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-10 py-8">
-            {/* Header Section with improved spacing and 3D Visual */}
+            {/* Header Section */}
             <div className="relative bg-slate-900 rounded-2xl p-8 overflow-hidden mb-8">
                 <div className="absolute inset-0 z-0">
                     <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
@@ -125,82 +134,67 @@ export default function Dashboard() {
                         <h1 className="text-3xl font-bold text-white">Medical Overview</h1>
                         <p className="text-slate-300 mt-1">Hospital Administration Dashboard</p>
                     </div>
-                    <div className="mt-4 md:mt-0 flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-md border border-white/20 backdrop-blur-md">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                        </span>
-                        <span className="text-sm font-medium text-white">System Live</span>
+                    <div className="mt-4 md:mt-0 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
+
+                        <button
+                            onClick={handleResetSystem}
+                            className="flex items-center space-x-2 bg-red-600/20 hover:bg-red-600/30 text-red-100 px-4 py-2 rounded-lg backdrop-blur-md border border-red-500/30 transition-colors"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                            <span>Reset System</span>
+                        </button>
+
+                        <button
+                            onClick={handleAddPatient}
+                            className="flex items-center space-x-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg shadow-lg shadow-primary-500/20 transition-all"
+                        >
+                            <Plus className="h-4 w-4" />
+                            <span>Add Patient</span>
+                        </button>
+
+                        <div className="flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-md border border-white/20 backdrop-blur-md">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            <span className="text-sm font-medium text-white">System Live</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Patients" value="1,245" icon={Users} color="bg-blue-500" />
-                <StatCard title="Critical Cases" value="42" icon={AlertCircle} color="bg-red-500" />
-                <StatCard title="Avg. Accuracy" value="98.5%" icon={Activity} color="bg-green-500" />
-                <StatCard title="Monthly Growth" value="+12.5%" icon={TrendingUp} color="bg-purple-500" />
+                <StatCard title="Total Patients" value={stats.total_patients} icon={Users} color="bg-blue-500" />
+                <StatCard title="Critical Cases" value={stats.critical_cases} icon={AlertCircle} color="bg-red-500" />
+                <StatCard title="Avg. Accuracy" value={stats.avg_accuracy} icon={Activity} color="bg-green-500" />
+                <StatCard title="Monthly Growth" value={stats.monthly_growth} icon={TrendingUp} color="bg-purple-500" />
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Activity Chart - Takes up 2 columns */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100"
-                >
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-bold text-slate-900">Assessment Volume</h3>
-                        <div className="flex items-center space-x-4 bg-slate-50 rounded-lg p-1">
-                            <button onClick={handlePrevYear} className="p-1 hover:bg-white rounded-md transition-colors text-slate-500 hover:text-slate-900 shadow-sm">
-                                <ChevronLeft className="h-5 w-5" />
-                            </button>
-                            <span className="font-semibold text-slate-900 w-12 text-center">{year}</span>
-                            <button onClick={handleNextYear} className="p-1 hover:bg-white rounded-md transition-colors text-slate-500 hover:text-slate-900 shadow-sm">
-                                <ChevronRight className="h-5 w-5" />
-                            </button>
-                        </div>
-                    </div>
 
-                    <div className="h-80 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={currentData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    cursor={{ fill: '#f1f5f9' }}
-                                />
-                                <Bar dataKey="assessments" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={32} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </motion.div>
-
-                {/* Risk Distribution - Takes up 1 column */}
+                {/* Risk Distribution - Takes up 1 column (Expanded to full width if no history for now) */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col"
+                    className="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col"
                 >
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">Risk Distribution</h3>
+                    <h3 className="text-lg font-bold text-slate-900 mb-6">Patient Risk Distribution</h3>
                     <div className="flex-1 min-h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={riskData}
+                                    data={stats.risk_distribution}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
+                                    innerRadius={80}
+                                    outerRadius={120}
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {riskData.map((_, index) => (
+                                    {stats.risk_distribution.map((entry: any, index: number) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -214,8 +208,11 @@ export default function Dashboard() {
 
             {/* Recent Activity Table */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100">
+                <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                     <h3 className="text-lg font-bold text-slate-900">Recent Patient Assessments</h3>
+                    <button onClick={fetchStats} className="text-slate-400 hover:text-primary-600 transition-colors">
+                        <RefreshCw className="h-5 w-5" />
+                    </button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-200">
@@ -223,28 +220,40 @@ export default function Dashboard() {
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Patient ID</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Demographics</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Name / Demographics</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Diagnosis</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Doctor</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-200">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">#P-2024-{100 + i}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">Feb {10 + i}, 2025</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{45 + i} yrs / {i % 2 === 0 ? 'M' : 'F'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={cn(
-                                            "px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full",
-                                            i % 2 === 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                        )}>
-                                            {i % 2 === 0 ? 'Low Risk' : 'Medium Risk'}
-                                        </span>
+                            {stats.recent_activity.length > 0 ? (
+                                stats.recent_activity.map((item: any) => (
+                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">#REC-{item.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(item.date).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                            <div className="font-medium text-slate-900">{item.name}</div>
+                                            <div className="text-xs">{item.age} yrs / {item.sex === 1 ? 'M' : 'F'}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={cn(
+                                                "px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full",
+                                                item.risk_level === 'Low' ? 'bg-green-100 text-green-800' :
+                                                    item.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                                            )}>
+                                                {item.risk_level} Risk
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{item.doctor}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                        No recent assessments found.
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">Dr. Sarah Chen</td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

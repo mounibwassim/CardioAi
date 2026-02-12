@@ -8,6 +8,8 @@ import { cn } from '../lib/utils';
 interface FormData extends PatientData { }
 
 const initialData: FormData = {
+    name: '',
+    contact: '',
     age: 55,
     sex: 1,
     cp: 1,
@@ -32,7 +34,7 @@ export default function Predict() {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: parseFloat(value) // Basic casting, refining for specific types later if needed
+            [name]: (name === 'name' || name === 'contact') ? value : parseFloat(value)
         }));
     };
 
@@ -106,6 +108,11 @@ export default function Predict() {
                             <Heart className="h-5 w-5 mr-2 text-primary-500" />
                             Demographics & Vitals
                         </h3>
+                        {/* Modified Grid for Name/Contact */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <InputGroup label="Patient Full Name" name="name" type="text" />
+                            <InputGroup label="Contact Number (Optional)" name="contact" type="text" />
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <InputGroup label="Age (years)" name="age" />
                             <InputGroup label="Sex" name="sex" options={[{ label: "Male", value: 1 }, { label: "Female", value: 0 }]} />

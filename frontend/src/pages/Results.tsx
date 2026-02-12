@@ -50,7 +50,20 @@ export default function Results() {
             pdf.rect(0, 0, pdfWidth, 20, 'F');
             pdf.setTextColor(255, 255, 255);
             pdf.setFontSize(16);
+            pdf.setFontSize(16);
             pdf.text("CardioAI Clinical Report", 10, 13);
+
+            // Add Logo (Assuming static path or base64)
+            try {
+                const logoImg = new Image();
+                logoImg.src = "/assets/images/logo.png";
+                // We await simple loading using a promise wrapper if strictness required, but 
+                // for synchronous jspdf in a browser, we usually need it preloaded. 
+                // However, adding it to the PDF from an image element or path:
+                pdf.addImage(logoImg, 'PNG', 160, 2, 40, 16);
+            } catch (e) {
+                console.warn("Logo add failed", e);
+            }
 
             // Content
             pdf.addImage(imgData, 'PNG', 0, 25, pdfWidth, pdfHeight);
