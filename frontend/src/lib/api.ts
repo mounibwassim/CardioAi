@@ -51,6 +51,7 @@ export interface PatientData {
     slope: number;
     ca: number;
     thal: number;
+    doctor_id?: number | string;
 }
 
 export interface PredictionResult {

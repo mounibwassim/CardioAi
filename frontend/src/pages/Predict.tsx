@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Activity, Heart, ArrowRight, Loader2 } from 'lucide-react';
-import { predictHeartDisease, type PatientData } from '../lib/api';
+import { predictHeartDisease, getDoctors, type PatientData, type Doctor } from '../lib/api';
 import { cn } from '../lib/utils';
 
 interface FormData extends PatientData { }
@@ -74,13 +74,26 @@ const InputGroup = ({
 export default function Predict() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState<FormData>(initialData);
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
+    const [formData, setFormData] = useState<FormData>({ ...initialData, doctor_id: '' });
+
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const data = await getDoctors();
+                setDoctors(data || []);
+            } catch (error) {
+                console.error("Failed to fetch doctors", error);
+            }
+        };
+        fetchDoctors();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: (name === 'name' || name === 'contact') ? value : parseFloat(value)
+            [name]: (name === 'name' || name === 'contact' || name === 'doctor_id') ? value : parseFloat(value)
         }));
     };
 
@@ -88,7 +101,7 @@ export default function Predict() {
         e.preventDefault();
 
         // 🚨 CRITICAL: Validate all fields before sending
-        const requiredFields = ['name', 'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal'];
+        const requiredFields = ['name', 'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'doctor_id'];
 
         // Check for empty fields
         const emptyFields = requiredFields.filter(field => {
@@ -157,9 +170,27 @@ export default function Predict() {
                             Demographics & Vitals
                         </h3>
                         {/* Modified Grid for Name/Contact */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <InputGroup label="Patient Full Name" name="name" type="text" value={formData.name} onChange={handleChange} />
                             <InputGroup label="Contact Number (Optional)" name="contact" type="text" value={formData.contact} onChange={handleChange} />
+                            <div className="space-y-1">
+                                <label htmlFor="doctor_id" className="block text-sm font-medium text-slate-700">
+                                    Assigned Doctor
+                                </label>
+                                <select
+                                    id="doctor_id"
+                                    name="doctor_id"
+                                    value={formData.doctor_id}
+                                    onChange={handleChange}
+                                    required
+                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                                >
+                                    <option value="">Select Doctor</option>
+                                    {doctors.map(doc => (
+                                        <option key={doc.id} value={doc.id}>{doc.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <InputGroup label="Age (years)" name="age" value={formData.age} onChange={handleChange} />

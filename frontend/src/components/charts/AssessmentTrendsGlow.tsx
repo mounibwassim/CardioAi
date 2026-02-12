@@ -232,7 +232,11 @@ const AssessmentTrendsGlow = ({ data }: AssessmentTrendsGlowProps) => {
                                 fontSize="12"
                                 textAnchor="middle"
                             >
-                                {d.date.split('-').slice(1).join('/')}
+                                {new Date(d.date).toLocaleDateString('en-MY', {
+                                    weekday: 'short',
+                                    day: 'numeric',
+                                    month: 'short'
+                                })}
                             </text>
                         )
                     ))}

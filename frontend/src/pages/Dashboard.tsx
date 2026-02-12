@@ -29,20 +29,21 @@ import RiskDistribution3D from '../components/charts/RiskDistribution3D';
 import { safeArray, safeNumber } from '../lib/utils';
 
 // Define StatCard with Glassmorphism
-const StatCard = ({ title, value, icon: Icon, color, delay }: { title: string, value: string | number, icon: any, color: string, delay: number }) => (
+const StatCard = ({ title, value, icon: Icon, color, delay, onClick }: { title: string, value: string | number, icon: any, color: string, delay: number, onClick?: () => void }) => (
     <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay, duration: 0.4 }}
-        className="glass-card p-6 rounded-2xl relative overflow-hidden group transition-all duration-300"
+        onClick={onClick}
+        className="glass-card p-6 rounded-2xl relative overflow-hidden group transition-all duration-300 cursor-pointer hover:shadow-2xl hover:bg-white/10"
     >
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent -mr-16 -mt-16 rounded-full group-hover:scale-125 transition-transform duration-500" />
 
         <div className="flex items-center justify-between relative z-10">
             <div>
-                <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">{title}</p>
+                <p className="text-sm font-semibold text-gray-600 uppercase tracking-wider">{title}</p>
                 <motion.p
-                    className="text-3xl font-bold text-white mt-2"
+                    className="text-3xl font-extrabold text-gray-800 mt-2 tracking-tight"
                     initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: delay + 0.2 }}
@@ -55,9 +56,9 @@ const StatCard = ({ title, value, icon: Icon, color, delay }: { title: string, v
             </div>
         </div>
 
-        <div className="mt-4 flex items-center text-xs font-medium text-slate-500 group-hover:text-indigo-400 transition-colors">
+        <div className="mt-4 flex items-center text-xs font-bold text-gray-500 group-hover:text-indigo-600 transition-colors uppercase tracking-widest">
             <span>View detailed analytics</span>
-            <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+            <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all font-bold" />
         </div>
     </motion.div>
 );
@@ -89,7 +90,7 @@ export default function Dashboard() {
         total_assessments: 0,
         monthly_growth: 0
     });
-    const [_monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
+    const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
     const [riskDist, setRiskDist] = useState<RiskDistribution[]>([]);
     const [doctorPerf, setDoctorPerf] = useState<DoctorPerformance[]>([]);
 
@@ -288,10 +289,38 @@ export default function Dashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Patients" value={computedMetrics.total} icon={Users} color="bg-blue-500" delay={0.1} />
-                <StatCard title="Critical Cases" value={computedMetrics.critical} icon={AlertCircle} color="bg-red-500" delay={0.2} />
-                <StatCard title="Avg. Accuracy" value={computedMetrics.accuracy} icon={Activity} color="bg-green-500" delay={0.3} />
-                <StatCard title="Monthly Growth" value={computedMetrics.growth} icon={TrendingUp} color="bg-purple-500" delay={0.4} />
+                <StatCard
+                    title="Total Patients"
+                    value={computedMetrics.total}
+                    icon={Users}
+                    color="bg-blue-500"
+                    delay={0.1}
+                    onClick={() => navigate('/doctor/patients')}
+                />
+                <StatCard
+                    title="Critical Cases"
+                    value={computedMetrics.critical}
+                    icon={AlertCircle}
+                    color="bg-red-500"
+                    delay={0.2}
+                    onClick={() => navigate('/doctor/patients?filter=critical')}
+                />
+                <StatCard
+                    title="Avg. Accuracy"
+                    value={computedMetrics.accuracy}
+                    icon={Activity}
+                    color="bg-green-500"
+                    delay={0.3}
+                    onClick={() => navigate('/doctor/analytics')}
+                />
+                <StatCard
+                    title="Monthly Growth"
+                    value={computedMetrics.growth}
+                    icon={TrendingUp}
+                    color="bg-purple-500"
+                    delay={0.4}
+                    onClick={() => navigate('/doctor/analytics?view=monthly')}
+                />
             </div>
 
             {/* 3D Risk Distribution - Full Width */}
@@ -382,9 +411,9 @@ export default function Dashboard() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.7, duration: 0.5 }}
                 >
-                    <Monthly3DChart data={safeArray(stats?.monthly_stats).map((d: any) => ({
+                    <Monthly3DChart data={safeArray(monthlyTrends).map((d: any) => ({
                         month: d?.month || 'N/A',
-                        assessments: safeNumber(d?.assessments || d?.value)
+                        assessments: safeNumber(d?.count || d?.assessments || d?.value)
                     }))} />
                 </motion.div>
             </ChartParallaxWrapper>

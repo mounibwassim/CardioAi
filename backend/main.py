@@ -166,6 +166,7 @@ class PatientData(BaseModel):
     sex: int
     contact: Optional[str] = None # NEW
     doctor_name: str = "Dr. Sarah Chen"  # Default doctor, can be changed
+    doctor_id: Optional[int] = None # NEW: Link to doctors table
     cp: int
     trestbps: int
     chol: int
@@ -666,6 +667,18 @@ async def get_doctor_performance():
         logger.error(f"Doctor performance error: {str(e)}")
         return []
 
+@app.get("/doctors")
+def get_doctors_list():
+    """Get list of all doctors for dropdowns"""
+    try:
+        conn = get_db_connection()
+        doctors = conn.execute("SELECT id, name, email, specialization FROM doctors").fetchall()
+        conn.close()
+        return [dict(d) for d in doctors]
+    except Exception as e:
+        logger.error(f"Error fetching doctors: {e}")
+        return []
+
 @app.post("/predict", response_model=PredictionResult)
 def predict_heart_disease(data: PatientData):
     logger.info(f"Prediction requested for: {data.name}")
@@ -738,18 +751,19 @@ def predict_heart_disease(data: PatientData):
             """, (data.name, data.age, data.sex, data.contact, risk_level, system_notes))
             patient_id = c.lastrowid
             
-        # 2. Save Record with model_probability
+        # 2. Save Record with model_probability and doctor_id
         record_data = data.dict()
         record_data.pop('name', None)
         record_data.pop('contact', None)
+        record_data.pop('doctor_id', None) # Don't store in JSON blob
         
         # PHASE 0: Store model_probability for scientific justification
         c.execute("""
             INSERT INTO records (
                 patient_id, input_data, prediction_result, risk_score, risk_level, 
-                doctor_name, model_probability
+                doctor_name, doctor_id, model_probability
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             patient_id, 
             json.dumps(record_data), 
@@ -757,6 +771,7 @@ def predict_heart_disease(data: PatientData):
             float(risk_probability), 
             risk_level, 
             data.doctor_name or 'Dr. Sarah Chen',
+            data.doctor_id, # Link to doctor
             float(risk_probability)  # Store probability
         ))
         
