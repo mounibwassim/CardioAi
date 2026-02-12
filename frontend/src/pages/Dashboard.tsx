@@ -251,15 +251,16 @@ export default function Dashboard() {
                             <ResponsiveContainer width="100%" height={350}>
                                 <PieChart>
                                     <Pie
-                                        data={stats.risk_distribution}
+                                        data={riskDist.map(r => ({ name: r.level, value: r.count }))}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={80}
                                         outerRadius={120}
                                         paddingAngle={5}
                                         dataKey="value"
+                                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                     >
-                                        {stats.risk_distribution.map((_: any, index: number) => (
+                                        {riskDist.map((_, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
@@ -324,7 +325,11 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
             >
-                <DoctorPerformanceChart data={doctorPerf} />
+                <DoctorPerformanceChart data={doctorPerf.map(d => ({
+                    doctor: d.name,
+                    patients: d.assessments,
+                    criticalCases: d.high_risk_cases
+                }))} />
             </motion.div>
 
             {/* 3D Monthly Analytics Chart - NEW! */}
