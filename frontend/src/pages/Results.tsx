@@ -1,7 +1,6 @@
 import { useLocation, Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Activity, AlertTriangle, CheckCircle, RefreshCw, Download, XCircle, Calendar, User } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { type PredictionResult, type PatientData } from '../lib/api';
 import { useState } from 'react';
@@ -42,12 +41,6 @@ export default function Results() {
     }
 
     const handlePrint = async () => {
-        const element = document.getElementById('report-content');
-        if (!element) {
-            alert('Report content not found. Please refresh the page and try again.');
-            return;
-        }
-
         try {
             setIsDownloading(true);
             console.log('Starting PDF generation...');
