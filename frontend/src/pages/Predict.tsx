@@ -86,13 +86,46 @@ export default function Predict() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // 🚨 CRITICAL: Validate all fields before sending
+        const requiredFields = ['name', 'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal'];
+
+        // Check for empty fields
+        const emptyFields = requiredFields.filter(field => {
+            const value = formData[field as keyof typeof formData];
+            return value === '' || value === null || value === undefined;
+        });
+
+        if (emptyFields.length > 0) {
+            alert(`Please fill all required fields: ${emptyFields.join(', ')}`);
+            return;
+        }
+
+        // Check for NaN values in numeric fields
+        const numericFields = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal'];
+        const nanFields = numericFields.filter(field => {
+            const value = formData[field as keyof typeof formData];
+            return typeof value === 'number' && isNaN(value);
+        });
+
+        if (nanFields.length > 0) {
+            alert(`Invalid numeric values detected in: ${nanFields.join(', ')}. Please enter valid numbers.`);
+            return;
+        }
+
+        // Additional validation: age must be positive
+        if (formData.age <= 0 || formData.age > 120) {
+            alert('Age must be between 1 and 120');
+            return;
+        }
+
         setLoading(true);
         try {
             const result = await predictHeartDisease(formData);
             navigate('/doctor/results', { state: { result, data: formData } });
         } catch (error) {
             console.error("Prediction failed:", error);
-            alert("Failed to get prediction. Please try again.");
+            alert("Failed to get prediction. Please check all fields and try again.");
         } finally {
             setLoading(false);
         }

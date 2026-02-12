@@ -90,6 +90,41 @@ export interface Record {
     created_at: string;
 }
 
+// PHASE 1+2: TypeScript Contracts for Analytics Endpoints
+export interface AnalyticsSummary {
+    critical_cases: number;
+    avg_accuracy: number;  // Percentage (0-100)
+    total_assessments: number;
+    monthly_growth: number;  // Percentage change
+}
+
+export interface MonthlyTrend {
+    month: string;  // "YYYY-MM"
+    count: number;
+    high_risk: number;
+}
+
+export interface RiskDistribution {
+    level: 'Low' | 'Medium' | 'High';
+    count: number;
+    percentage: number;
+}
+
+export interface DoctorPerformance {
+    doctor_id: number;
+    name: string;
+    assessments: number;
+    accuracy: number;  // Percentage (0-100)
+    high_risk_cases: number;
+}
+
+export interface Doctor {
+    id: number;
+    name: string;
+    email: string;
+    specialization: string;
+}
+
 export const predictHeartDisease = async (data: PatientData): Promise<PredictionResult> => {
     try {
         const response = await api.post('/predict', data);
@@ -170,5 +205,34 @@ export const updatePatientSignature = async (patientId: number, signature: strin
     const response = await api.put(`/patients/${patientId}/signature`, {
         signature: signature
     });
+    return response.data;
+};
+
+// PHASE 1+2: Analytics API Functions
+export const getDoctors = async (): Promise<Doctor[]> => {
+    const response = await api.get('/doctors');
+    return response.data;
+};
+
+export const getAnalyticsSummary = async (doctorId?: number): Promise<AnalyticsSummary> => {
+    const params = doctorId ? { doctor_id: doctorId } : {};
+    const response = await api.get('/analytics/summary', { params });
+    return response.data;
+};
+
+export const getMonthlyTrends = async (doctorId?: number): Promise<MonthlyTrend[]> => {
+    const params = doctorId ? { doctor_id: doctorId } : {};
+    const response = await api.get('/analytics/monthly-trends', { params });
+    return response.data;
+};
+
+export const getRiskDistribution = async (doctorId?: number): Promise<RiskDistribution[]> => {
+    const params = doctorId ? { doctor_id: doctorId } : {};
+    const response = await api.get('/analytics/risk-distribution', { params });
+    return response.data;
+};
+
+export const getDoctorPerformance = async (): Promise<DoctorPerformance[]> => {
+    const response = await api.get('/analytics/doctor-performance');
     return response.data;
 };
