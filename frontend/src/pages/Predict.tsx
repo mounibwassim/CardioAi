@@ -25,6 +25,52 @@ const initialData: FormData = {
     thal: 3,
 };
 
+// CRITICAL FIX: Move InputGroup OUTSIDE to prevent re-renders
+const InputGroup = ({
+    label,
+    name,
+    type = "number",
+    options,
+    value,
+    onChange
+}: {
+    label: string;
+    name: string;
+    type?: string;
+    options?: { label: string; value: number }[];
+    value: any;
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+}) => (
+    <div className="space-y-1">
+        <label htmlFor={name} className="block text-sm font-medium text-slate-700">
+            {label}
+        </label>
+        {options ? (
+            <select
+                id={name}
+                name={name}
+                value={value}
+                onChange={onChange}
+                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+            >
+                {options.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+            </select>
+        ) : (
+            <input
+                type={type}
+                id={name}
+                name={name}
+                value={value}
+                onChange={onChange}
+                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                required
+            />
+        )}
+    </div>
+);
+
 export default function Predict() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -51,37 +97,6 @@ export default function Predict() {
             setLoading(false);
         }
     };
-
-    const InputGroup = ({ label, name, type = "number", options }: { label: string, name: keyof FormData, type?: string, options?: { label: string, value: number }[] }) => (
-        <div className="space-y-1">
-            <label htmlFor={name} className="block text-sm font-medium text-slate-700">
-                {label}
-            </label>
-            {options ? (
-                <select
-                    id={name}
-                    name={name}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
-                >
-                    {options.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
-            ) : (
-                <input
-                    type={type}
-                    id={name}
-                    name={name}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
-                    required
-                />
-            )}
-        </div>
-    );
 
     return (
         <div className="max-w-4xl mx-auto py-8">
@@ -110,15 +125,15 @@ export default function Predict() {
                         </h3>
                         {/* Modified Grid for Name/Contact */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <InputGroup label="Patient Full Name" name="name" type="text" />
-                            <InputGroup label="Contact Number (Optional)" name="contact" type="text" />
+                            <InputGroup label="Patient Full Name" name="name" type="text" value={formData.name} onChange={handleChange} />
+                            <InputGroup label="Contact Number (Optional)" name="contact" type="text" value={formData.contact} onChange={handleChange} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <InputGroup label="Age (years)" name="age" />
-                            <InputGroup label="Sex" name="sex" options={[{ label: "Male", value: 1 }, { label: "Female", value: 0 }]} />
-                            <InputGroup label="Resting Blood Pressure (mm Hg)" name="trestbps" />
-                            <InputGroup label="Cholesterol (mg/dl)" name="chol" />
-                            <InputGroup label="Fasting Blood Sugar > 120 mg/dl" name="fbs" options={[{ label: "True", value: 1 }, { label: "False", value: 0 }]} />
+                            <InputGroup label="Age (years)" name="age" value={formData.age} onChange={handleChange} />
+                            <InputGroup label="Sex" name="sex" options={[{ label: "Male", value: 1 }, { label: "Female", value: 0 }]} value={formData.sex} onChange={handleChange} />
+                            <InputGroup label="Resting Blood Pressure (mm Hg)" name="trestbps" value={formData.trestbps} onChange={handleChange} />
+                            <InputGroup label="Cholesterol (mg/dl)" name="chol" value={formData.chol} onChange={handleChange} />
+                            <InputGroup label="Fasting Blood Sugar > 120 mg/dl" name="fbs" options={[{ label: "True", value: 1 }, { label: "False", value: 0 }]} value={formData.fbs} onChange={handleChange} />
                         </div>
                     </div>
 
@@ -134,26 +149,26 @@ export default function Predict() {
                                 { label: "Atypical Angina", value: 2 },
                                 { label: "Non-anginal Pain", value: 3 },
                                 { label: "Asymptomatic", value: 4 }
-                            ]} />
+                            ]} value={formData.cp} onChange={handleChange} />
                             <InputGroup label="Resting ECG Results" name="restecg" options={[
                                 { label: "Normal", value: 0 },
                                 { label: "ST-T Wave Abnormality", value: 1 },
                                 { label: "Left Ventricular Hypertrophy", value: 2 }
-                            ]} />
-                            <InputGroup label="Max Heart Rate" name="thalach" />
-                            <InputGroup label="Exercise Induced Angina" name="exang" options={[{ label: "Yes", value: 1 }, { label: "No", value: 0 }]} />
-                            <InputGroup label="ST Depression (Oldpeak)" name="oldpeak" type="number" />
+                            ]} value={formData.restecg} onChange={handleChange} />
+                            <InputGroup label="Max Heart Rate" name="thalach" value={formData.thalach} onChange={handleChange} />
+                            <InputGroup label="Exercise Induced Angina" name="exang" options={[{ label: "Yes", value: 1 }, { label: "No", value: 0 }]} value={formData.exang} onChange={handleChange} />
+                            <InputGroup label="ST Depression (Oldpeak)" name="oldpeak" type="number" value={formData.oldpeak} onChange={handleChange} />
                             <InputGroup label="Slope" name="slope" options={[
                                 { label: "Upsloping", value: 1 },
                                 { label: "Flat", value: 2 },
                                 { label: "Downsloping", value: 3 }
-                            ]} />
-                            <InputGroup label="Major Vessels (0-3)" name="ca" />
+                            ]} value={formData.slope} onChange={handleChange} />
+                            <InputGroup label="Major Vessels (0-3)" name="ca" value={formData.ca} onChange={handleChange} />
                             <InputGroup label="Thalassemia" name="thal" options={[
                                 { label: "Normal", value: 3 },
                                 { label: "Fixed Defect", value: 6 },
                                 { label: "Reversable Defect", value: 7 }
-                            ]} />
+                            ]} value={formData.thal} onChange={handleChange} />
                         </div>
                     </div>
 
