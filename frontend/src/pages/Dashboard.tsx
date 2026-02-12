@@ -1,7 +1,26 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, AlertCircle, Activity, TrendingUp, Plus, RefreshCw, ChevronRight } from 'lucide-react';
+import {
+    Users,
+    AlertTriangle,
+    Activity,
+    TrendingUp,
+    Plus,
+    RefreshCw,
+    ChevronRight
+} from 'lucide-react';
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Cell,
+    PieChart,
+    Pie
+} from 'recharts';
 import { useParallax } from '../hooks/useParallax';
 import {
     getDashboardStats,
@@ -25,43 +44,64 @@ import AssessmentTrendsGlow from '../components/charts/AssessmentTrendsGlow';
 import RiskTrends3D from '../components/charts/RiskTrends3D';
 import DoctorPerformance3D from '../components/charts/DoctorPerformance3D';
 import Monthly3DChart from '../components/charts/Monthly3DChart';
-import RiskDistribution3D from '../components/charts/RiskDistribution3D';
 import { safeArray, safeNumber } from '../lib/utils'; // Keep existing utils import
 
-// Define StatCard with Glassmorphism
-const StatCard = ({ title, value, icon: Icon, color, delay, onClick }: { title: string, value: string | number, icon: any, color: string, delay: number, onClick?: () => void }) => (
-    <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay, duration: 0.4 }}
-        onClick={onClick}
-        className="glass-card p-6 rounded-2xl relative overflow-hidden group transition-all duration-300 cursor-pointer hover:shadow-2xl hover:bg-white/10"
-    >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent -mr-16 -mt-16 rounded-full group-hover:scale-125 transition-transform duration-500" />
+// Define StatCard props to match usage
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    icon: any;
+    color?: string;
+    delay?: number;
+    subtitle?: string;
+    type?: string;
+    onClick?: () => void;
+}
 
-        <div className="flex items-center justify-between relative z-10">
-            <div>
-                <p className="text-sm font-semibold text-gray-600 uppercase tracking-wider">{title}</p>
-                <motion.p
-                    className="text-3xl font-extrabold text-gray-800 mt-2 tracking-tight"
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: delay + 0.2 }}
-                >
-                    {value}
-                </motion.p>
-            </div>
-            <div className={`p-4 rounded-xl ${color} bg-opacity-20 backdrop-blur-md border border-white/10 shadow-lg group-hover:rotate-12 transition-transform duration-300`}>
-                <Icon className={`h-7 w-7 ${color.replace('bg-', 'text-')}`} />
-            </div>
-        </div>
+const StatCard = ({ title, value, icon: Icon, color = "bg-primary-500", delay = 0.1, subtitle, type, onClick }: StatCardProps) => {
+    // Determine color based on type if explicit color not provided
+    const displayColor = color || (
+        type === 'danger' ? 'bg-red-500' :
+            type === 'success' ? 'bg-green-500' :
+                type === 'warning' ? 'bg-amber-500' :
+                    'bg-primary-500'
+    );
 
-        <div className="mt-4 flex items-center text-xs font-bold text-gray-500 group-hover:text-indigo-600 transition-colors uppercase tracking-widest">
-            <span>View detailed analytics</span>
-            <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all font-bold" />
-        </div>
-    </motion.div>
-);
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay, duration: 0.4 }}
+            onClick={onClick}
+            className="glass-card p-6 rounded-2xl relative overflow-hidden group transition-all duration-300 cursor-pointer hover:shadow-2xl hover:bg-white/10"
+        >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent -mr-16 -mt-16 rounded-full group-hover:scale-125 transition-transform duration-500" />
+
+            <div className="flex items-center justify-between relative z-10">
+                <div>
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wider">{title}</p>
+                    <motion.p
+                        className="text-3xl font-extrabold text-gray-800 mt-2 tracking-tight"
+                        initial={{ y: 10, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: delay + 0.2 }}
+                    >
+                        {value}
+                    </motion.p>
+                    {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+                </div>
+                <div className={`p-4 rounded-xl ${displayColor} bg-opacity-20 backdrop-blur-md border border-white/10 shadow-lg group-hover:rotate-12 transition-transform duration-300`}>
+                    <Icon className={`h-7 w-7 ${displayColor.replace('bg-', 'text-')}`} />
+                </div>
+            </div>
+
+            <div className="mt-4 flex items-center text-xs font-bold text-gray-500 group-hover:text-indigo-600 transition-colors uppercase tracking-widest">
+                <span>View details</span>
+                <ChevronRight className="h-4 w-4 ml-1 opacity-1 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all font-bold" />
+            </div>
+        </motion.div>
+    );
+};
 
 // Parallax Wrapper for Charts
 const ChartParallaxWrapper = ({ children, className }: { children: React.ReactNode, className?: string }) => {
@@ -357,7 +397,7 @@ export default function Dashboard() {
                     </h3>
                     <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={safeArray(doctorPerf).map((d: DoctorPerformance) => ({
+                            <BarChart data={safeArray<DoctorPerformance>(doctorPerf).map((d) => ({
                                 doctor: d?.name || 'Unknown',
                                 patients: safeNumber(d?.assessments)
                             }))}>
@@ -391,7 +431,7 @@ export default function Dashboard() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={safeArray(riskDist).map((r: RiskDistribution) => ({
+                                    data={safeArray<RiskDistribution>(riskDist).map((r) => ({
                                         name: r?.level || 'Unknown',
                                         value: safeNumber(r?.count)
                                     }))}
@@ -402,11 +442,10 @@ export default function Dashboard() {
                                     paddingAngle={8}
                                     innerRadius={80}
                                     outerRadius={120}
-                                    activeOuterRadius={130}
                                     isAnimationActive={false}
-                                    label={({ name, percent }: { name: string, percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    label={({ name, percent }: { name?: string, percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                                 >
-                                    {safeArray(riskDist).map((entry: RiskDistribution, index: number) => {
+                                    {safeArray<RiskDistribution>(riskDist).map((_entry, index) => {
                                         const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
                                         return <Cell key={index} fill={COLORS[index % COLORS.length]} />;
                                     })}
@@ -464,7 +503,7 @@ export default function Dashboard() {
                 <ChartParallaxWrapper>
                     <ErrorBoundary fallbackTitle="Assessment Trend Error">
                         <AssessmentTrendsGlow
-                            data={safeArray(stats?.assessment_trends).map((d: { date: string; total: number }) => ({
+                            data={safeArray<{ date: string; total: number }>(stats?.assessment_trends).map((d) => ({
                                 date: d?.date || 'N/A',
                                 assessments: safeNumber(d?.total)
                             }))}
@@ -475,7 +514,7 @@ export default function Dashboard() {
                 <ChartParallaxWrapper>
                     <ErrorBoundary fallbackTitle="Risk Trend Error">
                         <RiskTrends3D
-                            data={safeArray(stats?.risk_trends).map((d: { date: string; low: number; medium: number; high: number }) => ({
+                            data={safeArray<{ date: string; low: number; medium: number; high: number }>(stats?.risk_trends).map((d) => ({
                                 date: d?.date || 'N/A',
                                 low: safeNumber(d?.low),
                                 medium: safeNumber(d?.medium),
@@ -490,7 +529,7 @@ export default function Dashboard() {
             <ChartParallaxWrapper className="mt-8">
                 <ErrorBoundary fallbackTitle="Doctor Performance Error">
                     <DoctorPerformance3D
-                        data={safeArray(doctorPerf).map((d: DoctorPerformance) => ({
+                        data={safeArray<DoctorPerformance>(doctorPerf).map((d) => ({
                             doctor: d?.name || 'Unknown',
                             patients: safeNumber(d?.assessments),
                             criticalCases: safeNumber(d?.high_risk_cases)
