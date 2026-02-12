@@ -19,6 +19,7 @@
         "autoprefixer": "^10.4.24",
         "axios": "^1.13.5",
         "chart.js": "^4.5.1",
+        "chartjs-plugin-datalabels": "^2.2.0",
         "clsx": "^2.1.1",
         "framer-motion": "^12.34.0",
         "html2canvas": "^1.4.1",
