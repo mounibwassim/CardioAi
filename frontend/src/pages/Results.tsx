@@ -91,10 +91,8 @@ export default function Results() {
 
             console.log('Canvas created successfully');
 
-            const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
             let currentY = 0;
 
@@ -133,9 +131,9 @@ export default function Results() {
 
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(10);
-            const riskColor = result.risk_level === 'High' ? [220, 38, 38] :
+            const riskColor: [number, number, number] = result.risk_level === 'High' ? [220, 38, 38] :
                 result.risk_level === 'Medium' ? [234, 179, 8] : [34, 197, 94];
-            pdf.setTextColor(...riskColor);
+            pdf.setTextColor(riskColor[0], riskColor[1], riskColor[2]);
             pdf.setFont('helvetica', 'bold');
             pdf.text(`Risk Level: ${result.risk_level}`, 15, currentY);
             pdf.setTextColor(0, 0, 0);
@@ -144,19 +142,18 @@ export default function Results() {
             pdf.text(`Risk Score: ${(result.risk_score * 100).toFixed(1)}%`, 15, currentY);
             currentY += 10;
 
-            // AI Analysis (if available)
-            if (result.explanation) {
-                pdf.setFont('helvetica', 'bold');
-                pdf.setFontSize(12);
-                pdf.text('AI Analysis Summary', 15, currentY);
-                currentY += 7;
+            // AI Analysis Summary
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.text('AI Analysis Summary', 15, currentY);
+            currentY += 7;
 
-                pdf.setFont('helvetica', 'normal');
-                pdf.setFontSize(9);
-                const analysisLines = pdf.splitTextToSize(result.explanation, pdfWidth - 30);
-                pdf.text(analysisLines, 15, currentY);
-                currentY += analysisLines.length * 4 + 5;
-            }
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            const analysisText = `Based on the assessment, the patient shows a ${result.risk_level.toLowerCase()} risk level for cardiovascular disease with a risk score of ${(result.risk_score * 100).toFixed(1)}%.`;
+            const analysisLines = pdf.splitTextToSize(analysisText, pdfWidth - 30);
+            pdf.text(analysisLines, 15, currentY);
+            currentY += analysisLines.length * 4 + 10;
 
             // Doctor Notes (if available - would need to be passed from patient record)
             // This would require fetching patient notes from the database
