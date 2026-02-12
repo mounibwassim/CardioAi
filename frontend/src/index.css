@@ -34,7 +34,7 @@
   }
 
   textarea {
-    @apply p-4 !important;
+    @apply !p-4;
   }
 }
 
