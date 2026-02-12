@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useState } from 'react';
 import DoctorLoginModal from './DoctorLoginModal';
@@ -9,7 +9,6 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
     const location = useLocation();
-    const navigate = useNavigate();
     const isActive = (path: string) => location.pathname === path;
 
     const userRole = localStorage.getItem('user_role');
