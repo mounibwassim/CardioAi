@@ -1,23 +1,29 @@
 import { useLocation, Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, AlertTriangle, CheckCircle, RefreshCw, Download, XCircle } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, RefreshCw, Download, XCircle, Calendar, User } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { type PredictionResult, type PatientData } from '../lib/api';
+import { useState } from 'react';
 
 export default function Results() {
     const location = useLocation();
     const state = location.state as { result: PredictionResult; data: PatientData } | null;
+
+    // Doctor selection state
+    const [selectedDoctor, setSelectedDoctor] = useState('Dr. Sarah Chen');
+    const doctorList = ['Dr. Sarah Chen', 'Dr. Emily Ross', 'Dr. Michael Torres'];
 
     if (!state) {
         return <Navigate to="/predict" />;
     }
 
     const { result, data } = state;
-
-
-
-
+    const assessmentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
     // Determine risk styling and icon for the header
     let riskColor = "bg-slate-700"; // Default
@@ -26,7 +32,7 @@ export default function Results() {
     if (result.risk_level === "Low") {
         riskColor = "bg-green-600";
         RiskIcon = CheckCircle;
-    } else if (result.risk_level === "Moderate") {
+    } else if (result.risk_level === "Medium") {
         riskColor = "bg-yellow-600";
         RiskIcon = AlertTriangle;
     } else if (result.risk_level === "High") {
@@ -50,16 +56,12 @@ export default function Results() {
             pdf.rect(0, 0, pdfWidth, 20, 'F');
             pdf.setTextColor(255, 255, 255);
             pdf.setFontSize(16);
-            pdf.setFontSize(16);
             pdf.text("CardioAI Clinical Report", 10, 13);
 
-            // Add Logo (Assuming static path or base64)
+            // Add Logo
             try {
                 const logoImg = new Image();
                 logoImg.src = "/assets/images/logo.png";
-                // We await simple loading using a promise wrapper if strictness required, but 
-                // for synchronous jspdf in a browser, we usually need it preloaded. 
-                // However, adding it to the PDF from an image element or path:
                 pdf.addImage(logoImg, 'PNG', 160, 2, 40, 16);
             } catch (e) {
                 console.warn("Logo add failed", e);
@@ -73,14 +75,11 @@ export default function Results() {
             pdf.setTextColor(100);
             pdf.text(`Generated on: ${new Date().toLocaleString()}`, 10, pdf.internal.pageSize.getHeight() - 10);
 
-            pdf.save(`CardioAI_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+            pdf.save(`CardioAI_Report_${data.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
         } catch (err) {
             console.error("PDF Generation failed", err);
         }
     };
-
-
-
 
     return (
         <div className="max-w-4xl mx-auto py-12">
@@ -91,6 +90,28 @@ export default function Results() {
                 id="report-content"
                 className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100"
             >
+                {/* Logo and Header */}
+                <div className="bg-white px-8 pt-6 pb-4 border-b border-slate-200">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <img
+                                src="/assets/images/logo.png"
+                                alt="CardioAI Logo"
+                                className="h-16 mb-2"
+                            />
+                            <h1 className="text-2xl font-bold text-slate-900">Clinical Assessment Report</h1>
+                        </div>
+                        <div className="text-right text-sm text-slate-600">
+                            <div className="flex items-center justify-end mb-1">
+                                <Calendar className="h-4 w-4 mr-1" />
+                                <span>{assessmentDate}</span>
+                            </div>
+                            <div className="text-xs text-slate-500">Report ID: {result.record_id}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Risk Banner */}
                 <div className={`p-8 ${riskColor} text-white text-center`}>
                     <div className="mx-auto bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm">
                         <RiskIcon className="h-10 w-10 text-white" />
@@ -100,7 +121,28 @@ export default function Results() {
                 </div>
 
                 <div className="p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Patient Information */}
+                    <div className="mb-8 bg-slate-50 rounded-xl p-6 border border-slate-200">
+                        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                            <User className="h-5 w-5 mr-2 text-primary-600" />
+                            Patient Information
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <span className="text-sm text-slate-500">Full Name</span>
+                                <p className="font-semibold text-slate-900">{data.name}</p>
+                            </div>
+                            {data.contact && (
+                                <div>
+                                    <span className="text-sm text-slate-500">Contact</span>
+                                    <p className="font-semibold text-slate-900">{data.contact}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Clinical Data Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                         <div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-4 border-b pb-2">Patient Profile</h3>
                             <dl className="space-y-3">
@@ -146,7 +188,8 @@ export default function Results() {
                         </div>
                     </div>
 
-                    <div className="mt-8 bg-slate-50 rounded-xl p-6 border border-slate-100">
+                    {/* AI Analysis Summary */}
+                    <div className="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-8">
                         <h3 className="text-lg font-semibold text-slate-900 mb-3">AI Analysis Summary</h3>
                         <p className="text-slate-600 leading-relaxed">
                             The patient exhibits <strong>{result.risk_level.toLowerCase()} risk</strong> markers based on the provided clinical data.
@@ -156,9 +199,39 @@ export default function Results() {
                             }
                         </p>
                     </div>
+
+                    {/* Doctor Information */}
+                    <div className="border-t border-slate-200 pt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Reviewing Physician
+                                </label>
+                                <select
+                                    value={selectedDoctor}
+                                    onChange={(e) => setSelectedDoctor(e.target.value)}
+                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                                >
+                                    {doctorList.map((doc) => (
+                                        <option key={doc} value={doc}>{doc}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Physician Signature
+                                </label>
+                                <div className="border-b-2 border-slate-300 pb-1 text-slate-400 italic">
+                                    {selectedDoctor}
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">Digitally signed on {assessmentDate}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </motion.div>
 
+            {/* Action Buttons */}
             <div className="mt-12 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 justify-center">
                 <button
                     onClick={handlePrint}
@@ -168,7 +241,7 @@ export default function Results() {
                     Download Report
                 </button>
                 <Link
-                    to="/predict" // Changed from /doctor/predict to /predict based on original context
+                    to="/doctor/predict"
                     className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm"
                 >
                     <RefreshCw className="mr-2 h-5 w-5" />
