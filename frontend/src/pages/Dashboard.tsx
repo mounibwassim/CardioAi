@@ -13,6 +13,7 @@ import AgeDistributionChart from '../components/charts/AgeDistributionChart';
 import AssessmentTrendsChart from '../components/charts/AssessmentTrendsChart';
 import RiskTrendsChart from '../components/charts/RiskTrendsChart';
 import DoctorPerformanceChart from '../components/charts/DoctorPerformanceChart';
+import Monthly3DChart from '../components/charts/Monthly3DChart';
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
@@ -38,19 +39,16 @@ export default function Dashboard() {
     const [stats, setStats] = useState<any>({
         total_patients: 0,
         critical_cases: 0,
-        avg_accuracy: "0%",
-        monthly_growth: "0%",
+        avg_accuracy: '0%',
+        monthly_growth: '0%',
         recent_activity: [],
-        risk_distribution: [
-            { name: "Low Risk", value: 0 },
-            { name: "Medium Risk", value: 0 },
-            { name: "High Risk", value: 0 }
-        ],
+        risk_distribution: [],
         gender_distribution: [],
         age_distribution: [],
         assessment_trends: [],
         risk_trends: [],
-        doctor_performance: []
+        doctor_performance: [],
+        monthly_stats: [] // For 3D chart
     });
 
     // Fetch function with AbortController support for memory safety
@@ -65,7 +63,13 @@ export default function Dashboard() {
             // Check if request was aborted before updating state
             if (signal?.aborted) return;
 
-            setStats(statsData);
+            // Prepare monthly data for 3D chart from assessment trends
+            const monthlyData = statsData.assessment_trends?.slice(-12).map((item: any) => ({
+                month: item.month,
+                assessments: item.count
+            })) || [];
+
+            setStats({ ...statsData, monthly_stats: monthlyData });
             setPatients(patientsData);
         } catch (error) {
             if (signal?.aborted) return; // Ignore errors from aborted requests
@@ -306,6 +310,15 @@ export default function Dashboard() {
                 transition={{ delay: 0.6 }}
             >
                 <DoctorPerformanceChart data={stats.doctor_performance} />
+            </motion.div>
+
+            {/* 3D Monthly Analytics Chart - NEW! */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+            >
+                <Monthly3DChart data={stats.monthly_stats || []} />
             </motion.div>
 
             {/* Recent Activity Table */}
