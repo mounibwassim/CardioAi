@@ -380,7 +380,7 @@ async def get_dashboard_stats():
             GROUP BY risk_level
         """).fetchall()
         
-        conn.close()
+        # DO NOT CLOSE CONNECTION HERE - We still have more queries below!
 
         formatted_activity = [
             {
@@ -493,6 +493,7 @@ async def get_dashboard_stats():
         ]
 
         # Close connection AFTER all queries complete
+        conn.close()
 
         return {
             "total_patients": total_patients,
