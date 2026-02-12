@@ -1,8 +1,10 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Text, OrbitControls } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { motion } from 'framer-motion';
+import { calculateBarHeight, guardNaN } from '../../lib/3d-utils';
 
 interface MonthlyData {
     month: string;
@@ -28,35 +30,47 @@ const Bar3D = ({ position, height, color, label, value }: Omit<Bar3DProps, 'maxV
             const currentScale = meshRef.current.scale.y;
             const target = hovered ? height * 1.15 : height;
             meshRef.current.scale.y += (target - currentScale) * 0.1;
+
+            // Subtle rotation pulse on hover
+            if (hovered) {
+                meshRef.current.rotation.y += 0.02;
+            } else {
+                meshRef.current.rotation.y *= 0.95;
+            }
         }
     });
 
     return (
         <group position={position}>
-            {/* Base Platform */}
+            {/* Glowing Base Platform */}
             <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <circleGeometry args={[0.5, 32]} />
                 <meshStandardMaterial
                     color={hovered ? color : '#1e293b'}
                     transparent
-                    opacity={0.3}
+                    opacity={hovered ? 0.5 : 0.3}
+                    emissive={hovered ? color : '#000'}
+                    emissiveIntensity={hovered ? 0.4 : 0}
                 />
             </mesh>
 
-            {/* 3D Bar */}
+            {/* 3D Bar with Metallic Glow */}
             <mesh
                 ref={meshRef}
                 position={[0, 0.5, 0]}
                 onPointerOver={() => setHovered(true)}
                 onPointerOut={() => setHovered(false)}
+                castShadow
+                receiveShadow
             >
                 <boxGeometry args={[0.8, 1, 0.8]} />
                 <meshStandardMaterial
                     color={color}
                     emissive={color}
-                    emissiveIntensity={hovered ? 0.6 : 0.3}
-                    metalness={0.7}
-                    roughness={0.2}
+                    emissiveIntensity={hovered ? 0.8 : 0.5}
+                    metalness={0.9}
+                    roughness={0.1}
+                    envMapIntensity={1.5}
                 />
             </mesh>
 
@@ -75,15 +89,29 @@ const Bar3D = ({ position, height, color, label, value }: Omit<Bar3DProps, 'maxV
             {hovered && (
                 <Text
                     position={[0, height * 0.5 + 0.8, 0]}
-                    fontSize={0.25}
+                    fontSize={0.3}
                     color="white"
                     anchorX="center"
                     anchorY="middle"
-                    outlineWidth={0.02}
+                    outlineWidth={0.03}
                     outlineColor="#000"
                 >
                     {value}
                 </Text>
+            )}
+
+            {/* Top Glow Cap */}
+            {hovered && (
+                <mesh position={[0, height * 0.5 + 0.5, 0]}>
+                    <sphereGeometry args={[0.15, 16, 16]} />
+                    <meshStandardMaterial
+                        color={color}
+                        emissive={color}
+                        emissiveIntensity={1.5}
+                        transparent
+                        opacity={0.6}
+                    />
+                </mesh>
             )}
         </group>
     );
@@ -94,16 +122,19 @@ const Scene = ({ data }: { data: MonthlyData[] }) => {
 
     return (
         <>
-            {/* Lighting Setup */}
-            <ambientLight intensity={0.4} />
-            <pointLight position={[10, 10, 10]} intensity={1} color="#6366f1" />
-            <pointLight position={[-10, 5, -10]} intensity={0.5} color="#a855f7" />
+            {/* Enhanced Lighting Setup */}
+            <ambientLight intensity={0.5} />
+            <pointLight position={[10, 10, 10]} intensity={1.5} color="#6366f1" castShadow />
+            <pointLight position={[-10, 5, -10]} intensity={0.8} color="#a855f7" />
+            <pointLight position={[0, 15, 5]} intensity={1} color="#3b82f6" />
             <spotLight
-                position={[0, 15, 0]}
-                angle={0.5}
-                intensity={1}
+                position={[0, 20, 0]}
+                angle={0.6}
+                intensity={1.5}
                 penumbra={1}
                 castShadow
+                shadow-mapSize-width={2048}
+                shadow-mapSize-height={2048}
             />
 
             {/* Floor Grid */}
@@ -111,7 +142,7 @@ const Scene = ({ data }: { data: MonthlyData[] }) => {
 
             {/* Bars */}
             {data.map((item, i) => {
-                const normalizedHeight = (item.assessments / maxValue) * 3;
+                const normalizedHeight = calculateBarHeight(item.assessments, maxValue, 3);
                 const xPos = (i - (data.length - 1) / 2) * 1.8;
 
                 return (
@@ -132,14 +163,17 @@ const Scene = ({ data }: { data: MonthlyData[] }) => {
                 enablePan={false}
                 maxPolarAngle={Math.PI / 2.2}
                 minPolarAngle={Math.PI / 6}
+                autoRotate
+                autoRotateSpeed={0.5}
             />
 
-            {/* Post-processing Effects */}
+            {/* Post-processing Effects - Enhanced Bloom */}
             <EffectComposer>
                 <Bloom
-                    intensity={0.5}
-                    luminanceThreshold={0.4}
+                    intensity={0.8}
+                    luminanceThreshold={0.3}
                     luminanceSmoothing={0.9}
+                    radius={0.8}
                 />
             </EffectComposer>
         </>
@@ -152,7 +186,7 @@ interface Monthly3DChartProps {
 
 const Monthly3DChart = ({ data }: Monthly3DChartProps) => {
     // BULLETPROOF: Filter and validate data to prevent WebGL crashes
-    const safeData = (data || []).filter((d: any) =>
+    const safeData = useMemo(() => (data || []).filter((d: any) =>
         d &&
         typeof d === 'object' &&
         (d.month || d.name) &&
@@ -160,43 +194,57 @@ const Monthly3DChart = ({ data }: Monthly3DChartProps) => {
     ).map((d: any) => ({
         month: String(d.month || d.name || 'N/A').substring(0, 10), // Truncate long labels
         assessments: Number(d.assessments || d.value || 0)
-    }));
+    })), [data]);
 
     if (safeData.length === 0) {
         return (
-            <div className="h-96 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl flex items-center justify-center">
+            <div className="h-96 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl flex items-center justify-center border border-slate-700">
                 <p className="text-slate-400 text-sm">No monthly data available</p>
             </div>
         );
     }
 
     return (
-        <div className="h-96 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl overflow-hidden relative shadow-2xl border border-slate-700">
+        <motion.div
+            className="h-96 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl overflow-hidden relative shadow-2xl border border-slate-700"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+        >
             {/* Header */}
             <div className="absolute top-4 left-4 z-10">
                 <h3 className="text-lg font-bold text-white">Monthly Assessment Trends</h3>
                 <p className="text-sm text-slate-400">Last 12 months • 3D Interactive</p>
             </div>
 
-            {/* 3D Canvas */}
             <Canvas
                 camera={{ position: [0, 4, 10], fov: 50 }}
                 shadows
-                gl={{ antialias: true, alpha: false }}
+                onCreated={() => {
+                    // This is a bit of a hack since we don't have direct access to a persistent ref 
+                    // that use3DCleanup needs from here, but Canvas manages its own disposal usually.
+                    // However, we'll implement it formally for components where we manage the renderer.
+                }}
+                gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
             >
                 <color attach="background" args={['#0f172a']} />
-                <fog attach="fog" args={['#0f172a', 5, 20]} />
+                <fog attach="fog" args={['#0f172a', 5, 25]} />
                 <Scene data={safeData} />
             </Canvas>
 
-            {/* Legend */}
-            <div className="absolute bottom-4 right-4 bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-600">
+            {/* Legend with Glass Effect */}
+            <div className="absolute bottom-4 right-4 bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-600 shadow-lg">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-indigo-500"></div>
-                    <span className="text-xs text-slate-300">Assessments</span>
+                    <div className="w-3 h-3 rounded-sm bg-indigo-500 shadow-lg shadow-indigo-500/50"></div>
+                    <span className="text-xs text-slate-300 font-medium">Assessments</span>
                 </div>
             </div>
-        </div>
+
+            {/* Instruction Hint */}
+            <div className="absolute bottom-4 left-4 text-xs text-slate-500">
+                <p>💫 Hover bars for details • Drag to rotate</p>
+            </div>
+        </motion.div>
     );
 };
 

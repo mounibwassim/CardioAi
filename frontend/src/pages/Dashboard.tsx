@@ -1,10 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-    PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer
-} from 'recharts';
-import { Users, AlertCircle, Activity, TrendingUp, Plus, RefreshCw } from 'lucide-react';
+import { Users, AlertCircle, Activity, TrendingUp, Plus, RefreshCw, ChevronRight } from 'lucide-react';
+import { useParallax } from '../hooks/useParallax';
 import {
     getDashboardStats,
     getPatients,
@@ -22,28 +20,62 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import GenderDistributionChart from '../components/charts/GenderDistributionChart';
 import AgeDistributionChart from '../components/charts/AgeDistributionChart';
-import AssessmentTrendsChart from '../components/charts/AssessmentTrendsChart';
-import RiskTrendsChart from '../components/charts/RiskTrendsChart';
-import DoctorPerformanceChart from '../components/charts/DoctorPerformanceChart';
+// NEW: 3D Premium Charts
+import AssessmentTrendsGlow from '../components/charts/AssessmentTrendsGlow';
+import RiskTrends3D from '../components/charts/RiskTrends3D';
+import DoctorPerformance3D from '../components/charts/DoctorPerformance3D';
 import Monthly3DChart from '../components/charts/Monthly3DChart';
+import RiskDistribution3D from '../components/charts/RiskDistribution3D';
 import { safeArray, safeNumber } from '../lib/utils';
 
-const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
+// Define StatCard with Glassmorphism
+const StatCard = ({ title, value, icon: Icon, color, delay }: { title: string, value: string | number, icon: any, color: string, delay: number }) => (
+    <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay, duration: 0.4 }}
+        className="glass-card p-6 rounded-2xl relative overflow-hidden group transition-all duration-300"
+    >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent -mr-16 -mt-16 rounded-full group-hover:scale-125 transition-transform duration-500" />
 
-// Define StatCard outside to prevent re-renders
-const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) => (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between relative z-10">
             <div>
-                <p className="text-sm font-medium text-slate-500">{title}</p>
-                <p className="text-2xl font-bold text-slate-900 mt-2">{value}</p>
+                <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">{title}</p>
+                <motion.p
+                    className="text-3xl font-bold text-white mt-2"
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: delay + 0.2 }}
+                >
+                    {value}
+                </motion.p>
             </div>
-            <div className={`p-3 rounded-full ${color} bg-opacity-10`}>
-                <Icon className={`h-6 w-6 ${color.replace('bg-', 'text-')}`} />
+            <div className={`p-4 rounded-xl ${color} bg-opacity-20 backdrop-blur-md border border-white/10 shadow-lg group-hover:rotate-12 transition-transform duration-300`}>
+                <Icon className={`h-7 w-7 ${color.replace('bg-', 'text-')}`} />
             </div>
         </div>
-    </div>
+
+        <div className="mt-4 flex items-center text-xs font-medium text-slate-500 group-hover:text-indigo-400 transition-colors">
+            <span>View detailed analytics</span>
+            <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+        </div>
+    </motion.div>
 );
+
+// Parallax Wrapper for Charts
+const ChartParallaxWrapper = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const parallax = useParallax(cardRef, 0.5);
+
+    return (
+        <div ref={cardRef} className={`card-3d-tilt ${className || ''}`} style={{
+            '--tilt-x': `${parallax.rotateX}deg`,
+            '--tilt-y': `${parallax.rotateY}deg`
+        } as React.CSSProperties}>
+            {children}
+        </div>
+    );
+};
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -256,122 +288,106 @@ export default function Dashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Patients" value={computedMetrics.total} icon={Users} color="bg-blue-500" />
-                <StatCard title="Critical Cases" value={computedMetrics.critical} icon={AlertCircle} color="bg-red-500" />
-                <StatCard title="Avg. Accuracy" value={computedMetrics.accuracy} icon={Activity} color="bg-green-500" />
-                <StatCard title="Monthly Growth" value={computedMetrics.growth} icon={TrendingUp} color="bg-purple-500" />
+                <StatCard title="Total Patients" value={computedMetrics.total} icon={Users} color="bg-blue-500" delay={0.1} />
+                <StatCard title="Critical Cases" value={computedMetrics.critical} icon={AlertCircle} color="bg-red-500" delay={0.2} />
+                <StatCard title="Avg. Accuracy" value={computedMetrics.accuracy} icon={Activity} color="bg-green-500" delay={0.3} />
+                <StatCard title="Monthly Growth" value={computedMetrics.growth} icon={TrendingUp} color="bg-purple-500" delay={0.4} />
             </div>
 
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 dashboard-column">
-                {/* Risk Distribution - Takes up full width */}
-                <ErrorBoundary fallbackTitle="Chart Display Failed">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col"
-                    >
-                        <h3 className="text-lg font-bold text-slate-900 mb-6">Patient Risk Distribution</h3>
-                        <div className="chart-wrapper">
-                            <ResponsiveContainer width="100%" height={350}>
-                                <PieChart>
-                                    <Pie
-                                        data={safeArray(riskDist).map((r: any) => ({
-                                            name: r?.level || 'Unknown',
-                                            value: safeNumber(r?.count)
-                                        }))}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={80}
-                                        outerRadius={120}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                        label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                                    >
-                                        {riskDist.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </motion.div>
+            {/* 3D Risk Distribution - Full Width */}
+            <ChartParallaxWrapper className="grid grid-cols-1 gap-8 dashboard-column mt-8">
+                <ErrorBoundary fallbackTitle="3D Chart Display Failed">
+                    <RiskDistribution3D
+                        data={safeArray(riskDist).map((r: any) => ({
+                            level: r?.level || 'Unknown',
+                            count: safeNumber(r?.count)
+                        }))}
+                    />
                 </ErrorBoundary>
-            </div>
+            </ChartParallaxWrapper>
 
             {/* Additional Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 dashboard-column">
-                <ErrorBoundary fallbackTitle="Gender Chart Error">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <GenderDistributionChart data={computedMetrics.genderDist} />
-                    </motion.div>
-                </ErrorBoundary>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 dashboard-column mt-8">
+                <ChartParallaxWrapper>
+                    <ErrorBoundary fallbackTitle="Gender Chart Error">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="h-full bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/5 p-4"
+                        >
+                            <GenderDistributionChart data={computedMetrics.genderDist} />
+                        </motion.div>
+                    </ErrorBoundary>
+                </ChartParallaxWrapper>
 
-                <ErrorBoundary fallbackTitle="Age Chart Error">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <AgeDistributionChart data={computedMetrics.ageGroups} />
-                    </motion.div>
-                </ErrorBoundary>
+                <ChartParallaxWrapper>
+                    <ErrorBoundary fallbackTitle="Age Chart Error">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="h-full bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/5 p-4"
+                        >
+                            <AgeDistributionChart data={computedMetrics.ageGroups} />
+                        </motion.div>
+                    </ErrorBoundary>
+                </ChartParallaxWrapper>
             </div>
 
-            {/* Trends Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <ErrorBoundary fallbackTitle="Assessment Trend Error">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                    >
-                        <AssessmentTrendsChart data={safeArray(stats?.assessment_trends)} />
-                    </motion.div>
-                </ErrorBoundary>
+            {/* 3D Trends Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                <ChartParallaxWrapper>
+                    <ErrorBoundary fallbackTitle="Assessment Trend Error">
+                        <AssessmentTrendsGlow
+                            data={safeArray(stats?.assessment_trends).map((d: any) => ({
+                                date: d?.date || 'N/A',
+                                assessments: safeNumber(d?.total || d?.assessments || d?.count)
+                            }))}
+                        />
+                    </ErrorBoundary>
+                </ChartParallaxWrapper>
 
-                <ErrorBoundary fallbackTitle="Risk Trend Error">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                    >
-                        <RiskTrendsChart data={safeArray(stats?.risk_trends)} />
-                    </motion.div>
-                </ErrorBoundary>
+                <ChartParallaxWrapper>
+                    <ErrorBoundary fallbackTitle="Risk Trend Error">
+                        <RiskTrends3D
+                            data={safeArray(stats?.risk_trends).map((d: any) => ({
+                                date: d?.date || 'N/A',
+                                low: safeNumber(d?.low),
+                                medium: safeNumber(d?.medium),
+                                high: safeNumber(d?.high)
+                            }))}
+                        />
+                    </ErrorBoundary>
+                </ChartParallaxWrapper>
             </div>
 
-            {/* Doctor Performance Chart - Full Width */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-            >
-                <DoctorPerformanceChart data={safeArray(doctorPerf).map((d: any) => ({
-                    doctor: d?.name || 'Unknown',
-                    patients: safeNumber(d?.assessments),
-                    criticalCases: safeNumber(d?.high_risk_cases)
-                }))} />
-            </motion.div>
+            {/* 3D Doctor Performance Chart - Full Width */}
+            <ChartParallaxWrapper className="mt-8">
+                <ErrorBoundary fallbackTitle="Doctor Performance Error">
+                    <DoctorPerformance3D
+                        data={safeArray(doctorPerf).map((d: any) => ({
+                            doctor: d?.name || 'Unknown',
+                            patients: safeNumber(d?.assessments),
+                            criticalCases: safeNumber(d?.high_risk_cases)
+                        }))}
+                    />
+                </ErrorBoundary>
+            </ChartParallaxWrapper>
 
             {/* 3D Monthly Analytics Chart - NEW! */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-            >
-                <Monthly3DChart data={safeArray(stats?.monthly_stats).map((d: any) => ({
-                    month: d?.month || 'N/A',
-                    assessments: safeNumber(d?.assessments || d?.value)
-                }))} />
-            </motion.div>
+            <ChartParallaxWrapper className="mt-8">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.7, duration: 0.5 }}
+                >
+                    <Monthly3DChart data={safeArray(stats?.monthly_stats).map((d: any) => ({
+                        month: d?.month || 'N/A',
+                        assessments: safeNumber(d?.assessments || d?.value)
+                    }))} />
+                </motion.div>
+            </ChartParallaxWrapper>
 
             {/* Recent Activity Table */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
