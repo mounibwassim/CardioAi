@@ -20,7 +20,9 @@ interface GlassBarProps {
     value: number;
 }
 
-const GlassBar = ({ position, width, doctor, value }: GlassBarProps) => {
+const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f97316', '#10b981', '#3b82f6'];
+
+const GlassBar = ({ position, width, doctor, value, color }: GlassBarProps & { color: string }) => {
     const [hovered, setHovered] = useState(false);
     const meshRef = useRef<THREE.Mesh>(null);
     const glowRef = useRef<THREE.Mesh>(null);
@@ -49,8 +51,8 @@ const GlassBar = ({ position, width, doctor, value }: GlassBarProps) => {
             >
                 <boxGeometry args={[width, 0.5, 0.4]} />
                 <meshStandardMaterial
-                    color="#6366f1"
-                    emissive="#6366f1"
+                    color={color}
+                    emissive={color}
                     emissiveIntensity={hovered ? 1 : 0.3}
                     transparent
                     opacity={0.3}
@@ -68,8 +70,8 @@ const GlassBar = ({ position, width, doctor, value }: GlassBarProps) => {
             >
                 <boxGeometry args={[width, 0.6, 0.6]} />
                 <meshPhysicalMaterial
-                    color="#6366f1"
-                    emissive="#6366f1"
+                    color={color}
+                    emissive={color}
                     emissiveIntensity={hovered ? 0.6 : 0.3}
                     metalness={0.3}
                     roughness={0.1}
@@ -83,9 +85,9 @@ const GlassBar = ({ position, width, doctor, value }: GlassBarProps) => {
 
             {/* Doctor Label */}
             <Text
-                position={[-0.3, 0, 0]}
-                fontSize={0.18}
-                color="#cbd5e1"
+                position={[-0.4, 0, 0]}
+                fontSize={0.3}
+                color="#f8fafc"
                 anchorX="right"
                 anchorY="middle"
             >
@@ -95,8 +97,8 @@ const GlassBar = ({ position, width, doctor, value }: GlassBarProps) => {
             {/* Value Label */}
             {hovered && (
                 <Text
-                    position={[width + 0.3, 0, 0]}
-                    fontSize={0.22}
+                    position={[width + 0.4, 0, 0]}
+                    fontSize={0.35}
                     color="white"
                     anchorX="left"
                     anchorY="middle"
@@ -124,7 +126,7 @@ const GlassBar = ({ position, width, doctor, value }: GlassBarProps) => {
 
 const Scene = ({ data }: { data: DoctorPerformanceData[] }) => {
     const maxValue = Math.max(...data.map(d => d.patients), 1);
-    const maxWidth = 4;
+    const maxWidth = 3.5;
 
     return (
         <>
@@ -144,7 +146,9 @@ const Scene = ({ data }: { data: DoctorPerformanceData[] }) => {
             {/* Bars */}
             {data.map((item, i) => {
                 const width = calculateBarHeight(item.patients, maxValue, maxWidth);
-                const yPos = -(i - (data.length - 1) / 2) * 1.2; // Negative for top-to-bottom
+                // Increased spacing from 1.2 to 1.6
+                const yPos = -(i - (data.length - 1) / 2) * 1.6;
+                const color = COLORS[i % COLORS.length];
 
                 return (
                     <GlassBar
@@ -153,6 +157,7 @@ const Scene = ({ data }: { data: DoctorPerformanceData[] }) => {
                         width={width}
                         doctor={item.doctor}
                         value={item.patients}
+                        color={color}
                     />
                 );
             })}

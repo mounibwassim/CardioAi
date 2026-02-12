@@ -135,7 +135,15 @@ export default function Predict() {
         setLoading(true);
         try {
             const result = await predictHeartDisease(formData);
-            navigate('/doctor/results', { state: { result, data: formData } });
+            // Pass doctor name in state for the results page
+            const selectedDoctorObj = doctors.find(d => String(d.id) === String(formData.doctor_id));
+            navigate('/doctor/results', {
+                state: {
+                    result,
+                    data: formData,
+                    doctorName: selectedDoctorObj?.name || 'Unknown'
+                }
+            });
         } catch (error) {
             console.error("Prediction failed:", error);
             alert("Failed to get prediction. Please check all fields and try again.");

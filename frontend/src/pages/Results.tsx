@@ -7,10 +7,10 @@ import { useState } from 'react';
 
 export default function Results() {
     const location = useLocation();
-    const state = location.state as { result: PredictionResult; data: PatientData } | null;
+    const state = location.state as { result: PredictionResult; data: PatientData; doctorName?: string } | null;
 
     // Doctor selection state
-    const [selectedDoctor, setSelectedDoctor] = useState('Dr. Sarah Chen');
+    const [selectedDoctor, setSelectedDoctor] = useState(state?.doctorName || 'Dr. Sarah Chen');
     const [isDownloading, setIsDownloading] = useState(false);
     const doctorList = ['Dr. Sarah Chen', 'Dr. Emily Ross', 'Dr. Michael Torres'];
 

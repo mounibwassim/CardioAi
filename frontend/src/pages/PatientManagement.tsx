@@ -88,7 +88,7 @@ export default function PatientManagement() {
                 </div>
             </div>
 
-            <div className="bg-white shadow-sm rounded-lg border border-slate-200 overflow-hidden">
+            <div className="bg-white shadow-sm rounded-lg border border-slate-200">
                 <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50">
                         <tr>
