@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from config import RISK_THRESHOLDS, classify_risk
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -547,16 +548,13 @@ def predict_heart_disease(data: PatientData):
         # Predict
         prediction = model.predict(scaled_data)[0]
         probabilities = model.predict_proba(scaled_data)[0]
-        risk_score = probabilities[1]  
+        risk_probability = probabilities[1]  # Probability of heart disease
         
-        risk_level = "Low"
-        if risk_score > 0.7:
-            risk_level = "High"
-        elif risk_score > 0.3:
-            risk_level = "Medium"
+        # PHASE 0: Use scientific thresholds from config
+        risk_level = classify_risk(risk_probability)
 
         # Generate AI system notes
-        system_notes = generate_system_notes(risk_level, risk_score, data.dict())
+        system_notes = generate_system_notes(risk_level, risk_probability, data.dict())
 
         # --- SAVE TO DATABASE ---
         conn = get_db_connection()
@@ -582,15 +580,27 @@ def predict_heart_disease(data: PatientData):
             """, (data.name, data.age, data.sex, data.contact, risk_level, system_notes))
             patient_id = c.lastrowid
             
-        # 2. Save Record
+        # 2. Save Record with model_probability
         record_data = data.dict()
         record_data.pop('name', None)
         record_data.pop('contact', None)
         
+        # PHASE 0: Store model_probability for scientific justification
         c.execute("""
-            INSERT INTO records (patient_id, input_data, prediction_result, risk_score, risk_level, doctor_name)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (patient_id, json.dumps(record_data), int(prediction), float(risk_score), risk_level, data.doctor_name or 'Dr. Sarah Chen'))
+            INSERT INTO records (
+                patient_id, input_data, prediction_result, risk_score, risk_level, 
+                doctor_name, model_probability
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            patient_id, 
+            json.dumps(record_data), 
+            int(prediction), 
+            float(risk_probability), 
+            risk_level, 
+            data.doctor_name or 'Dr. Sarah Chen',
+            float(risk_probability)  # Store probability
+        ))
         
         record_id = c.lastrowid
         conn.commit()

@@ -111,6 +111,17 @@ def init_db():
         print("Phase 4.6: Adding is_deleted to records table")
         c.execute("ALTER TABLE records ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE")
     
+    # PHASE 0 MIGRATION: Add model_probability for scientific justification
+    try:
+        c.execute("SELECT model_probability FROM records LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Phase 0: Adding model_probability to records table")
+        c.execute("ALTER TABLE records ADD COLUMN model_probability REAL DEFAULT 0.0")
+        # Backfill: Estimate probabilities from risk_level for existing records
+        c.execute("UPDATE records SET model_probability = 0.90 WHERE risk_level = 'High' AND model_probability = 0.0")
+        c.execute("UPDATE records SET model_probability = 0.60 WHERE risk_level = 'Medium' AND model_probability = 0.0")
+        c.execute("UPDATE records SET model_probability = 0.30 WHERE risk_level = 'Low' AND model_probability = 0.0")
+    
     # Feedbacks Table
     c.execute('''CREATE TABLE IF NOT EXISTS feedbacks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -130,6 +141,27 @@ def init_db():
                     email TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )''')
+    
+    # PHASE 0 MIGRATION: Doctors Table (replaces hardcoded doctor names)
+    c.execute('''CREATE TABLE IF NOT EXISTS doctors (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    email TEXT UNIQUE,
+                    specialization TEXT DEFAULT 'Cardiology',
+                    signature_path TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )''')
+    
+    # Insert default doctors if table is empty
+    existing_doctors = c.execute("SELECT COUNT(*) FROM doctors").fetchone()[0]
+    if existing_doctors == 0:
+        print("Phase 0: Inserting default doctors")
+        c.execute("INSERT INTO doctors (id, name, email, specialization) VALUES (?, ?, ?, ?)",
+                  (1, 'Dr. Sarah Chen', 'sarah.chen@cardioai.com', 'Cardiology'))
+        c.execute("INSERT INTO doctors (id, name, email, specialization) VALUES (?, ?, ?, ?)",
+                  (2, 'Dr. Emily Ross', 'emily.ross@cardioai.com', 'Internal Medicine'))
+        c.execute("INSERT INTO doctors (id, name, email, specialization) VALUES (?, ?, ?, ?)",
+                  (3, 'Dr. Michael Torres', 'michael.torres@cardioai.com', 'Cardiology'))
     
     # Phase 4.5: Audit Logs Table
     c.execute('''CREATE TABLE IF NOT EXISTS audit_logs (
