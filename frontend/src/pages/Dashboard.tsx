@@ -2,12 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend
+    PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { Users, AlertCircle, Activity, TrendingUp, ChevronLeft, ChevronRight, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Users, AlertCircle, Activity, TrendingUp, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { getDashboardStats, resetSystem } from '../lib/api';
 
@@ -109,6 +108,17 @@ export default function Dashboard() {
         </div>
     );
 
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <Activity className="h-10 w-10 text-primary-500 animate-spin mx-auto mb-4" />
+                    <p className="text-slate-500">Loading dashboard metrics...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-10 py-8">
             {/* Header Section */}
@@ -194,7 +204,7 @@ export default function Dashboard() {
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {stats.risk_distribution.map((entry: any, index: number) => (
+                                    {stats.risk_distribution.map((_: any, index: number) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
