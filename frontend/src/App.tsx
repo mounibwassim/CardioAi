@@ -9,6 +9,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Predict = lazy(() => import('./pages/Predict'));
 const Results = lazy(() => import('./pages/Results'));
 const PatientManagement = lazy(() => import('./pages/PatientManagement'));
+const PatientDetails = lazy(() => import('./pages/PatientDetails'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Feedback = lazy(() => import('./pages/Feedback'));
 const ComprehensiveCare = lazy(() => import('./pages/services/ComprehensiveCare'));
@@ -72,6 +73,7 @@ function App() {
             <Route index element={<Navigate to="/doctor/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="patients" element={<PatientManagement />} />
+            <Route path="patient/:id" element={<PatientDetails />} />
             <Route path="predict" element={<Predict />} />
             <Route path="results" element={<Results />} />
           </Route>
