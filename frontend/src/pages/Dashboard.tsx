@@ -5,7 +5,19 @@ import {
     PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Users, AlertCircle, Activity, TrendingUp, Plus, RefreshCw } from 'lucide-react';
-import { getDashboardStats, getPatients, type Patient } from '../lib/api';
+import {
+    getDashboardStats,
+    getPatients,
+    getAnalyticsSummary,
+    getMonthlyTrends,
+    getRiskDistribution,
+    getDoctorPerformance,
+    type Patient,
+    type AnalyticsSummary,
+    type MonthlyTrend,
+    type RiskDistribution,
+    type DoctorPerformance
+} from '../lib/api';
 import ErrorBoundary from '../components/ErrorBoundary';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import GenderDistributionChart from '../components/charts/GenderDistributionChart';
@@ -36,41 +48,63 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [patients, setPatients] = useState<Patient[]>([]);
-    const [stats, setStats] = useState<any>({
-        total_patients: 0,
+
+    // PHASE 3: Use typed analytics state instead of generic stats
+    const [summary, setSummary] = useState<AnalyticsSummary>({
         critical_cases: 0,
-        avg_accuracy: '0%',
-        monthly_growth: '0%',
-        recent_activity: [],
-        risk_distribution: [],
+        avg_accuracy: 0,
+        total_assessments: 0,
+        monthly_growth: 0
+    });
+    const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
+    const [riskDist, setRiskDist] = useState<RiskDistribution[]>([]);
+    const [doctorPerf, setDoctorPerf] = useState<DoctorPerformance[]>([]);
+
+    // Keep legacy data temporarily for charts not yet migrated
+    const [stats, setStats] = useState<any>({
         gender_distribution: [],
         age_distribution: [],
         assessment_trends: [],
-        risk_trends: [],
-        doctor_performance: [],
-        monthly_stats: [] // For 3D chart
+        risk_trends: []
     });
 
-    // Fetch function with AbortController support for memory safety
+    // PHASE 3: Fetch using new standardized analytics endpoints
     const fetchAllData = useCallback(async (showLoading = false, signal?: AbortSignal) => {
         if (showLoading) setLoading(true);
         try {
-            const [statsData, patientsData] = await Promise.all([
-                getDashboardStats(),
-                getPatients()
+            // Parallel fetch all analytics data
+            const [
+                summaryData,
+                trendsData,
+                riskData,
+                perfData,
+                patientsData,
+                legacyStats  // Temporary: for charts not yet migrated
+            ] = await Promise.all([
+                getAnalyticsSummary(),
+                getMonthlyTrends(),
+                getRiskDistribution(),
+                getDoctorPerformance(),
+                getPatients(),
+                getDashboardStats()  // Temporary: for gender/age/assessment trends
             ]);
 
             // Check if request was aborted before updating state
             if (signal?.aborted) return;
 
-            // Prepare monthly data for 3D chart from assessment trends
-            const monthlyData = statsData.assessment_trends?.slice(-12).map((item: any) => ({
-                month: item.month,
-                assessments: item.count
-            })) || [];
-
-            setStats({ ...statsData, monthly_stats: monthlyData });
+            setSummary(summaryData);
+            setMonthlyTrends(trendsData);
+            setRiskDist(riskData);
+            setDoctorPerf(perfData);
             setPatients(patientsData);
+
+            // Keep legacy charts data temporarily
+            setStats({
+                gender_distribution: legacyStats.gender_distribution || [],
+                age_distribution: legacyStats.age_distribution || [],
+                assessment_trends: legacyStats.assessment_trends || [],
+                risk_trends: legacyStats.risk_trends || []
+            });
         } catch (error) {
             if (signal?.aborted) return; // Ignore errors from aborted requests
             console.error("Failed to fetch dashboard data", error);
@@ -99,36 +133,17 @@ export default function Dashboard() {
         };
     }, [fetchAllData]);
 
-    // Enhanced Memoized Metrics Calculation with NaN Guards
+    // PHASE 3: Enhanced Memoized Metrics using new analytics state
     const computedMetrics = useMemo(() => {
-        // CRITICAL: All numeric values must go through sanitization
         const safePatients = patients || [];
-        const total = safePatients.length;
+        const total = summary.total_assessments || safePatients.length;  // Use analytics total
 
-        // Critical Cases: Count patients with High risk level
-        const critical = safePatients.filter(p => p.risk_level === 'High').length;
+        // Use summary data from new endpoint
+        const critical = summary.critical_cases;
+        const accuracy = `${summary.avg_accuracy.toFixed(1)}%`;
+        const growth = summary.monthly_growth >= 0 ? `+${summary.monthly_growth}%` : `${summary.monthly_growth}%`;
 
-        // Safe Accuracy Calculation
-        // If stats has numeric accuracy, use it; otherwise default to 0
-        let accuracy = '0%';
-        if (stats.avg_accuracy) {
-            // If already a string with %, use it
-            if (typeof stats.avg_accuracy === 'string') {
-                accuracy = stats.avg_accuracy;
-            } else {
-                // If numeric, format it
-                const numAcc = parseFloat(stats.avg_accuracy);
-                accuracy = !isNaN(numAcc) && isFinite(numAcc) ? `${numAcc.toFixed(1)}%` : '0%';
-            }
-        }
-
-        // Safe Growth Calculation
-        let growth = '0%';
-        if (stats.monthly_growth) {
-            growth = typeof stats.monthly_growth === 'string' ? stats.monthly_growth : '0%';
-        }
-
-        // Calculate Gender Dist from real patients
+        // Calculate Gender Dist from real patients (legacy until chart migration)
         const maleCount = safePatients.filter(p => p.sex === 1).length;
         const femaleCount = safePatients.filter(p => p.sex === 0).length;
         const genderDist = [
@@ -136,7 +151,7 @@ export default function Dashboard() {
             { name: "Female", value: femaleCount }
         ];
 
-        // Calculate Age Dist from real patients
+        // Calculate Age Dist from real patients (legacy until chart migration)
         const ageGroups = [
             { ageGroup: '< 30', count: 0 },
             { ageGroup: '30-39', count: 0 },
@@ -147,7 +162,7 @@ export default function Dashboard() {
 
         safePatients.forEach(p => {
             const age = parseInt(String(p.age));
-            if (isNaN(age)) return; // Skip invalid ages
+            if (isNaN(age)) return;
 
             if (age < 30) ageGroups[0].count++;
             else if (age < 40) ageGroups[1].count++;
@@ -164,7 +179,7 @@ export default function Dashboard() {
             genderDist,
             ageGroups
         };
-    }, [patients, stats]);
+    }, [summary, patients]);
 
     const handleAddPatient = () => {
         // Navigating to Patient Management where the modal is
