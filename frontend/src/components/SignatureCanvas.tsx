@@ -14,7 +14,7 @@ export interface SignatureCanvasRef {
 }
 
 const SignatureCanvasComponent = forwardRef<SignatureCanvasRef, SignatureCanvasComponentProps>(
-    ({ onSave, onClose, initialSignature }, ref) => {
+    ({ onSave, onClose }, ref) => {
         const sigCanvas = useRef<SignatureCanvas>(null);
 
         useImperativeHandle(ref, () => ({

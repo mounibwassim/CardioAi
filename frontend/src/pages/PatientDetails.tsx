@@ -23,7 +23,6 @@ export default function PatientDetails() {
 
     // Signature state
     const [showSignatureModal, setShowSignatureModal] = useState(false);
-    const [savingSignature, setSavingSignature] = useState(false);
 
     const doctorList = ['Dr. Sarah Chen', 'Dr. Emily Ross', 'Dr. Michael Torres'];
 
@@ -69,7 +68,6 @@ export default function PatientDetails() {
         if (!patient) return;
 
         try {
-            setSavingSignature(true);
             await updatePatientSignature(patient.id, signatureData);
             // Refresh patient data
             await fetchPatientData();
@@ -78,8 +76,6 @@ export default function PatientDetails() {
         } catch (error) {
             console.error('Failed to save signature:', error);
             alert('Failed to save signature. Please try again.');
-        } finally {
-            setSavingSignature(false);
         }
     };
 
