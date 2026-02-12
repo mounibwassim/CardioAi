@@ -95,14 +95,38 @@ export default function Dashboard() {
         };
     }, [fetchAllData]);
 
-    // Memoized Metrics Calculation (Production Guard)
+    // Enhanced Memoized Metrics Calculation with NaN Guards
     const computedMetrics = useMemo(() => {
-        const total = patients.length;
-        const critical = patients.filter(p => p.risk_level === 'High').length;
+        // CRITICAL: All numeric values must go through sanitization
+        const safePatients = patients || [];
+        const total = safePatients.length;
+
+        // Critical Cases: Count patients with High risk level
+        const critical = safePatients.filter(p => p.risk_level === 'High').length;
+
+        // Safe Accuracy Calculation
+        // If stats has numeric accuracy, use it; otherwise default to 0
+        let accuracy = '0%';
+        if (stats.avg_accuracy) {
+            // If already a string with %, use it
+            if (typeof stats.avg_accuracy === 'string') {
+                accuracy = stats.avg_accuracy;
+            } else {
+                // If numeric, format it
+                const numAcc = parseFloat(stats.avg_accuracy);
+                accuracy = !isNaN(numAcc) && isFinite(numAcc) ? `${numAcc.toFixed(1)}%` : '0%';
+            }
+        }
+
+        // Safe Growth Calculation
+        let growth = '0%';
+        if (stats.monthly_growth) {
+            growth = typeof stats.monthly_growth === 'string' ? stats.monthly_growth : '0%';
+        }
 
         // Calculate Gender Dist from real patients
-        const maleCount = patients.filter(p => p.sex === 1).length;
-        const femaleCount = patients.filter(p => p.sex === 0).length;
+        const maleCount = safePatients.filter(p => p.sex === 1).length;
+        const femaleCount = safePatients.filter(p => p.sex === 0).length;
         const genderDist = [
             { name: "Male", value: maleCount },
             { name: "Female", value: femaleCount }
@@ -117,19 +141,22 @@ export default function Dashboard() {
             { ageGroup: '60+', count: 0 }
         ];
 
-        patients.forEach(p => {
-            if (p.age < 30) ageGroups[0].count++;
-            else if (p.age < 40) ageGroups[1].count++;
-            else if (p.age < 50) ageGroups[2].count++;
-            else if (p.age < 60) ageGroups[3].count++;
+        safePatients.forEach(p => {
+            const age = parseInt(String(p.age));
+            if (isNaN(age)) return; // Skip invalid ages
+
+            if (age < 30) ageGroups[0].count++;
+            else if (age < 40) ageGroups[1].count++;
+            else if (age < 50) ageGroups[2].count++;
+            else if (age < 60) ageGroups[3].count++;
             else ageGroups[4].count++;
         });
 
         return {
             total,
             critical,
-            accuracy: stats.avg_accuracy || '0%',
-            growth: stats.monthly_growth || '0%',
+            accuracy,
+            growth,
             genderDist,
             ageGroups
         };
