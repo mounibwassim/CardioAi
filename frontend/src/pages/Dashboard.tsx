@@ -1,50 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 import { Users, AlertCircle, Activity, TrendingUp, Plus, Trash2, RefreshCw } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { getDashboardStats, resetSystem } from '../lib/api';
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
-// Blood Flow Particles Component (Unchanged)
-const BloodParticles = () => {
-    const count = 50;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mesh = useRef<any>(null);
-    const dummy = new THREE.Object3D();
-    const particles = useRef(new Array(count).fill(0).map(() => ({
-        position: [Math.random() * 20 - 10, Math.random() * 10 - 5, Math.random() * 10 - 10],
-        speed: Math.random() * 0.05 + 0.02,
-        scale: Math.random() * 0.3 + 0.1
-    })));
-
-    useFrame(() => {
-        if (!mesh.current) return;
-        particles.current.forEach((particle, i) => {
-            particle.position[0] += particle.speed;
-            if (particle.position[0] > 10) particle.position[0] = -10;
-
-            dummy.position.set(particle.position[0], particle.position[1], particle.position[2] as number);
-            dummy.scale.set(particle.scale, particle.scale, particle.scale);
-            dummy.updateMatrix();
-            mesh.current.setMatrixAt(i, dummy.matrix);
-        });
-        mesh.current.instanceMatrix.needsUpdate = true;
-    });
-
-    return (
-        <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
-            <sphereGeometry args={[1, 16, 16]} />
-            <meshStandardMaterial color="#ef4444" transparent opacity={0.4} roughness={0.5} />
-        </instancedMesh>
-    );
-};
+// Define StatCard outside to prevent re-renders
+const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) => (
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+        <div className="flex items-center justify-between">
+            <div>
+                <p className="text-sm font-medium text-slate-500">{title}</p>
+                <p className="text-2xl font-bold text-slate-900 mt-2">{value}</p>
+            </div>
+            <div className={`p-3 rounded-full ${color} bg-opacity-10`}>
+                <Icon className={`h-6 w-6 ${color.replace('bg-', 'text-')}`} />
+            </div>
+        </div>
+    </div>
+);
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -52,8 +30,8 @@ export default function Dashboard() {
     const [stats, setStats] = useState<any>({
         total_patients: 0,
         critical_cases: 0,
-        avg_accuracy: "98.5%",
-        monthly_growth: "+12.5%",
+        avg_accuracy: "0%",
+        monthly_growth: "0%",
         recent_activity: [],
         risk_distribution: [
             { name: "Low Risk", value: 0 },
@@ -82,7 +60,7 @@ export default function Dashboard() {
         if (confirm("WARNING: This will delete ALL data (patients, records, feedbacks). Are you sure?")) {
             try {
                 await resetSystem();
-                await fetchStats(); // Refresh to show 0s
+                await fetchStats();
                 alert("System has been reset.");
             } catch (error) {
                 alert("Failed to reset system.");
@@ -91,22 +69,9 @@ export default function Dashboard() {
     };
 
     const handleAddPatient = () => {
+        // Navigating to Patient Management where the modal is
         navigate('/doctor/patients');
     };
-
-    const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) => (
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-slate-500">{title}</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-2">{value}</p>
-                </div>
-                <div className={`p-3 rounded-full ${color} bg-opacity-10`}>
-                    <Icon className={`h-6 w-6 ${color.replace('bg-', 'text-')}`} />
-                </div>
-            </div>
-        </div>
-    );
 
     if (loading) {
         return (
@@ -121,16 +86,8 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-10 py-8">
-            {/* Header Section */}
+            {/* Header Section - REMOVED 3D */}
             <div className="relative bg-slate-900 rounded-2xl p-8 overflow-hidden mb-8">
-                <div className="absolute inset-0 z-0">
-                    <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-                        <ambientLight intensity={0.5} />
-                        <pointLight position={[10, 10, 10]} intensity={1} color="#ef4444" />
-                        <BloodParticles />
-                    </Canvas>
-                </div>
-
                 <div className="absolute inset-0 z-0 opacity-20">
                     <img
                         src="/assets/images/medical abstract background blue.jpg"
@@ -164,7 +121,6 @@ export default function Dashboard() {
 
                         <div className="flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-md border border-white/20 backdrop-blur-md">
                             <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                             </span>
                             <span className="text-sm font-medium text-white">System Live</span>
@@ -183,8 +139,7 @@ export default function Dashboard() {
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                {/* Risk Distribution - Takes up 1 column (Expanded to full width if no history for now) */}
+                {/* Risk Distribution - Takes up full width */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -192,7 +147,8 @@ export default function Dashboard() {
                     className="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col"
                 >
                     <h3 className="text-lg font-bold text-slate-900 mb-6">Patient Risk Distribution</h3>
-                    <div className="flex-1 min-h-[300px]">
+                    {/* Fixed Height Container to prevent width(-1) error */}
+                    <div className="flex-1 min-h-[300px] w-full h-80">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -246,11 +202,9 @@ export default function Dashboard() {
                                             <div className="text-xs">{item.age} yrs / {item.sex === 1 ? 'M' : 'F'}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={cn(
-                                                "px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full",
-                                                item.risk_level === 'Low' ? 'bg-green-100 text-green-800' :
+                                            <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${item.risk_level === 'Low' ? 'bg-green-100 text-green-800' :
                                                     item.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                                            )}>
+                                                }`}>
                                                 {item.risk_level} Risk
                                             </span>
                                         </td>

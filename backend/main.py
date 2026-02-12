@@ -327,8 +327,28 @@ async def get_dashboard_stats():
         # 2. Critical Cases (High Risk)
         critical_cases = conn.execute("SELECT COUNT(*) FROM records WHERE risk_level = 'High'").fetchone()[0]
         
-        # 3. Recent Activity (Last 5 records with patient names)
-        # Assuming records has patient_id, we join
+        # 3. Monthly Growth
+        import datetime
+        now = datetime.datetime.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # Handle year rollover for previous month
+        if now.month == 1:
+            start_of_prev_month = now.replace(year=now.year-1, month=12, day=1, hour=0, minute=0, second=0, microsecond=0)
+        else:
+            start_of_prev_month = now.replace(month=now.month-1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            
+        current_month_count = conn.execute("SELECT COUNT(*) FROM records WHERE created_at >= ?", (start_of_month,)).fetchone()[0]
+        prev_month_count = conn.execute("SELECT COUNT(*) FROM records WHERE created_at >= ? AND created_at < ?", (start_of_prev_month, start_of_month)).fetchone()[0]
+        
+        if prev_month_count > 0:
+            growth = ((current_month_count - prev_month_count) / prev_month_count) * 100
+            monthly_growth = f"{growth:+.1f}%"
+        elif current_month_count > 0:
+             monthly_growth = "+100%" # Growth from 0
+        else:
+            monthly_growth = "0%"
+
+        # 4. Recent Activity
         recent_activity = conn.execute("""
             SELECT r.id, p.name, p.age, p.sex, r.risk_level, r.created_at, r.risk_score
             FROM records r
@@ -337,7 +357,7 @@ async def get_dashboard_stats():
             LIMIT 5
         """).fetchall()
         
-        # 4. Risk Distribution for Charts
+        # 5. Risk Distribution
         risk_counts = conn.execute("""
             SELECT risk_level, COUNT(*) as count 
             FROM records 
@@ -346,7 +366,6 @@ async def get_dashboard_stats():
         
         conn.close()
 
-        # Format for frontend
         formatted_activity = [
             {
                 "id": str(row['id']),
@@ -355,7 +374,7 @@ async def get_dashboard_stats():
                 "sex": row['sex'],
                 "risk_level": row['risk_level'],
                 "date": row['created_at'],
-                "doctor": "Dr. Sarah Chen" # Placeholder until we track doctor per record
+                "doctor": "Dr. Sarah Chen"
             } for row in recent_activity
         ]
 
@@ -375,8 +394,8 @@ async def get_dashboard_stats():
         return {
             "total_patients": total_patients,
             "critical_cases": critical_cases,
-            "avg_accuracy": "98.5%", # Static metric for now
-            "monthly_growth": "+12.5%", # Static metric for now
+            "avg_accuracy": "0%", # No ground truth feedback loop yet
+            "monthly_growth": monthly_growth,
             "recent_activity": formatted_activity,
             "risk_distribution": formatted_risks
         }
@@ -386,6 +405,8 @@ async def get_dashboard_stats():
         return {
             "total_patients": 0,
             "critical_cases": 0,
+            "avg_accuracy": "0%",
+            "monthly_growth": "0%",
             "recent_activity": [],
             "risk_distribution": []
         }
