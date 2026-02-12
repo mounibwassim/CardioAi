@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft, User, Calendar, Activity, FileText,
-    Save, AlertCircle, TrendingUp, Heart, PenTool
+    Save, AlertCircle, TrendingUp, Heart, PenTool, Download
 } from 'lucide-react';
 import { getPatientRecords, updatePatientNotes, updatePatientSignature, type Patient, type Record } from '../lib/api';
 import SignatureCanvas from '../components/SignatureCanvas';
+import { generatePDF } from '../lib/pdfGenerator';
 
 export default function PatientDetails() {
     const { id } = useParams<{ id: string }>();
@@ -76,6 +77,56 @@ export default function PatientDetails() {
         } catch (error) {
             console.error('Failed to save signature:', error);
             alert('Failed to save signature. Please try again.');
+        }
+    };
+
+    const handleDownloadOverviewPDF = async () => {
+        if (!patient || records.length === 0) {
+            alert('No patient data available to generate PDF');
+            return;
+        }
+
+        try {
+            // Get latest record for assessment data
+            const latestRecord = records[0];
+
+            // Mock PatientData for PDF generation (simplified - needs actual clinical data)
+            const patientData: any = {
+                name: patient.name,
+                age: patient.age,
+                sex: patient.sex,
+                contact: patient.contact || '',
+                // Clinical data would need to be stored in records or fetched separately
+                cp: 0,
+                trestbps: 0,
+                chol: 0,
+                fbs: 0,
+                restecg: 0,
+                thalach: 0,
+                exang: 0,
+                oldpeak: 0,
+                slope: 0,
+                ca: 0,
+                thal: 0
+            };
+
+            const resultData: any = {
+                record_id: latestRecord.id,
+                risk_level: latestRecord.risk_level,
+                risk_score: latestRecord.risk_score,
+                explanation: patient.system_notes || ''
+            };
+
+            // Generate PDF with notes and signature
+            await generatePDF(
+                resultData,
+                patientData,
+                patient.doctor_notes || '',
+                patient.doctor_signature || ''
+            );
+        } catch (error) {
+            console.error('Failed to generate PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
         }
     };
 
@@ -212,52 +263,99 @@ export default function PatientDetails() {
                 </nav>
             </div>
 
+
             {/* Tab Content */}
             {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* System Notes */}
-                    <div className="bg-white shadow-sm rounded-lg border border-slate-200 p-6">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                            <Heart className="h-5 w-5 mr-2 text-red-500" />
-                            AI Analysis Summary
-                        </h3>
-                        <div className="prose prose-sm max-w-none text-slate-600 whitespace-pre-line">
-                            {patient.system_notes || 'No AI analysis available yet.'}
-                        </div>
+                <div className="space-y-6">
+                    {/* Download Overview PDF Button */}
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleDownloadOverviewPDF}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Full Report
+                        </button>
                     </div>
 
-                    {/* Latest Assessment */}
-                    {records.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* System Notes */}
                         <div className="bg-white shadow-sm rounded-lg border border-slate-200 p-6">
                             <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                                <TrendingUp className="h-5 w-5 mr-2 text-primary-600" />
-                                Latest Assessment
+                                <Heart className="h-5 w-5 mr-2 text-red-500" />
+                                AI Analysis Summary
                             </h3>
-                            <div className="space-y-3">
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-slate-500">Date:</span>
-                                    <span className="text-sm font-medium text-slate-900">
-                                        {new Date(records[0].created_at).toLocaleString()}
-                                    </span>
+                            <div className="prose prose-sm max-w-none text-slate-600 whitespace-pre-line">
+                                {patient.system_notes || 'No AI analysis available yet.'}
+                            </div>
+                        </div>
+
+                        {/* Latest Assessment */}
+                        {records.length > 0 && (
+                            <div className="bg-white shadow-sm rounded-lg border border-slate-200 p-6">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                                    <TrendingUp className="h-5 w-5 mr-2 text-primary-600" />
+                                    Latest Assessment
+                                </h3>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-slate-500">Date:</span>
+                                        <span className="text-sm font-medium text-slate-900">
+                                            {new Date(records[0].created_at).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-slate-500">Risk Score:</span>
+                                        <span className="text-sm font-medium text-slate-900">
+                                            {(records[0].risk_score * 100).toFixed(1)}%
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-slate-500">Risk Level:</span>
+                                        <span className={`text-sm font-bold ${getRiskColor(records[0].risk_level).split(' ')[0]}`}>
+                                            {records[0].risk_level}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-slate-500">Reviewed By:</span>
+                                        <span className="text-sm font-medium text-slate-900">
+                                            {records[0].doctor_name}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-slate-500">Risk Score:</span>
-                                    <span className="text-sm font-medium text-slate-900">
-                                        {(records[0].risk_score * 100).toFixed(1)}%
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-slate-500">Risk Level:</span>
-                                    <span className={`text-sm font-bold ${getRiskColor(records[0].risk_level).split(' ')[0]}`}>
-                                        {records[0].risk_level}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-slate-500">Reviewed By:</span>
-                                    <span className="text-sm font-medium text-slate-900">
-                                        {records[0].doctor_name}
-                                    </span>
-                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Doctor Notes Section */}
+                    {patient.doctor_notes && (
+                        <div className="bg-white shadow-sm rounded-lg border border-slate-200 p-6">
+                            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                                <FileText className="h-5 w-5 mr-2 text-primary-600" />
+                                Doctor Notes
+                            </h3>
+                            <div className="prose prose-sm max-w-none text-slate-600 whitespace-pre-line">
+                                {patient.doctor_notes}
+                            </div>
+                            <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-500">
+                                By {patient.doctor_name || 'Physician'} • Last updated: {new Date(patient.last_updated).toLocaleString()}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Signature Display */}
+                    {patient.doctor_signature && (
+                        <div className="bg-white shadow-sm rounded-lg border border-slate-200 p-6">
+                            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                                <PenTool className="h-5 w-5 mr-2 text-primary-600" />
+                                Signature
+                            </h3>
+                            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                                <img
+                                    src={patient.doctor_signature}
+                                    alt="Doctor Signature"
+                                    className="max-w-xs h-20 object-contain"
+                                />
                             </div>
                         </div>
                     )}
