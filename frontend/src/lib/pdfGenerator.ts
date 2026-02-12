@@ -167,20 +167,43 @@ export const generatePDF = async (
 
     currentY += 10;
 
-    // AI Analysis Summary
+    // AI Analysis Summary - Clean bullet point format
     pdf.setFillColor(241, 245, 249); // slate-100
-    pdf.rect(10, currentY, pdfWidth - 20, 30, 'F');
+    pdf.rect(10, currentY, pdfWidth - 20, 45, 'F');
 
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(15, 23, 42); // Dark text for clarity
     pdf.text('AI Analysis Summary', 15, currentY + 8);
 
-    pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'italic');
-    pdf.setTextColor(51, 65, 85);
-    const analysisText = result.explanation || `The patient exhibits ${result.risk_level.toLowerCase()} risk markers based on provided clinical data. Professional review recommended.`;
-    const splitText = pdf.splitTextToSize(analysisText, pdfWidth - 30);
-    pdf.text(splitText, 15, currentY + 16);
+    currentY += 14;
 
-    currentY += 40;
+    // Parse explanation into bullet points
+    pdf.setFontSize(9.5);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(30, 41, 59); // Darker slate for better readability
+
+    const analysisText = result.explanation || `The patient exhibits ${result.risk_level.toLowerCase()} risk markers based on provided clinical data. Professional review recommended.`;
+
+    // Split by bullet characters or newlines
+    const bullets = analysisText.split(/[•\n]/).filter(item => item.trim().length > 0);
+
+    bullets.forEach((bullet) => {
+        const cleanBullet = bullet.trim();
+        if (cleanBullet) {
+            // Add bullet point symbol
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('•', 17, currentY);
+
+            // Add bullet text
+            pdf.setFont('helvetica', 'normal');
+            const wrappedBullet = pdf.splitTextToSize(cleanBullet, pdfWidth - 35);
+            pdf.text(wrappedBullet, 23, currentY);
+            currentY += wrappedBullet.length * 4.2 + 1;
+        }
+    });
+
+    currentY += 8;
 
     // Clinical Recommendations
     pdf.setFontSize(11);
