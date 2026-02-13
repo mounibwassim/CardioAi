@@ -26,8 +26,9 @@ export default function Settings() {
             ];
             keysToRemove.forEach(k => localStorage.removeItem(k));
 
-            // Force landing on login
-            navigate('/login', { replace: true });
+            // Force landing on home
+            sessionStorage.removeItem('doctorUnlocked');
+            navigate('/', { replace: true });
             window.location.reload(); // Hard reset app state
         }
     };

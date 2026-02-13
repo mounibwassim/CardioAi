@@ -1,9 +1,10 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PatientLayout from './layouts/PatientLayout';
 import DoctorLayout from './layouts/DoctorLayout';
 import ScrollToTop from './components/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
+import DoctorPassword from './components/DoctorPassword';
 
 // Lazy Load Pages for Performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -51,8 +52,25 @@ const AutoSessionSeeder = () => {
   return null;
 };
 
-// Bypass Guard - Always allow entry to doctor portal
+// Bypass Guard - Show password gate if not unlocked
 const ProtectedDoctorRoute = ({ children }: { children: React.ReactNode }) => {
+  // Check session storage so it persists through refresh but dies on tab close
+  // We can't use state in a way that resets on every render if we want to stay inside the dashboard
+  // So we use session storage.
+  const unlocked = sessionStorage.getItem('doctorUnlocked') === 'true';
+  const [, forceUpdate] = useState({});
+
+  if (!unlocked) {
+    return (
+      <DoctorPassword
+        onSuccess={() => {
+          sessionStorage.setItem('doctorUnlocked', 'true');
+          forceUpdate({}); // Trigger re-render to show children
+        }}
+      />
+    );
+  }
+
   return <>{children}</>;
 };
 
