@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
@@ -5,6 +6,16 @@ export default function PatientLayout() {
     const location = useLocation();
     const navigate = useNavigate();
     const isActive = (path: string) => location.pathname === path;
+
+    useEffect(() => {
+        // Isolation: Apply Patient Portal Theme
+        const patientTheme = localStorage.getItem("patientTheme") || "light";
+        if (patientTheme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">

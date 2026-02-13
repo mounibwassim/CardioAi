@@ -1,9 +1,20 @@
+import { useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 export default function DoctorLayout() {
     const location = useLocation();
     const isActive = (path: string) => location.pathname === path;
+
+    useEffect(() => {
+        // Isolation: Apply Doctor Portal Theme
+        const doctorTheme = localStorage.getItem("doctorTheme") || "dark";
+        if (doctorTheme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">

@@ -10,7 +10,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Predict = lazy(() => import('./pages/Predict'));
 const Results = lazy(() => import('./pages/Results'));
 const PatientManagement = lazy(() => import('./pages/PatientManagement'));
-const PatientDetails = lazy(() => import('./pages/PatientDetails'));
+const PatientOverview = lazy(() => import('./pages/PatientOverview'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Feedback = lazy(() => import('./pages/Feedback'));
 const PatientPortal = lazy(() => import('./pages/PatientPortal'));
@@ -65,7 +65,7 @@ function App() {
           <Route path="/doctor" element={<DoctorRoute><DoctorLayout /></DoctorRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="patients" element={<PatientManagement />} />
-            <Route path="patient/:id" element={<PatientDetails />} />
+            <Route path="patient/:id" element={<PatientOverview />} />
             <Route path="new-assessment" element={<Predict />} />
             <Route path="results" element={<Results />} />
             <Route path="settings" element={<Settings />} />

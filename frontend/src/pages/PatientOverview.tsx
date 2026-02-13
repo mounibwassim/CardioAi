@@ -10,7 +10,7 @@ import { getPatientRecords, updatePatientNotes, updatePatientSignature, type Pat
 import SignatureCanvas from '../components/SignatureCanvas';
 import { generatePDF } from '../lib/pdfGenerator';
 
-export default function PatientDetails() {
+export default function PatientOverview() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();

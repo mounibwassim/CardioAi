@@ -17,17 +17,17 @@ export default function Settings() {
         setDarkMode(newMode);
         if (newMode) {
             document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
+            localStorage.setItem('doctorTheme', 'dark');
         } else {
             document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
+            localStorage.setItem('doctorTheme', 'light');
         }
     };
 
     // Handle Logout
     const handleLogout = () => {
         if (confirm('Are you sure you want to sign out?')) {
-            localStorage.clear();
+            localStorage.removeItem("doctorSession");
             navigate('/');
         }
     };

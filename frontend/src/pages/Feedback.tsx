@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Star, QrCode } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
-import { submitFeedback } from '../lib/api';
 
 export default function Feedback() {
+    const navigate = useNavigate();
     const [name, setName] = useState('');
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
@@ -14,11 +15,27 @@ export default function Feedback() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (rating === 0 || !name.trim()) return;
+
+        const newFeedback = {
+            id: Date.now().toString(),
+            name,
+            message: comment,
+            rating,
+            createdAt: new Date().toISOString()
+        };
+
         try {
-            await submitFeedback(name, rating, comment);
+            const existing = JSON.parse(localStorage.getItem("feedback") || "[]");
+            existing.unshift(newFeedback); // Newest first
+            localStorage.setItem("feedback", JSON.stringify(existing));
             setSubmitted(true);
+
+            // Auto redirect after a short delay or allow user to see success
+            setTimeout(() => {
+                navigate("/faq");
+            }, 1500);
         } catch (error) {
-            alert("Failed to submit feedback");
+            alert("Failed to save feedback");
         }
     };
 
@@ -66,7 +83,14 @@ export default function Feedback() {
                             </div>
 
                             <textarea
-                                className="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                className="
+                                    w-full p-4 rounded-xl
+                                    bg-white text-slate-800
+                                    dark:bg-slate-800 dark:text-slate-100
+                                    border border-slate-300 dark:border-slate-600
+                                    focus:outline-none focus:ring-2 focus:ring-blue-500
+                                    transition-all
+                                "
                                 rows={4}
                                 required
                                 placeholder="Tell us about your experience..."

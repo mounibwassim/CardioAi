@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp, Shield, Brain, Lock, Info } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, Shield, Brain, Lock, Info, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../lib/utils';
 
 const faqs = [
     {
@@ -38,6 +39,8 @@ const faqs = [
 export default function PatientFAQ() {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+    const feedbackList = JSON.parse(localStorage.getItem("feedback") || "[]");
+
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
@@ -57,7 +60,11 @@ export default function PatientFAQ() {
                     </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4 mb-20">
+                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <Info className="text-primary-500" />
+                        System Guidelines
+                    </h2>
                     {faqs.map((faq, index) => (
                         <motion.div
                             key={index}
@@ -102,6 +109,43 @@ export default function PatientFAQ() {
                         </motion.div>
                     ))}
                 </div>
+
+                {/* Community Feedback Section */}
+                {feedbackList.length > 0 && (
+                    <div className="mt-16 mb-20">
+                        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                            <Star className="text-yellow-500" />
+                            Community Feedback
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {feedbackList.map((feedback: any) => (
+                                <motion.div
+                                    key={feedback.id}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="p-6 rounded-2xl shadow-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between"
+                                >
+                                    <div>
+                                        <div className="flex mb-3">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className={cn("h-3 w-3", i < feedback.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-600")} />
+                                            ))}
+                                        </div>
+                                        <p className="text-slate-300 italic text-sm leading-relaxed mb-4">
+                                            "{feedback.message}"
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                        <span className="text-xs font-bold text-primary-400">{feedback.name}</span>
+                                        <span className="text-[10px] text-slate-500 font-mono">
+                                            {new Date(feedback.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Disclaimer Box */}
                 <motion.div
