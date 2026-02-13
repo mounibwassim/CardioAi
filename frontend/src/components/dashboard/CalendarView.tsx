@@ -39,7 +39,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ assessmentMap }) => {
     const [selectedDay, setSelectedDay] = useState<{ day: number, count: number } | null>(null);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 hover:shadow-2xl relative">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-[280px] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl relative">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <CalendarIcon className="w-5 h-5 text-emerald-500" aria-hidden="true" />

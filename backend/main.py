@@ -751,7 +751,7 @@ def predict_heart_disease(data: PatientData):
         patient_id = None
         existing_patient = c.execute("SELECT id FROM patients WHERE name = ?", (data.name,)).fetchone()
         
-        # Get doctor name for the result
+        # 🚨 V20: Unified Doctor Retrieval
         doc_res = c.execute("SELECT name FROM doctors WHERE id = ?", (data.doctor_id,)).fetchone()
         assigned_doctor = doc_res['name'] if doc_res else "Dr. Sarah Chen"
 
@@ -760,24 +760,23 @@ def predict_heart_disease(data: PatientData):
             # Update patient risk level and system notes
             c.execute("""
                 UPDATE patients 
-                SET risk_level = ?, system_notes = ?, last_updated = CURRENT_TIMESTAMP, age = ?, sex = ?, contact = ?
+                SET risk_level = ?, system_notes = ?, last_updated = CURRENT_TIMESTAMP, age = ?, sex = ?, contact = ?, doctor_name = ?
                 WHERE id = ?
-            """, (risk_level, system_notes, data.age, data.sex, data.contact, patient_id))
+            """, (risk_level, system_notes, data.age, data.sex, data.contact, assigned_doctor, patient_id))
         else:
-            # Create new patient with system notes
+            # Create new patient with assigned doctor
             c.execute("""
-                INSERT INTO patients (name, age, sex, contact, risk_level, system_notes, last_updated) 
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (data.name, data.age, data.sex, data.contact, risk_level, system_notes))
+                INSERT INTO patients (name, age, sex, contact, risk_level, system_notes, last_updated, doctor_name, doctor_id) 
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+            """, (data.name, data.age, data.sex, data.contact, risk_level, system_notes, assigned_doctor, data.doctor_id))
             patient_id = c.lastrowid
             
         # 2. Save Record with model_probability and doctor_id
         record_data = data.dict()
         record_data.pop('name', None)
         record_data.pop('contact', None)
-        record_data.pop('doctor_id', None) # Don't store in JSON blob
+        record_data.pop('doctor_id', None) 
         
-        # PHASE 0: Store model_probability for scientific justification
         c.execute("""
             INSERT INTO records (
                 patient_id, input_data, prediction_result, risk_score, risk_level, 
@@ -790,14 +789,23 @@ def predict_heart_disease(data: PatientData):
             int(prediction), 
             float(risk_probability), 
             risk_level, 
-            data.doctor_name or 'Dr. Sarah Chen',
-            data.doctor_id, # Link to doctor
-            float(risk_probability)  # Store probability
+            assigned_doctor,
+            data.doctor_id,
+            float(risk_probability)
         ))
         
         record_id = c.lastrowid
         conn.commit()
         conn.close()
+
+        return {
+            "prediction": int(prediction),
+            "risk_score": float(risk_probability),
+            "risk_level": risk_level,
+            "patient_id": patient_id,
+            "record_id": record_id,
+            "explanation": system_notes  # V20: The Single Source of Truth
+        }
 
         logger.info(f"Prediction saved: Patient ID {patient_id}, Record ID {record_id}, Risk: {risk_level}, Probability: {risk_probability:.4f}")
 

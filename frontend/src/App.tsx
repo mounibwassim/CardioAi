@@ -69,10 +69,10 @@ function App() {
           {/* Doctor Analytics Routes (Guarded & Isolated) */}
           <Route element={<DoctorRoute><DoctorLayout /></DoctorRoute>}>
             <Route path="/doctor" element={<Dashboard />} />
-            <Route path="/patients" element={<PatientManagement />} />
-            <Route path="/patient/:id" element={<PatientDetails />} />
-            <Route path="/predict" element={<Predict />} />
-            <Route path="/results" element={<Results />} />
+            <Route path="/doctor/patients" element={<PatientManagement />} />
+            <Route path="/doctor/patient/:id" element={<PatientDetails />} />
+            <Route path="/doctor/predict" element={<Predict />} />
+            <Route path="/doctor/results" element={<Results />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/doctor/*" element={<DoctorNotFound />} />
           </Route>

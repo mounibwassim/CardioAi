@@ -10,10 +10,7 @@ export default function Results() {
     const location = useLocation();
     const state = location.state as { result: PredictionResult; data: PatientData; doctorName?: string } | null;
 
-    // Doctor selection state
-    const [selectedDoctor, setSelectedDoctor] = useState(state?.doctorName || 'Dr. Sarah Chen');
     const [isDownloading, setIsDownloading] = useState(false);
-    const doctorList = ['Dr. Sarah Chen', 'Dr. Emily Ross', 'Dr. Michael Torres'];
 
     if (!state) {
         return <Navigate to="/predict" />;
@@ -111,7 +108,7 @@ export default function Results() {
                             </div>
                             <div>
                                 <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Assigned Physician</span>
-                                <p className="text-lg font-bold text-slate-900 leading-tight">{selectedDoctor}</p>
+                                <p className="text-lg font-bold text-slate-900 leading-tight">{state.doctorName || 'Dr. Sarah Chen'}</p>
                             </div>
                             {data.contact && (
                                 <div className="col-span-2">
@@ -181,42 +178,10 @@ export default function Results() {
                     <div className="bg-slate-950 text-white rounded-xl p-6 mb-8 shadow-xl border border-white/10">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="bg-primary-500 h-2 w-2 rounded-full animate-pulse" />
-                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Clinical Insight Engine (v6.1)</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Clinical Insight Engine (v20.0)</h3>
                         </div>
-                        <div className="text-lg leading-relaxed font-medium tracking-tight">
-                            {result.explanation ? result.explanation.replace(/\*\*/g, "") : (
-                                `The patient presents a cardiovascular risk probability of ${safeToFixed(result.risk_score * 100, 1)}%. ` +
-                                `System model classifies this case as ${result.risk_level.toUpperCase()} risk based on current clinical vectors.`
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Clinical Recommendations */}
-                    <div className="mb-8 p-6 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                        <h3 className="text-lg font-semibold text-indigo-900 mb-3 flex items-center gap-2">
-                            <Activity className="w-5 h-5" />
-                            Clinical Recommendations
-                        </h3>
-                        <div className="text-sm text-slate-700 space-y-2">
-                            {result.risk_level === "High" ? (
-                                <ul className="list-disc pl-5 space-y-1">
-                                    <li>Immediate cardiology consultation required for diagnostic confirmation.</li>
-                                    <li>Conduct immediate 12-lead ECG and cardiac enzyme profiling.</li>
-                                    <li>Initiate aggressive lifestyle intervention and pharmacological therapy as indicated.</li>
-                                </ul>
-                            ) : result.risk_level === "Medium" ? (
-                                <ul className="list-disc pl-5 space-y-1">
-                                    <li>Schedule follow-up assessment with lipid profile and stress testing.</li>
-                                    <li>Implement dietary modifications and daily blood pressure monitoring.</li>
-                                    <li>Review risk factors in 4-6 weeks for progression.</li>
-                                </ul>
-                            ) : (
-                                <ul className="list-disc pl-5 space-y-1">
-                                    <li>Continue standard primary care monitoring and annual screenings.</li>
-                                    <li>Maintain current healthy lifestyle and preventative measures.</li>
-                                    <li>Re-assess risk if new symptoms or significant age/weight changes occur.</li>
-                                </ul>
-                            )}
+                        <div className="text-lg leading-relaxed font-medium tracking-tight whitespace-pre-wrap">
+                            {result.explanation || `The patient presents a cardiovascular risk probability of ${safeToFixed(result.risk_score * 100, 1)}%. AI model classifies this case as ${result.risk_level.toUpperCase()} risk.`}
                         </div>
                     </div>
 
@@ -227,22 +192,16 @@ export default function Results() {
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                     Reviewing Physician
                                 </label>
-                                <select
-                                    value={selectedDoctor}
-                                    onChange={(e) => setSelectedDoctor(e.target.value)}
-                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
-                                >
-                                    {doctorList.map((doc) => (
-                                        <option key={doc} value={doc}>{doc}</option>
-                                    ))}
-                                </select>
+                                <div className="text-lg font-bold text-slate-900 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                    {state.doctorName || 'Dr. Sarah Chen'}
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                     Physician Signature
                                 </label>
                                 <div className="border-b-2 border-slate-300 pb-1 text-slate-400 italic">
-                                    {selectedDoctor}
+                                    {state.doctorName || 'Dr. Sarah Chen'}
                                 </div>
                                 <p className="text-xs text-slate-500 mt-1">Digitally signed on {assessmentDate}</p>
                             </div>

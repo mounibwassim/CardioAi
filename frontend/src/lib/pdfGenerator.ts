@@ -4,9 +4,7 @@ import { type PredictionResult, type PatientData } from './api';
 
 export const generatePDF = async (
     result: PredictionResult,
-    data: PatientData,
-    doctorNotes?: string,
-    doctorSignature?: string
+    data: PatientData
 ) => {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -168,96 +166,43 @@ export const generatePDF = async (
 
     currentY += 10;
 
-    // AI Analysis Summary - High Contrast Clinical Formatting
-    pdf.setFillColor(248, 250, 252); // slate-50
-    pdf.setDrawColor(15, 23, 42); // slate-900 border
+    // AI Analysis Summary - Single Source of Truth
+    pdf.setFillColor(248, 250, 252);
+    pdf.setDrawColor(15, 23, 42);
     pdf.setLineWidth(0.3);
-    pdf.rect(10, currentY, pdfWidth - 20, 48, 'FD');
 
+    // Calculate height based on text
+    const analysisText = result.explanation || `The patient presents a cardiovascular risk probability of ${(result.risk_score * 100).toFixed(1)}%. AI model classifies this case as ${result.risk_level.toUpperCase()} risk.`;
+    const wrappedAnalysis = pdf.splitTextToSize(analysisText, pdfWidth - 30);
+    const rectHeight = (wrappedAnalysis.length * 5) + 15;
+
+    pdf.rect(10, currentY, pdfWidth - 20, rectHeight, 'FD');
     pdf.setFontSize(12);
     pdf.setFont('Times-Roman', 'bold');
     pdf.setTextColor(15, 23, 42);
-    pdf.text('AI Analysis Summary', 15, currentY + 8);
+    pdf.text('Clinical Analysis & Recommendations', 15, currentY + 8);
 
-    currentY += 14;
-
-    // Parse explanation into bullet points - ENSURING TIMES ROMAN
+    currentY += 15;
     pdf.setFontSize(10);
     pdf.setFont('Times-Roman', 'normal');
     pdf.setTextColor(30, 41, 59);
+    pdf.text(wrappedAnalysis, 15, currentY);
 
-    const analysisText = result.explanation || `The patient exhibits ${result.risk_level.toLowerCase()} risk markers based on provided clinical data. Professional review recommended.`;
+    currentY += (wrappedAnalysis.length * 5) + 15;
 
-    const bullets = analysisText.split(/[•\n]/).filter(item => item.trim().length > 0);
-
-    bullets.forEach((bullet) => {
-        const cleanBullet = bullet.trim();
-        if (cleanBullet) {
-            pdf.setFont('Times-Roman', 'bold');
-            pdf.text('•', 17, currentY);
-
-            pdf.setFont('Times-Roman', 'normal');
-            const wrappedBullet = pdf.splitTextToSize(cleanBullet, pdfWidth - 35);
-            pdf.text(wrappedBullet, 23, currentY);
-            currentY += wrappedBullet.length * 4.5 + 1;
-        }
-    });
-
-    currentY += 8;
-
-    // Clinical Recommendations
+    // Signature Area
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(15, currentY, 100, currentY);
+    currentY += 5;
     pdf.setFontSize(11);
     pdf.setFont('Times-Roman', 'bold');
-    pdf.setTextColor(15, 23, 42);
-    pdf.text('Clinical Recommendations', 15, currentY);
-
+    pdf.text('Physician Signature:', 15, currentY);
     currentY += 6;
-    pdf.setFontSize(9);
     pdf.setFont('Times-Roman', 'normal');
-    pdf.setTextColor(71, 85, 105);
-    const recommendations = [
-        "- Schedule follow-up lipid profile in 3 months",
-        "- Monitor daily blood pressure readings",
-        "- Discuss low-sodium dietary adjustments"
-    ];
-    recommendations.forEach(rec => {
-        pdf.text(rec, 15, currentY);
-        currentY += 5;
-    });
-
-    currentY += 10;
-
-    // Doctor Notes (if provided)
-    if (doctorNotes && doctorNotes.trim()) {
-        pdf.setFontSize(11);
-        pdf.setFont('Times-Roman', 'bold');
-        pdf.setTextColor(15, 23, 42);
-        pdf.text('Doctor Notes', 15, currentY);
-
-        currentY += 6;
-        pdf.setFontSize(9);
-        pdf.setFont('Times-Roman', 'normal');
-        pdf.setTextColor(51, 65, 85);
-        const notesSplit = pdf.splitTextToSize(doctorNotes, pdfWidth - 30);
-        pdf.text(notesSplit, 15, currentY);
-        currentY += (notesSplit.length * 5) + 10;
-    }
-
-    // Signature (if provided)
-    if (doctorSignature) {
-        pdf.setFontSize(11);
-        pdf.setFont('Times-Roman', 'bold');
-        pdf.setTextColor(15, 23, 42);
-        pdf.text('Signature', 15, currentY);
-
-        currentY += 6;
-        try {
-            pdf.addImage(doctorSignature, 'PNG', 15, currentY, 60, 20);
-            currentY += 25;
-        } catch (error) {
-            console.warn('Failed to add signature to PDF');
-        }
-    }
+    pdf.text(data.doctor_name || 'Dr. Sarah Chen', 15, currentY);
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text(`Electronically verified on ${new Date().toLocaleDateString()}`, 15, currentY + 5);
 
     // Footer
     pdf.setFontSize(8);

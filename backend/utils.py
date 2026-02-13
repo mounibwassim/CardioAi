@@ -8,41 +8,45 @@ def generate_system_notes(risk_level: str, risk_score: float, patient_data: dict
     """
     prob_percent = risk_score * 100
     
-    # Professional Medical Format
+    # Clinical Analysis Table
     summary = [
-        f"AI Analysis Summary",
-        f"The patient presents a calculated cardiovascular risk probability of {prob_percent:.1f}%. "
-        f"Clinical indicators including specific cardiac markers significantly contribute to the overall risk profile. "
-        f"The model classifies this case as {risk_level} Risk based on a threshold ≥{'70%' if risk_level == 'High' else '40%' if risk_level == 'Medium' else 'standard clinical bounds'}."
+        "### [AI Analysis Summary]",
+        f"The patient presents a cardiovascular risk probability of {prob_percent:.1f}%.",
+        f"This classification is derived from a multi-vector Random Forest model baseline.",
+        "",
+        "### [Contributing Factors]"
     ]
     
-    # Specific Indications
     concerns = []
     if patient_data.get('trestbps', 0) > 140:
-        concerns.append(f"Elevated systolic blood pressure ({patient_data['trestbps']} mm Hg)")
+        concerns.append(f"Hypertension indicator ({patient_data['trestbps']} mm Hg)")
     if patient_data.get('chol', 0) > 200:
-        concerns.append(f"Elevated cholesterol levels ({patient_data['chol']} mg/dl)")
+        concerns.append(f"Hyperlipidemia indicator ({patient_data['chol']} mg/dl)")
     if patient_data.get('oldpeak', 0) > 2.0:
-        concerns.append(f"Significant ST depression ({patient_data['oldpeak']})")
+        concerns.append(f"ST-segment depression ({patient_data['oldpeak']})")
+    if patient_data.get('thalach', 0) < 60:
+         concerns.append(f"Bradycardia risk ({patient_data['thalach']} bpm)")
         
     if concerns:
-        summary.append("\nContributing Factors:")
         for c in concerns:
             summary.append(f"- {c}")
-
-    # Recommendations
-    summary.append("\nClinical Recommendations:")
-    if risk_level == "High":
-        summary.append("- Schedule immediate cardiology consultation")
-        summary.append("- Stress test and echocardiogram recommended")
-    elif risk_level == "Medium":
-        summary.append("- Follow-up lipid profile in 3-6 months")
-        summary.append("- Monitor daily blood pressure readings")
     else:
-        summary.append("- Continue routine health monitoring")
-        summary.append("- Annual cardiovascular screening recommended")
+        summary.append("- No acute pathological markers detected in vitals.")
+
+    # Standardized Clinical Recommendations (V20)
+    summary.append("")
+    summary.append("### [Clinical Recommendations]")
+    if risk_level == "High":
+        summary.append("- [URGENT] 12-lead ECG and cardiac enzyme profiling.")
+        summary.append("- [URGENT] Immediate cardiology consultation for diagnostic confirmation.")
+        summary.append("- Initiate aggressive lifestyle intervention and pharmacological review.")
+    elif risk_level == "Medium":
+        summary.append("- Schedule follow-up lipid profile and stress testing (4-6 weeks).")
+        summary.append("- Implement dietary modifications (low sodium, heart-healthy).")
+        summary.append("- Daily blood pressure and symptom monitoring required.")
+    else:
+        summary.append("- Maintain regular annual cardiovascular screenings.")
+        summary.append("- Continue standard preventative health measures and exercise.")
+        summary.append("- Re-assess risk if new clinical symptoms emerge.")
         
-    final_text = "\n".join(summary)
-    
-    # Remove markdown stars for production stability
-    return final_text.replace("**", "")
+    return "\n".join(summary)

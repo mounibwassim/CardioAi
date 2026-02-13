@@ -49,6 +49,7 @@ export interface PatientData {
     ca: number;
     thal: number;
     doctor_id?: number | string;
+    doctor_name?: string;
 }
 
 export interface PredictionResult {
