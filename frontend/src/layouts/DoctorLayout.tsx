@@ -26,9 +26,10 @@ export default function DoctorLayout() {
                         </div>
 
                         <nav className="hidden md:flex items-center space-x-6" role="navigation" aria-label="Doctor Navigation">
-                            <Link to="/doctor" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor') ? "text-primary-400" : "text-slate-400")}>Patients</Link>
-                            <Link to="/predict" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/predict') ? "text-primary-400" : "text-slate-400")}>New Assessment</Link>
-                            <Link to="/settings" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/settings') ? "text-primary-400" : "text-slate-400")}>Settings</Link>
+                            <Link to="/doctor" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor') ? "text-primary-400" : "text-slate-400")}>Dashboard</Link>
+                            <Link to="/doctor/patients" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor/patients') ? "text-primary-400" : "text-slate-400")}>Patients</Link>
+                            <Link to="/doctor/new-assessment" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor/new-assessment') ? "text-primary-400" : "text-slate-400")}>New Assessment</Link>
+                            <Link to="/doctor/settings" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor/settings') ? "text-primary-400" : "text-slate-400")}>Settings</Link>
                         </nav>
                     </div>
                 </div>

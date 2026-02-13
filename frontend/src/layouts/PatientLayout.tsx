@@ -37,7 +37,8 @@ export default function PatientLayout() {
 
                         <nav className="hidden md:flex items-center space-x-6" role="navigation" aria-label="Patient Navigation">
                             <Link to="/" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/') ? "text-primary-400" : "text-slate-400")}>Patient Hub</Link>
-                            <Link to="/contact" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/contact') ? "text-primary-400" : "text-slate-400")}>Assistance</Link>
+                            <Link to="/faq" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/faq') ? "text-primary-400" : "text-slate-400")}>FAQ</Link>
+                            <Link to="/contact" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/contact') ? "text-primary-400" : "text-slate-400")}>Support Center</Link>
                             <Link to="/feedback" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/feedback') ? "text-primary-400" : "text-slate-400")}>Feedback</Link>
                         </nav>
                     </div>

@@ -27,9 +27,8 @@ export default function Settings() {
     // Handle Logout
     const handleLogout = () => {
         if (confirm('Are you sure you want to sign out?')) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            navigate('/patient');
+            localStorage.clear();
+            navigate('/');
         }
     };
 

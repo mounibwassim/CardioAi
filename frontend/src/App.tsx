@@ -14,14 +14,13 @@ const PatientDetails = lazy(() => import('./pages/PatientDetails'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Feedback = lazy(() => import('./pages/Feedback'));
 const PatientPortal = lazy(() => import('./pages/PatientPortal'));
+const PatientFAQ = lazy(() => import('./pages/PatientFAQ'));
 const ComprehensiveCare = lazy(() => import('./pages/services/ComprehensiveCare'));
 const AIRiskAnalysis = lazy(() => import('./pages/services/AIRiskAnalysis'));
 const ExpertConsultation = lazy(() => import('./pages/services/ExpertConsultation'));
 const OngoingMonitoring = lazy(() => import('./pages/services/OngoingMonitoring'));
 const PatientReviews = lazy(() => import('./pages/PatientReviews'));
 const Settings = lazy(() => import('./pages/Settings'));
-const PatientNotFound = lazy(() => import('./pages/patient/PatientNotFound'));
-const DoctorNotFound = lazy(() => import('./pages/doctor/DoctorNotFound'));
 
 // Loading Screen
 const Loading = () => (
@@ -38,12 +37,8 @@ const Loading = () => (
 
 // Architectural Safeguard: Doctor Route Guard (Simple validation)
 const DoctorRoute = ({ children }: { children: React.ReactNode }) => {
-  const isDoctorView = window.location.pathname.startsWith("/doctor") ||
-    window.location.pathname.startsWith("/patients") ||
-    window.location.pathname.startsWith("/patient") ||
-    window.location.pathname.startsWith("/predict") ||
-    window.location.pathname.startsWith("/settings") ||
-    window.location.pathname.startsWith("/results");
+  // Check if user is trying to access doctor routes
+  const isDoctorView = window.location.pathname.startsWith("/doctor");
   return isDoctorView ? <>{children}</> : <Navigate to="/" replace />;
 };
 
@@ -55,26 +50,25 @@ function App() {
         <Routes>
           {/* Patient Portal Routes */}
           <Route element={<PatientLayout />}>
-            <Route path="/" element={<PatientPortal />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/reviews" element={<PatientReviews />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/services/comprehensive-care" element={<ComprehensiveCare />} />
-            <Route path="/services/ai-risk-analysis" element={<AIRiskAnalysis />} />
-            <Route path="/services/expert-consultation" element={<ExpertConsultation />} />
-            <Route path="/services/ongoing-monitoring" element={<OngoingMonitoring />} />
-            <Route path="*" element={<PatientNotFound />} />
+            <Route index element={<PatientPortal />} />
+            <Route path="feedback" element={<Feedback />} />
+            <Route path="reviews" element={<PatientReviews />} />
+            <Route path="contact" element={<Contact />} />
+            <Route path="faq" element={<PatientFAQ />} />
+            <Route path="services/comprehensive-care" element={<ComprehensiveCare />} />
+            <Route path="services/ai-risk-analysis" element={<AIRiskAnalysis />} />
+            <Route path="services/expert-consultation" element={<ExpertConsultation />} />
+            <Route path="services/ongoing-monitoring" element={<OngoingMonitoring />} />
           </Route>
 
           {/* Doctor Analytics Routes (Guarded & Isolated) */}
-          <Route element={<DoctorRoute><DoctorLayout /></DoctorRoute>}>
-            <Route path="/doctor" element={<Dashboard />} />
-            <Route path="/doctor/patients" element={<PatientManagement />} />
-            <Route path="/doctor/patient/:id" element={<PatientDetails />} />
-            <Route path="/doctor/predict" element={<Predict />} />
-            <Route path="/doctor/results" element={<Results />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/doctor/*" element={<DoctorNotFound />} />
+          <Route path="/doctor" element={<DoctorRoute><DoctorLayout /></DoctorRoute>}>
+            <Route index element={<Dashboard />} />
+            <Route path="patients" element={<PatientManagement />} />
+            <Route path="patient/:id" element={<PatientDetails />} />
+            <Route path="new-assessment" element={<Predict />} />
+            <Route path="results" element={<Results />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           {/* Global Fallback */}

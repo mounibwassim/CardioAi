@@ -5,9 +5,9 @@ export default function Contact() {
         <div className="min-h-screen bg-slate-50 py-12">
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-slate-900 mb-4">Get in Touch</h1>
+                    <h1 className="text-4xl font-bold text-slate-900 mb-4">Support Center</h1>
                     <p className="text-lg text-slate-600">
-                        We are here to assist you with your cardiac health needs. Reach out to us directly.
+                        We are here to assist you with your cardiac health needs. Connect with our clinical team.
                     </p>
                 </div>
 
