@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, AlertTriangle, Trash2, Key, Info, Moon, LogOut } from 'lucide-react';
 import { resetSystem } from '../lib/api';
 import { useTheme } from '../context/ThemeContext';
@@ -9,7 +11,6 @@ export default function Settings() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
 
     // Handle Theme Toggle
     const toggleDarkMode = () => {
