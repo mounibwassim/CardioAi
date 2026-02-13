@@ -25,6 +25,13 @@ const initialData: FormData = {
     thal: 3,
 };
 
+// Hardcoded Doctors List for consistency
+const DOCTORS_LIST = [
+    { id: 1, name: 'Dr. Sarah Chen', email: 'sarah.chen@cardioai.com', specialization: 'Cardiology' },
+    { id: 2, name: 'Dr. Emily Ross', email: 'emily.ross@cardioai.com', specialization: 'Internal Medicine' },
+    { id: 3, name: 'Dr. Michael Torres', email: 'michael.torres@cardioai.com', specialization: 'Cardiology' }
+];
+
 // CRITICAL FIX: Move InputGroup OUTSIDE to prevent re-renders
 const InputGroup = ({
     label,
@@ -74,14 +81,16 @@ const InputGroup = ({
 export default function Predict() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [doctors, setDoctors] = useState<Doctor[]>([]);
-    const [formData, setFormData] = useState<FormData>({ ...initialData, doctor_id: '' });
+    const [doctors, setDoctors] = useState<Doctor[]>(DOCTORS_LIST);
+    const [formData, setFormData] = useState<FormData>({ ...initialData, doctor_id: DOCTORS_LIST[0].id });
 
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
                 const data = await getDoctors();
-                setDoctors(data || []);
+                if (data && data.length > 0) {
+                    setDoctors(data);
+                }
             } catch (error) {
                 console.error("Failed to fetch doctors", error);
             }
@@ -263,7 +272,6 @@ export default function Predict() {
                                     required
                                     className="w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 rounded-xl p-3 shadow-sm transition-all outline-none"
                                 >
-                                    <option value="" className="bg-white dark:bg-slate-900">Select Doctor</option>
                                     {doctors.map(doc => (
                                         <option key={doc.id} value={doc.id} className="bg-white dark:bg-slate-900">{doc.name}</option>
                                     ))}
