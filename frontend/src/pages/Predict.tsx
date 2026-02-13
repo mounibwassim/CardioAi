@@ -42,7 +42,7 @@ const InputGroup = ({
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }) => (
     <div className="space-y-1">
-        <label htmlFor={name} className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+        <label htmlFor={name} className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
             {label}
         </label>
         {options ? (
@@ -51,10 +51,10 @@ const InputGroup = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                className="w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 rounded-xl p-3 shadow-sm transition-all outline-none"
             >
                 {options.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value} className="bg-white dark:bg-slate-900">{opt.label}</option>
                 ))}
             </select>
         ) : (
@@ -64,7 +64,7 @@ const InputGroup = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                className="block w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                className="w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 rounded-xl p-3 shadow-sm transition-all outline-none"
                 required
             />
         )}
@@ -191,11 +191,11 @@ export default function Predict() {
                                     value={formData.doctor_id}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                                    className="w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 rounded-xl p-3 shadow-sm transition-all outline-none"
                                 >
-                                    <option value="">Select Doctor</option>
+                                    <option value="" className="bg-white dark:bg-slate-900">Select Doctor</option>
                                     {doctors.map(doc => (
-                                        <option key={doc.id} value={doc.id}>{doc.name}</option>
+                                        <option key={doc.id} value={doc.id} className="bg-white dark:bg-slate-900">{doc.name}</option>
                                     ))}
                                 </select>
                             </div>

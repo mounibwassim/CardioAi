@@ -7,31 +7,29 @@ import {
     ResponsiveContainer,
     Legend
 } from 'recharts';
-import { Activity } from 'lucide-react';
+import { Users } from 'lucide-react';
 
-interface RiskData {
+interface GenderData {
     name: string;
     value: number;
 }
 
-interface RiskDistributionProps {
-    data: RiskData[];
+interface GenderDistributionProps {
+    data: GenderData[];
 }
 
-// Clinical Color Spec V4
-const COLOR_MAP: Record<string, string> = {
-    'Low': '#10b981',      // Green
-    'Medium': '#f59e0b',   // Orange
-    'High': '#ef4444',     // Red
-    'Critical': '#7f1d1d'  // Dark Red
+const COLORS = {
+    Male: '#3b82f6',   // Blue
+    Female: '#ec4899', // Pink
+    Other: '#a855f7'   // Purple
 };
 
-const RiskDistribution: React.FC<RiskDistributionProps> = ({ data }) => {
+const GenderDistribution: React.FC<GenderDistributionProps> = ({ data }) => {
     return (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 hover:shadow-2xl">
             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-red-600" />
-                Risk Level Distribution
+                <Users className="w-5 h-5 text-pink-500" />
+                Gender Analysis
             </h3>
 
             <div className="flex-1 min-h-[300px]">
@@ -51,7 +49,7 @@ const RiskDistribution: React.FC<RiskDistributionProps> = ({ data }) => {
                             {data.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={COLOR_MAP[entry.name] || '#94a3b8'}
+                                    fill={COLORS[entry.name as keyof typeof COLORS] || '#94a3b8'}
                                     className="filter hover:brightness-110 transition-all duration-300"
                                 />
                             ))}
@@ -77,4 +75,4 @@ const RiskDistribution: React.FC<RiskDistributionProps> = ({ data }) => {
     );
 };
 
-export default RiskDistribution;
+export default GenderDistribution;

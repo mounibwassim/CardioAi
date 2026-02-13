@@ -480,10 +480,10 @@ export default function PatientDetails() {
                             <select
                                 value={selectedDoctor}
                                 onChange={(e) => setSelectedDoctor(e.target.value)}
-                                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                className="w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 rounded-xl p-3 shadow-sm transition-all outline-none"
                             >
                                 {doctorList.map((doctor) => (
-                                    <option key={doctor} value={doctor}>{doctor}</option>
+                                    <option key={doctor} value={doctor} className="bg-white dark:bg-slate-900">{doctor}</option>
                                 ))}
                             </select>
                         </div>
@@ -497,7 +497,7 @@ export default function PatientDetails() {
                                 value={doctorNotes}
                                 onChange={(e) => setDoctorNotes(e.target.value)}
                                 rows={10}
-                                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                className="w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 rounded-xl p-4 shadow-sm transition-all outline-none"
                                 placeholder="Enter clinical observations, recommendations, or follow-up notes..."
                             />
                         </div>

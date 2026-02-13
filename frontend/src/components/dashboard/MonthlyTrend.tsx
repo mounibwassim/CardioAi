@@ -1,62 +1,83 @@
 import React from 'react';
 import {
-    ResponsiveContainer,
     BarChart,
     Bar,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
-    Cell
+    ResponsiveContainer
 } from 'recharts';
+import { TrendingUp } from 'lucide-react';
 
-interface MonthlyTrendProps {
-    data: any[];
+interface MonthlyData {
+    month: string;
+    count: number;
+    high_risk: number;
 }
 
-const MonthlyTrend = ({ data }: MonthlyTrendProps) => {
+interface MonthlyTrendProps {
+    data: MonthlyData[];
+}
+
+const MonthlyTrend: React.FC<MonthlyTrendProps> = ({ data }) => {
     return (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 transition-all duration-300">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center">
-                <span className="w-2 h-6 bg-secondary-500 rounded-full mr-3"></span>
-                Monthly Assessments
-            </h3>
-            <div className="h-80 w-full">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 hover:shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-indigo-500" />
+                    Monthly Growth Distribution
+                </h3>
+            </div>
+
+            <div className="flex-1 min-h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.1)" />
+                    <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <defs>
+                            <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.9} />
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.6} />
+                            </linearGradient>
+                            <linearGradient id="colorHighRisk" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.9} />
+                                <stop offset="95%" stopColor="#7f1d1d" stopOpacity={0.6} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                         <XAxis
                             dataKey="month"
-                            stroke="#94a3b8"
-                            fontSize={12}
-                            tickLine={false}
                             axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 12, fontWeight: 600, fill: '#64748B' }}
                         />
                         <YAxis
-                            stroke="#94a3b8"
-                            fontSize={12}
-                            tickLine={false}
                             axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 12, fontWeight: 600, fill: '#64748B' }}
                         />
                         <Tooltip
-                            cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }}
                             contentStyle={{
-                                backgroundColor: '#1e293b',
+                                borderRadius: '12px',
                                 border: 'none',
-                                borderRadius: '8px',
-                                color: '#fff'
+                                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                                backgroundColor: '#fff'
                             }}
-                            itemStyle={{ color: '#fff' }}
+                            cursor={{ fill: '#f1f5f9' }}
                         />
                         <Bar
                             dataKey="count"
+                            name="Assessments"
+                            fill="url(#colorCount)"
                             radius={[6, 6, 0, 0]}
                             isAnimationActive={false}
-                        >
-                            {data.map((_, index) => (
-                                <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#10b981' : '#3b82f6'} />
-                            ))}
-                        </Bar>
+                        />
+                        <Bar
+                            dataKey="high_risk"
+                            name="High Risk"
+                            fill="url(#colorHighRisk)"
+                            radius={[6, 6, 0, 0]}
+                            isAnimationActive={false}
+                        />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
@@ -64,4 +85,4 @@ const MonthlyTrend = ({ data }: MonthlyTrendProps) => {
     );
 };
 
-export default React.memo(MonthlyTrend);
+export default MonthlyTrend;

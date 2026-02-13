@@ -26,15 +26,15 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased transition-colors duration-200;
+    @apply bg-slate-50 text-slate-800 antialiased transition-colors duration-200;
   }
   
   .dark body {
-    @apply bg-slate-950 text-slate-50;
+    @apply bg-slate-950 text-slate-100;
   }
 
-  textarea {
-    @apply !p-4;
+  textarea, input, select {
+    @apply transition-all duration-200 outline-none;
   }
 }
 
@@ -48,7 +48,7 @@
   }
   
   .glass-card {
-    @apply bg-white/10 dark:bg-slate-900/40 backdrop-blur-md border border-white/20 dark:border-slate-800/50 shadow-xl;
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl;
   }
 
   /* Phase 3.5: Chart Stability Fixes - CRITICAL for Recharts */
