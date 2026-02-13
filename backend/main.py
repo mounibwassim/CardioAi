@@ -202,6 +202,9 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class ResetRequest(BaseModel):
+    password: str
+
 class ContactRequest(BaseModel):
     name: str
     email: EmailStr
@@ -938,7 +941,17 @@ def get_feedbacks():
     return {"feedbacks": [dict(p) for p in feedbacks]}
 
 @app.post("/reset")
-def reset_database():
+def reset_database(data: ResetRequest):
+    # Security: Verify against hashed ADMIN_PASSWORD from env
+    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+    
+    # We support either plain comparison for dev or verify_password if we want strict production
+    # Best practice is to check against a hash.
+    # For simplicity in this demo environment, we check against the env string.
+    if data.password != admin_password:
+        logger.warning("Unauthorized Reset attempt blocked.")
+        raise HTTPException(status_code=401, detail="Invalid admin password")
+        
     wipe_data()
     return {"message": "System reset complete. All data wiped."}
 

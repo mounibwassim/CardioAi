@@ -178,8 +178,11 @@ def init_db():
     # Phase 4.2: Create Performance Indexes
     try:
         c.execute("CREATE INDEX IF NOT EXISTS idx_patients_doctor_id ON patients(doctor_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_patients_created_at ON patients(created_at)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_records_doctor_id ON records(doctor_id)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_records_patient_id ON records(patient_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_records_created_at ON records(created_at)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_records_risk_level ON records(risk_level)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_audit_doctor_id ON audit_logs(doctor_id)")
         print("Phase 4.2: Database indexes created")
     except sqlite3.OperationalError as e:

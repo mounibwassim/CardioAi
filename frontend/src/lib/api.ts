@@ -155,8 +155,8 @@ export const getFeedbacks = async () => {
     return response.data;
 };
 
-export const resetSystem = async () => {
-    await api.post('/reset');
+export const resetSystem = async (password: string) => {
+    await api.post('/reset', { password });
 };
 
 export const sendContact = async (data: { name: string, email: string, message: string }) => {

@@ -33,15 +33,13 @@ export default function Settings() {
         }
     };
 
-    // Mock admin password for now - in production this would be checked on the backend
-    const ADMIN_PASSWORD = 'admin';
 
     const handleReset = async () => {
         setError('');
         setSuccess('');
 
-        if (confirmPassword !== ADMIN_PASSWORD) {
-            setError('Incorrect admin password. Action denied.');
+        if (!confirmPassword) {
+            setError('Please enter the admin password to confirm.');
             return;
         }
 
@@ -51,7 +49,7 @@ export default function Settings() {
 
         setLoading(true);
         try {
-            await resetSystem();
+            await resetSystem(confirmPassword);
             setSuccess('System has been successfully reset. All records have been cleared.');
             setConfirmPassword('');
         } catch (err) {
