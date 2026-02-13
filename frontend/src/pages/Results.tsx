@@ -5,7 +5,7 @@ import { type PredictionResult, type PatientData } from '../lib/api';
 import { generatePDF } from '../lib/pdfGenerator';
 import { useState } from 'react';
 import { safeToFixed } from '../lib/utils';
-import { getCleanExplanation } from '../lib/clinicalLogic';
+import { getCleanExplanation, generateClinicalRecommendations } from '../lib/clinicalLogic';
 
 export default function Results() {
     const location = useLocation();
@@ -175,14 +175,47 @@ export default function Results() {
                         </div>
                     </div>
 
-                    {/* AI Analysis Summary - High Contrast Clinical Box */}
-                    <div className="bg-slate-950 text-white rounded-xl p-6 mb-8 shadow-xl border border-white/10">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-primary-500 h-2 w-2 rounded-full animate-pulse" />
-                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Clinical Insight Engine (v20.0)</h3>
-                        </div>
-                        <div className="text-lg leading-relaxed font-medium tracking-tight whitespace-pre-wrap">
-                            {getCleanExplanation(result, data)}
+                    {/* AI Analysis Summary - Professional Multi-Section Layout */}
+                    <div className="space-y-6 mb-8">
+                        <div className="bg-slate-950 text-white rounded-2xl p-8 shadow-2xl border border-white/5 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+
+                            <div className="flex items-center gap-3 mb-6">
+                                <Activity className="h-5 w-5 text-primary-400" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Clinical Diagnostic Interpretation</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                                <div>
+                                    <h4 className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-3">Model Analysis</h4>
+                                    <div className="space-y-3">
+                                        {getCleanExplanation(result, data).map((point, i) => (
+                                            <div key={i} className="flex items-start gap-3">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                                                <p className="text-sm text-slate-300 font-medium leading-relaxed italic">
+                                                    {point.replace(/[#*\[\]{}&]/g, '')}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Professional Recommendations</h4>
+                                    <div className="space-y-3">
+                                        {generateClinicalRecommendations(result, data).map((rec, i) => (
+                                            <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
+                                                <div className="bg-indigo-500/20 p-1.5 rounded-lg">
+                                                    <CheckCircle className="h-3.5 w-3.5 text-indigo-400" />
+                                                </div>
+                                                <p className="text-xs text-slate-200 font-bold tracking-tight">
+                                                    {rec}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

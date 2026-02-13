@@ -88,7 +88,7 @@ export default function PatientManagement() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 shadow-sm rounded-lg border border-slate-200 dark:border-white/5 overflow-hidden mt-6">
+            <div className="bg-white dark:bg-slate-900 shadow-sm rounded-lg border border-slate-200 dark:border-white/5 mt-6">
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-white/5">
                     <thead className="bg-slate-50 dark:bg-white/5">
                         <tr>
@@ -142,7 +142,7 @@ export default function PatientManagement() {
 
                                         {/* Dropdown Menu */}
                                         {openMenuId === patient.id && (
-                                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 z-50 border dark:border-white/10">
+                                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 z-[9999] border dark:border-white/10">
                                                 <div className="py-1" role="menu">
                                                     <button
                                                         onClick={() => handleViewDetails(patient.id)}

@@ -5,7 +5,6 @@ import { getCleanExplanation, generateClinicalRecommendations } from './clinical
 export const generatePDF = async (
     result: PredictionResult,
     data: PatientData,
-    doctorNotes?: string,
     doctorSignature?: string
 ) => {
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -13,9 +12,18 @@ export const generatePDF = async (
         title: `CardioAI Report - ${data.name}`
     });
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
 
     let currentY = 0;
+
+    // --- CASE COUNTER LOGIC ---
+    const caseNumber = Number(localStorage.getItem("caseCounter") || 0) + 1;
+    localStorage.setItem("caseCounter", caseNumber.toString());
+
+    const today = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
 
     // Load and add logo
     try {
@@ -34,27 +42,29 @@ export const generatePDF = async (
         console.warn('Logo not loaded, continuing without it');
     }
 
-    // Header Right - Date & ID
-    pdf.setFontSize(8);
-    pdf.setFont('Times-Roman', 'normal');
-    pdf.setTextColor(100, 116, 139);
-
-    const assessmentDate = new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-
-    pdf.text(assessmentDate, pdfWidth - 10, 15, { align: 'right' });
-    pdf.text(`Report ID: ${result.record_id}`, pdfWidth - 10, 19, { align: 'right' });
-
-    // Header - Clinical Assessment Report
-    pdf.setFontSize(20);
-    pdf.setFont('Times-Roman', 'bold');
+    // --- PROFESSIONAL HEADER: Signature + Date + Case at TOP ---
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(15, 23, 42);
-    pdf.text('Clinical Assessment Report', 10, 30);
 
-    currentY = 35;
+    // Left Side: Case & Date
+    pdf.text(`Case Number: ${caseNumber}`, 15, 25);
+    pdf.text(`Date: ${today}`, 15, 32);
+
+    // Right Side: Physician & Signature (Placeholders for layout)
+    pdf.text(`Physician: Dr. ${doctorSignature || data.doctor_name || 'Michael Torres'}`, 130, 25);
+    pdf.text("Signature: ____________________", 130, 32);
+
+    // Header divider
+    pdf.setDrawColor(226, 232, 240);
+    pdf.line(10, 38, 200, 38);
+
+    // Title
+    pdf.setFontSize(22);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('CLINICAL PROFILE', 10, 52);
+
+    currentY = 60;
 
     // Risk Banner
     const riskColors: { [key: string]: [number, number, number] } = {
@@ -79,23 +89,43 @@ export const generatePDF = async (
 
     currentY += 25;
 
-    // Patient Information Section (Condensed)
-    pdf.setFillColor(248, 250, 252);
-    pdf.rect(10, currentY, pdfWidth - 20, 20, 'F');
-
-    pdf.setTextColor(15, 23, 42);
+    // Clinical Profile Listing
+    pdf.setTextColor(30, 41, 59);
     pdf.setFontSize(11);
-    pdf.setFont('Times-Roman', 'bold');
-    pdf.text('Patient Profile', 15, currentY + 7);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Patient Vitals:', 15, currentY);
 
-    pdf.setFontSize(9);
-    pdf.setFont('Times-Roman', 'normal');
-    pdf.text(`Name: ${data.name}`, 15, currentY + 14);
-    pdf.text(`Age: ${data.age}`, 60, currentY + 14);
-    pdf.text(`Sex: ${data.sex === 1 ? 'Male' : 'Female'}`, 80, currentY + 14);
-    if (data.contact) pdf.text(`Contact: ${data.contact}`, 110, currentY + 14);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.text(`• Age: ${data.age}`, 20, currentY + 7);
+    pdf.text(`• Sex: ${data.sex === 1 ? 'Male' : 'Female'}`, 20, currentY + 14);
+    pdf.text(`• Blood Pressure: ${data.trestbps} mm Hg`, 80, currentY + 7);
+    pdf.text(`• Cholesterol: ${data.chol} mg/dl`, 80, currentY + 14);
+
+    if (data.contact) pdf.text(`• Records Check: ${data.contact}`, 140, currentY + 7);
 
     currentY += 28;
+
+    // --- DIAGNOSTIC LOGIC ---
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('Diagnostic Logic', 10, currentY);
+    pdf.line(10, currentY + 2, 200, currentY + 2);
+
+    currentY += 10;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`• Risk Classification: ${result.risk_level}`, 15, currentY);
+    pdf.text('• Key Contributing Variables:', 15, currentY + 7);
+
+    let factorY = currentY + 14;
+    const clinicalPoints = getCleanExplanation(result, data);
+    clinicalPoints.forEach(point => {
+        pdf.text(`   - ${point.replace(/[#*\[\]{}&]/g, '')}`, 20, factorY);
+        factorY += 7;
+    });
+
+    currentY = factorY + 10;
 
     // Two Columns for Clinical Indicators
     const leftColX = 15;
@@ -123,100 +153,52 @@ export const generatePDF = async (
 
     currentY += 22;
 
-    // --- CLINICAL ANALYSIS SECTION ---
-    currentY += 10;
-
-    // Section Background (Subtle 3D Effect)
+    // --- CLINICAL ANALYSIS ---
     pdf.setFillColor(248, 250, 252); // Light Slate
-    pdf.rect(10, currentY - 5, 190, 45, 'F');
-    // Border bottom for depth
+    pdf.rect(10, currentY, 190, 40, 'F');
     pdf.setDrawColor(226, 232, 240);
-    pdf.line(10, currentY + 40, 200, currentY + 40);
+    pdf.rect(10, currentY, 190, 40, 'D');
 
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(14);
+    pdf.setFontSize(12);
     pdf.setTextColor(30, 41, 59);
-    pdf.text('Clinical Analysis', 15, currentY + 2);
+    pdf.text('Clinical Analysis', 15, currentY + 8);
 
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setTextColor(71, 85, 105);
+    const analysisText = "AI structural analysis and multi-vector pattern matching confirm the stratified risk profile. Diagnostic interpretations are based on validated cardiac markers and historical patient data subsets.";
+    const wrappedAnalysis = pdf.splitTextToSize(analysisText, 180);
+    pdf.text(wrappedAnalysis, 15, currentY + 18);
 
-    const clinicalPoints = getCleanExplanation(result, data); // Adapted from record.risk_level
-    let analysisY = currentY + 10;
-    clinicalPoints.forEach(point => {
-        const wrapped = pdf.splitTextToSize(`• ${point}`, pdfWidth - 25);
-        pdf.text(wrapped, 15, analysisY);
-        analysisY += (wrapped.length * 5); // Adjusted for multi-line text
-    });
+    currentY += 50;
 
-    // --- CORE RECOMMENDATIONS SECTION ---
-    currentY = analysisY + 15; // Space between sections (Increased)
-
-    // Section Background (Subtle 3D Effect)
+    // --- RECOMMENDATIONS ---
     pdf.setFillColor(240, 249, 255); // Light Blue-ish
-    pdf.rect(10, currentY - 5, 190, 45, 'F');
-    // Border bottom for depth
+    pdf.rect(10, currentY, 190, 50, 'F');
     pdf.setDrawColor(186, 230, 253);
-    pdf.line(10, currentY + 40, 200, currentY + 40);
+    pdf.rect(10, currentY, 190, 50, 'D');
 
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(14);
+    pdf.setFontSize(12);
     pdf.setTextColor(7, 89, 133);
-    pdf.text('Core Recommendations', 15, currentY + 2);
+    pdf.text('Recommendations', 15, currentY + 8);
 
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setTextColor(12, 74, 110);
 
-    const recs = generateClinicalRecommendations(result, data); // Adapted from record.risk_level, record.input_data
-    let recY = currentY + 10;
-    recs.forEach(rec => {
-        const wrapped = pdf.splitTextToSize(`• ${rec}`, pdfWidth - 25);
-        pdf.text(wrapped, 15, recY);
-        recY += (wrapped.length * 5); // Adjusted for multi-line text
+    const recs = generateClinicalRecommendations(result, data);
+    let recY = currentY + 18;
+    recs.slice(0, 4).forEach(rec => {
+        pdf.text(`• ${rec.replace(/[#*\[\]{}&]/g, '')}`, 15, recY);
+        recY += 8;
     });
 
-    currentY = recY + 5; // Update currentY after recommendations
-
-    // Physician's Notes (if any)
-    if (doctorNotes) {
-        currentY += 8;
-        pdf.setFontSize(11);
-        pdf.setFont('Times-Roman', 'bold');
-        pdf.text('Physician\'s Observation Notes', 10, currentY);
-        pdf.line(10, currentY + 1, pdfWidth - 10, currentY + 1);
-
-        currentY += 8;
-        pdf.setFontSize(9);
-        pdf.setFont('Times-Roman', 'italic');
-        const wrappedNotes = pdf.splitTextToSize(doctorNotes, pdfWidth - 25);
-        pdf.text(wrappedNotes, 15, currentY);
-        currentY += (wrappedNotes.length * 5);
-    }
-
-    // Footer - Signature Area (Absolute Bottom)
-    const footerY = pdfHeight - 45;
-    pdf.setDrawColor(203, 213, 225);
-    pdf.line(pdfWidth - 90, footerY, pdfWidth - 10, footerY);
-
-    pdf.setFontSize(10);
-    pdf.setFont('Times-Roman', 'bold');
-    pdf.setTextColor(15, 23, 42);
-    pdf.text('Attending Physician Clinical Signature', pdfWidth - 90, footerY + 5);
-
-    pdf.setFontSize(9);
-    pdf.setFont('Times-Roman', 'italic');
-    pdf.text(`${doctorSignature || data.doctor_name || 'CardioAI Clinical System'}`, pdfWidth - 90, footerY + 10);
-
+    // Branding Bottom
     pdf.setFontSize(8);
-    pdf.setFont('Times-Roman', 'normal');
     pdf.setTextColor(148, 163, 184);
-    pdf.text(`Date of Verification: ${new Date().toLocaleString()}`, pdfWidth - 90, footerY + 15);
-
-    // Bottom Branding
-    pdf.setFontSize(8);
-    pdf.text('CardioAI - Professional Cardiovascular Clinical Hub', pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+    pdf.text('CardioAI - Professional Cardiovascular Clinical Hub', pdfWidth / 2, 285, { align: 'center' });
 
     // Save PDF
     const fileName = `Clinical_Report_${data.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;

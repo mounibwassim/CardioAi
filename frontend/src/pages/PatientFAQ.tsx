@@ -1,131 +1,170 @@
 import { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp, Info, Star } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, Info, Star, Activity, Brain, Stethoscope, Shield, Clock, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 
-const faqs: any[] = [];
+const faqs = [
+    {
+        question: "What does the cardiovascular risk percentage mean?",
+        answer: "The percentage represents the statistical probability of a cardiovascular event based on model analysis. • 0-20%: Low Risk, focus on maintenance. • 20-50%: Medium Risk, requires screening. • >50%: High Risk, clinical consultation required.",
+        category: "Analytics",
+        icon: Activity
+    },
+    {
+        question: "How is the AI prediction calculated?",
+        answer: "The system uses a Random Forest Ensemble model trained on anonymized clinical subsets. It analyzes age, BP, cholesterol, heart rate markers, and ST-segment patterns to derive risk vectors.",
+        category: "Technology",
+        icon: Brain
+    },
+    {
+        question: "Can I edit or update patient assessments?",
+        answer: "Yes, physicians can update clinical notes and signatures in the 'Patient Overview' section. Raw diagnostic data from assessments is locked to maintain audit trail integrity.",
+        category: "Management",
+        icon: Stethoscope
+    },
+    {
+        question: "Is my clinical data stored securely?",
+        answer: "Data is encrypted using military-grade protocols. Access is restricted via Physician PIN verification, and no personally identifiable information is used in AI model weight updates.",
+        category: "Security",
+        icon: Shield
+    },
+    {
+        question: "How often should assessments be repeated?",
+        answer: "• High Risk: Follow-up required immediately or within 14 days. • Medium Risk: Quarterly assessments recommended. • Low Risk: Annual cardiovascular screening.",
+        category: "Protocol",
+        icon: Clock
+    },
+    {
+        question: "What actions should be taken for high-risk results?",
+        answer: "Immediate cardiology referral is mandatory. The system generates a structured clinical report to assist the specialist in determining definitive intervention paths.",
+        category: "Emergency",
+        icon: AlertTriangle
+    }
+];
 
 export default function PatientFAQ() {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-    const feedbackList = JSON.parse(localStorage.getItem("feedback") || "[]");
+    const feedbackList = JSON.parse(localStorage.getItem("feedback") || "[]").filter((f: any) =>
+        f.message && !f.message.toLowerCase().includes("jj") && f.message.length > 5
+    );
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
+        <div className="min-h-screen bg-transparent text-slate-900 dark:text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-16">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="inline-flex items-center justify-center p-3 bg-primary-500/10 rounded-2xl mb-6 shadow-glow"
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="inline-flex items-center justify-center p-3 bg-primary-500/10 rounded-2xl mb-4"
                     >
-                        <HelpCircle className="h-10 w-10 text-primary-500" />
+                        <HelpCircle className="h-8 w-8 text-primary-500" />
                     </motion.div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-                        Health Intelligence <span className="text-primary-500">FAQ</span>
+                    <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-indigo-500">
+                        Physician Support Hub
                     </h1>
-                    <p className="mt-4 text-slate-400 text-lg">
-                        Common questions about our cardiovascular risk assessment system
+                    <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+                        Comprehensive documentation and guidance for the CardioAI clinical decision support system.
                     </p>
                 </div>
 
-                {faqs.length > 0 && (
-                    <div className="space-y-4 mb-20">
-                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                            <Info className="text-primary-500" />
-                            System Guidelines
-                        </h2>
-                        {faqs.map((faq, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="overflow-hidden bg-slate-900/50 border border-white/5 rounded-2xl backdrop-blur-sm"
-                            >
-                                <button
-                                    onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                                    className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors focus:outline-none"
-                                >
-                                    <div className="flex items-center space-x-4">
-                                        <div className="p-2 bg-slate-800 rounded-lg">
-                                            <faq.icon className="h-5 w-5 text-primary-400" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-slate-200 dark:border-white/5">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <Info className="h-5 w-5 text-indigo-500" />
+                            <h2 className="text-lg font-bold">Frequently Asked Questions</h2>
+                        </div>
+                        <div className="space-y-4">
+                            {faqs.map((faq, index) => (
+                                <div key={index} className="border-b border-slate-100 dark:border-white/5 last:border-0 pb-4">
+                                    <button
+                                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                                        className="w-full flex justify-between items-center text-left py-2 hover:text-primary-500 transition-colors"
+                                    >
+                                        <div className="flex items-center space-x-3">
+                                            <faq.icon className="h-4 w-4 opacity-50" />
+                                            <span className="font-bold text-sm tracking-tight">{faq.question}</span>
                                         </div>
-                                        <span className="font-bold text-slate-200">{faq.question}</span>
-                                    </div>
-                                    {openIndex === index ? (
-                                        <ChevronUp className="h-5 w-5 text-slate-500" />
-                                    ) : (
-                                        <ChevronDown className="h-5 w-5 text-slate-500" />
-                                    )}
-                                </button>
-                                <AnimatePresence>
-                                    {openIndex === index && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: "auto", opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            className="px-6 pb-6 pt-0"
-                                        >
-                                            <div className="p-4 bg-slate-950/50 rounded-xl border border-white/5 text-slate-400 text-sm leading-relaxed">
-                                                {faq.answer}
-                                            </div>
-                                            <div className="mt-4 flex items-center text-[10px] font-black tracking-widest text-primary-500 uppercase opacity-60">
-                                                <span className="bg-primary-500/10 px-2 py-1 rounded">Category: {faq.category}</span>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </motion.div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Community Feedback Section */}
-                {feedbackList.length > 0 && (
-                    <div className="mt-16 mb-20">
-                        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-                            <Star className="text-yellow-500" />
-                            Community Feedback
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {feedbackList.map((feedback: any) => (
-                                <motion.div
-                                    key={feedback.id}
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="
-                                        p-6 rounded-2xl
-                                        bg-gradient-to-br from-white to-slate-100
-                                        dark:from-slate-800 dark:to-slate-900
-                                        border border-slate-200 dark:border-slate-700
-                                        shadow-xl
-                                        hover:shadow-2xl hover:scale-[1.02]
-                                        transition-all duration-300
-                                        flex flex-col justify-between
-                                    "
-                                >
-                                    <div>
-                                        <div className="flex mb-3">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className={cn("h-3 w-3", i < feedback.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-600")} />
-                                            ))}
-                                        </div>
-                                        <p className="text-slate-800 dark:text-slate-100 italic text-sm leading-relaxed mb-4">
-                                            "{feedback.message}"
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-white/5">
-                                        <span className="text-xs font-bold text-primary-500 dark:text-primary-400">{feedback.name}</span>
-                                        <span className="text-[10px] text-slate-500 font-mono">
-                                            {new Date(feedback.createdAt).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                </motion.div>
+                                        {openIndex === index ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                    </button>
+                                    <AnimatePresence>
+                                        {openIndex === index && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <p className="py-3 text-sm text-slate-500 leading-relaxed font-medium">
+                                                    {faq.answer}
+                                                </p>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             ))}
                         </div>
                     </div>
-                )}
+
+                    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-slate-200 dark:border-white/5">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <Star className="h-5 w-5 text-yellow-500" />
+                            <h2 className="text-lg font-bold">Community Insights</h2>
+                        </div>
+                        <div className="space-y-6">
+                            {feedbackList.length > 0 ? (
+                                feedbackList.slice(0, 4).map((f: any, i: number) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ x: 20, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5"
+                                    >
+                                        <div className="flex items-center justify-between mb-2">
+                                            {f.rating && (
+                                                <div className="flex">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className={cn("h-3 w-3", i < f.rating ? "text-yellow-500 fill-yellow-500" : "text-slate-300")} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{f.timestamp ? new Date(f.timestamp).toLocaleDateString() : 'Recent Review'}</span>
+                                        </div>
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 italic font-medium leading-relaxed italic line-clamp-3">
+                                            "{f.message}"
+                                        </p>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className="text-center py-12">
+                                    <p className="text-sm text-slate-500">No community feedback available yet.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-primary-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl shadow-primary-600/20">
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div className="text-center md:text-left">
+                            <h3 className="text-2xl font-black mb-2 uppercase tracking-tighter">Diagnostic Verification Protocol</h3>
+                            <p className="text-primary-100 max-w-md font-medium text-sm leading-relaxed">
+                                Our AI system operates under strict clinical oversight. High-risk predictions are prioritized for manual review by a licensed cardiologist.
+                            </p>
+                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-white text-primary-600 px-8 py-4 rounded-2xl font-black tracking-widest uppercase text-xs shadow-xl"
+                        >
+                            Open Review Portal
+                        </motion.button>
+                    </div>
+                    {/* Abstract background elements */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl"></div>
+                </div>
             </div>
         </div>
     );

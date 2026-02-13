@@ -9,7 +9,7 @@ export default function PatientLayout() {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <div className={cn("min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 uppercase-none", patientTheme)}>
+        <div className={cn("min-h-screen flex flex-col transition-colors duration-300 uppercase-none", patientTheme === 'dark' ? 'patient-dark' : 'patient-light')}>
             <header className="relative w-full bg-slate-900/80 backdrop-blur-md border-b border-white/5 z-50">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-20">

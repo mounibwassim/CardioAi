@@ -9,6 +9,7 @@ import { cn } from '../lib/utils';
 import { getPatientRecords, updatePatientNotes, updatePatientSignature, type Patient, type Record } from '../lib/api';
 import SignatureCanvas from '../components/SignatureCanvas';
 import { generatePDF } from '../lib/pdfGenerator';
+import { generateClinicalRecommendations } from '../lib/clinicalLogic';
 
 export default function PatientOverview() {
     const { id } = useParams<{ id: string }>();
@@ -130,7 +131,6 @@ export default function PatientOverview() {
             await generatePDF(
                 resultData,
                 patientData,
-                patient.doctor_notes || '',
                 patient.doctor_signature || ''
             );
         } catch (error) {
@@ -337,14 +337,10 @@ export default function PatientOverview() {
                                     <div>
                                         <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Core Recommendations</div>
                                         <div className="grid grid-cols-1 gap-3">
-                                            {[
-                                                { text: "Schedule follow-up lipid profile in 3 months", icon: Activity },
-                                                { text: "Monitor daily blood pressure readings", icon: Shield },
-                                                { text: "Discuss low-sodium dietary adjustments", icon: TrendingUp }
-                                            ].map((rec, i) => (
+                                            {generateClinicalRecommendations({ risk_level: patient.risk_level, risk_score: records[0]?.risk_score || 0 } as any, records[0] ? JSON.parse(records[0].input_data) : {}).map((rec, i) => (
                                                 <div key={i} className="flex items-center p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                                                    <rec.icon className="h-4 w-4 mr-3 text-primary-500" />
-                                                    {rec.text}
+                                                    <Activity className="h-4 w-4 mr-3 text-primary-500" />
+                                                    {rec}
                                                 </div>
                                             ))}
                                         </div>

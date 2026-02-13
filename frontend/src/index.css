@@ -26,11 +26,23 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased transition-colors duration-200;
+    @apply antialiased transition-colors duration-200;
   }
   
-  .dark body {
-    @apply bg-slate-950 text-slate-100;
+  /* Doctor Portal Isolation */
+  .doctor-light {
+    @apply bg-slate-50 text-slate-900 border-slate-200;
+  }
+  .doctor-dark {
+    @apply bg-slate-950 text-slate-100 border-white/5;
+  }
+
+  /* Patient Portal Isolation */
+  .patient-light {
+    @apply bg-white text-slate-800 border-slate-200;
+  }
+  .patient-dark {
+    @apply bg-slate-950 text-slate-100 border-white/5;
   }
 
   textarea, input, select {
