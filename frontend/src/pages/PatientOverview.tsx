@@ -131,7 +131,8 @@ export default function PatientOverview() {
             await generatePDF(
                 resultData,
                 patientData,
-                patient.doctor_signature || ''
+                patient.doctor_signature || '',
+                patient.doctor_notes || ''
             );
         } catch (error) {
             console.error('Failed to generate PDF:', error);
