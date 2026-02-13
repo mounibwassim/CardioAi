@@ -135,15 +135,15 @@ export default function Predict() {
         setLoading(true);
         try {
             const result = await predictHeartDisease(formData);
-            // Pass doctor name in state for the results page
             const selectedDoctorObj = doctors.find(d => String(d.id) === String(formData.doctor_id));
-            navigate('/doctor/results', {
-                state: {
-                    result,
-                    data: formData,
-                    doctorName: selectedDoctorObj?.name || 'Unknown'
-                }
+
+            // Set predictive result for modal
+            setPredictionResult({
+                result,
+                doctorName: selectedDoctorObj?.name || 'Unknown'
             });
+            setShowResultModal(true);
+
         } catch (error) {
             console.error("Prediction failed:", error);
             alert("Failed to get prediction. Please check all fields and try again.");
@@ -152,8 +152,78 @@ export default function Predict() {
         }
     };
 
+    const [showResultModal, setShowResultModal] = useState(false);
+    const [predictionResult, setPredictionResult] = useState<any>(null);
+
     return (
-        <div className="max-w-4xl mx-auto py-8">
+        <div className="max-w-4xl mx-auto py-8 px-4">
+            {/* Result Interstitial Modal */}
+            {showResultModal && predictionResult && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-slate-900 border border-white/10 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden"
+                    >
+                        <div className={cn(
+                            "p-8 text-center",
+                            predictionResult.result.risk_level === 'High' ? "bg-red-500/10" :
+                                predictionResult.result.risk_level === 'Medium' ? "bg-amber-500/10" : "bg-emerald-500/10"
+                        )}>
+                            <div className={cn(
+                                "w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-6",
+                                predictionResult.result.risk_level === 'High' ? "bg-red-500 text-white" :
+                                    predictionResult.result.risk_level === 'Medium' ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
+                            )}>
+                                <Activity className="w-10 h-10" />
+                            </div>
+                            <h3 className="text-3xl font-bold text-white mb-2">Analysis Complete</h3>
+                            <p className="text-slate-400">Diagnostic assessment successful</p>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            <div className="flex justify-between items-center py-4 border-b border-white/5">
+                                <span className="text-slate-400 font-medium">Risk Characterization</span>
+                                <span className={cn(
+                                    "px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider",
+                                    predictionResult.result.risk_level === 'High' ? "bg-red-500/20 text-red-400" :
+                                        predictionResult.result.risk_level === 'Medium' ? "bg-amber-500/20 text-amber-400" : "bg-emerald-500/20 text-emerald-400"
+                                )}>
+                                    {predictionResult.result.risk_level} Risk
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-4 border-b border-white/5">
+                                <span className="text-slate-400 font-medium">Model Confidence</span>
+                                <span className="text-white font-mono font-bold">{(predictionResult.result.probability * 100).toFixed(1)}%</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3 pt-4">
+                                <button
+                                    onClick={() => navigate('/results', { state: { ...predictionResult, data: formData } })}
+                                    className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-bold transition-all active:scale-[0.98]"
+                                >
+                                    View Full Clinical Report
+                                </button>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => setShowResultModal(false)}
+                                        className="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold transition-all"
+                                    >
+                                        New Analysis
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/doctor')}
+                                        className="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold transition-all"
+                                    >
+                                        Go to Dashboard
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

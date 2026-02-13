@@ -1,63 +1,86 @@
-import { useRef, useMemo, useState, useEffect } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sphere, MeshDistortMaterial } from '@react-three/drei';
+import { Sphere, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-const PulseOrb = ({ riskWeights, isClicked, setIsClicked }: { riskWeights?: { green: number, yellow: number, red: number }, isClicked: boolean, setIsClicked: (v: boolean) => void }) => {
+const PulseOrb = ({ riskWeights }: { riskWeights?: { green: number, yellow: number, red: number } }) => {
     const mesh = useRef<THREE.Mesh>(null);
-    const targetScale = useRef(1);
     const lastFrameTime = useRef(0);
 
-    // Dynamic color calculation based on weights
-    // Green: #10b981 (16, 185, 129), Yellow: #fab005 (250, 176, 5), Red: #ef4444 (239, 68, 68), White: (255, 255, 255)
-    const orbColor = useMemo(() => {
-        // Guard against missing or NaN weights
-        if (!riskWeights || isNaN(riskWeights.green) || isNaN(riskWeights.yellow) || isNaN(riskWeights.red)) {
-            return '#ffffff'; // Professional White Initial/Fallback
-        }
 
+    // Physics State
+    const velocity = useRef(new THREE.Vector3(0, 0, 0));
+    const position = useRef(new THREE.Vector3(0, 0, 0));
+    const targetScale = useRef(1);
+
+    const BOUNDARY = 2.5;
+    const FRICTION = 0.92;
+    const CLICK_FORCE = 0.8;
+
+    // Dynamic color calculation based on weights
+    const orbColor = useMemo(() => {
+        if (!riskWeights || isNaN(riskWeights.green) || isNaN(riskWeights.yellow) || isNaN(riskWeights.red)) {
+            return '#ffffff';
+        }
         const r = Math.max(0, Math.min(255, riskWeights.red * 239 + riskWeights.yellow * 250 + riskWeights.green * 16));
         const g = Math.max(0, Math.min(255, riskWeights.red * 68 + riskWeights.yellow * 176 + riskWeights.green * 185));
         const b = Math.max(0, Math.min(255, riskWeights.red * 68 + riskWeights.yellow * 5 + riskWeights.green * 129));
-
         return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
     }, [riskWeights]);
+
+    const handleInteraction = (event: any) => {
+        event.stopPropagation();
+        // Add click force based on where we clicked (simple version: push towards center-opposite)
+        const point = event.point;
+        const pushDir = new THREE.Vector3().subVectors(new THREE.Vector3(0, 0, 0), point).normalize();
+        velocity.current.add(pushDir.multiplyScalar(CLICK_FORCE));
+        targetScale.current = 1.4;
+    };
 
     useFrame((state) => {
         if (!mesh.current) return;
         const time = state.clock.getElapsedTime();
 
-        // GPU Optimization: FPS Throttling (30 FPS target for background animations)
-        // We calculate every frame but only apply logic if enough time passed, 
-        // OR we can just let it run but ensure it's lightweight. 
-        // Throttling here helps on low-end clinical hardware.
-        if (time - lastFrameTime.current < 0.033) return;
+        // GPU Optimization: FPS Stability
+        if (time - lastFrameTime.current < 0.016) return;
         lastFrameTime.current = time;
 
-        // NaN Guard for scale/position
-        if (isNaN(targetScale.current)) targetScale.current = 1;
+        // Apply Physics
+        position.current.add(velocity.current);
+        velocity.current.multiplyScalar(FRICTION);
 
-        // Balloon Push Interaction
-        if (isClicked) {
-            targetScale.current = 1.6;
-            setIsClicked(false);
+        // Boundary Management (Bounce)
+        if (Math.abs(position.current.x) > BOUNDARY) {
+            velocity.current.x *= -1;
+            position.current.x = Math.sign(position.current.x) * BOUNDARY;
+        }
+        if (Math.abs(position.current.y) > BOUNDARY) {
+            velocity.current.y *= -1;
+            position.current.y = Math.sign(position.current.y) * BOUNDARY;
+        }
+        if (Math.abs(position.current.z) > BOUNDARY * 0.5) {
+            velocity.current.z *= -1;
+            position.current.z = Math.sign(position.current.z) * BOUNDARY * 0.5;
         }
 
-        // Lerp back to center position
-        mesh.current.position.lerp(new THREE.Vector3(0, 0, 0), 0.05);
+        // Soft Reset to Center
+        position.current.lerp(new THREE.Vector3(0, 0, 0), 0.01);
 
-        // Return scale
+        // Update Mesh
+        mesh.current.position.copy(position.current);
+
+        // Pulse & Scale logic
         targetScale.current = THREE.MathUtils.lerp(targetScale.current, 1, 0.1);
-        const pulse = 1 + Math.sin(time * 2) * 0.05;
-        const s = Math.max(0.1, Math.min(3, targetScale.current * pulse)); // Clamped & NaN safe
+        const pulse = 1 + Math.sin(time * 2.5) * 0.03;
+        const s = targetScale.current * pulse;
         mesh.current.scale.set(s, s, s);
 
-        // Rotation
-        mesh.current.rotation.y = time * 0.3;
-        mesh.current.rotation.x = time * 0.2;
+        // Subtle rotation based on movement
+        mesh.current.rotation.y += velocity.current.x * 0.5 + 0.01;
+        mesh.current.rotation.x += velocity.current.y * 0.5 + 0.005;
     });
 
-    // Explicit Disposal on Unmount
+    // Explicit Disposal
     useEffect(() => {
         return () => {
             if (mesh.current) {
@@ -72,26 +95,24 @@ const PulseOrb = ({ riskWeights, isClicked, setIsClicked }: { riskWeights?: { gr
     }, []);
 
     return (
-        <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-            <Sphere
-                ref={mesh}
-                args={[1.2, 64, 64]}
-                onClick={() => setIsClicked(true)}
-                onPointerOver={() => { document.body.style.cursor = 'pointer' }}
-                onPointerOut={() => { document.body.style.cursor = 'auto' }}
-            >
-                <MeshDistortMaterial
-                    color={orbColor}
-                    speed={2}
-                    distort={0.4}
-                    radius={1}
-                    emissive={orbColor}
-                    emissiveIntensity={0.6}
-                    transparent
-                    opacity={0.9}
-                />
-            </Sphere>
-        </Float>
+        <Sphere
+            ref={mesh}
+            args={[1.2, 64, 64]}
+            onClick={handleInteraction}
+            onPointerOver={() => { document.body.style.cursor = 'pointer' }}
+            onPointerOut={() => { document.body.style.cursor = 'auto' }}
+        >
+            <MeshDistortMaterial
+                color={orbColor}
+                speed={2}
+                distort={0.3}
+                radius={1}
+                emissive={orbColor}
+                emissiveIntensity={0.4}
+                transparent
+                opacity={0.8}
+            />
+        </Sphere>
     );
 };
 
@@ -104,7 +125,6 @@ interface AIStats {
 }
 
 const AIVisualization3D = ({ stats }: { stats?: AIStats }) => {
-    const [isClicked, setIsClicked] = useState(false);
 
     return (
         <div className="h-[400px] w-full bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative group">
@@ -145,14 +165,11 @@ const AIVisualization3D = ({ stats }: { stats?: AIStats }) => {
 
             {/* Canvas Container */}
             <div className="w-full h-full cursor-grab active:cursor-grabbing">
-                <Canvas camera={{ position: [0, 0, 5], fov: 45 }} dpr={[1, 2]}>
-                    <ambientLight intensity={0.5} />
-                    <pointLight position={[10, 10, 10]} intensity={1.5} />
-                    <PulseOrb
-                        riskWeights={stats?.riskWeights}
-                        isClicked={isClicked}
-                        setIsClicked={setIsClicked}
-                    />
+                <Canvas camera={{ position: [0, 0, 6], fov: 45 }} dpr={[1, 2]}>
+                    <ambientLight intensity={0.4} />
+                    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
+                    <pointLight position={[-10, -10, -10]} intensity={0.5} />
+                    <PulseOrb riskWeights={stats?.riskWeights} />
                 </Canvas>
             </div>
         </div>

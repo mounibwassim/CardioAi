@@ -70,6 +70,7 @@ const DoctorPerformance: React.FC<DoctorPerformanceProps> = ({ data }) => {
                             axisLine={false}
                             tickLine={false}
                             tick={{ fontSize: 12, fontWeight: 600, fill: '#64748B' }}
+                            allowDecimals={false}
                         />
                         <Tooltip
                             cursor={{ fill: 'transparent' }}

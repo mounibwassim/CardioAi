@@ -44,12 +44,12 @@ export default function PatientManagement() {
     };
 
     const handleViewDetails = (patientId: number) => {
-        navigate(`/doctor/patient/${patientId}`);
+        navigate(`/patient/${patientId}`);
         setOpenMenuId(null);
     };
 
     const handleAddNote = (patientId: number) => {
-        navigate(`/doctor/patient/${patientId}?tab=notes`);
+        navigate(`/patient/${patientId}?tab=notes`);
         setOpenMenuId(null);
     };
 

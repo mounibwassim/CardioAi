@@ -57,6 +57,7 @@ const WeeklyTrend: React.FC<WeeklyTrendProps> = ({ data }) => {
                             axisLine={false}
                             tickLine={false}
                             tick={{ fontSize: 12, fontWeight: 600, fill: '#64748B' }}
+                            allowDecimals={false}
                         />
                         <Tooltip
                             contentStyle={{
