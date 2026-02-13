@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -36,7 +36,7 @@ import {
 } from '../lib/api';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 // 3D charts removed for performance and clinical clarity
-import { safeArray, safeNumber } from '../lib/utils';
+import { safeArray, safeNumber, safeToFixed } from '../lib/utils';
 
 // Define StatCard props to match usage
 interface StatCardProps {
@@ -89,7 +89,6 @@ const StatCard = ({ title, value, icon: Icon, color = "bg-primary-500", delay = 
 
 
 // Memoized Dashboard component for performance
-import React from 'react';
 const Dashboard = React.memo(function Dashboard() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -136,6 +135,10 @@ const Dashboard = React.memo(function Dashboard() {
                 getPatients(),
                 getDashboardStats()  // Temporary: for gender/age/assessment trends
             ]);
+
+            // DEBUG API Response - Helps identify malformed/missing data causing crashes
+            console.log("Analytics Payload [Summary]:", summaryData);
+            console.log("Analytics Payload [Trends]:", trendsData);
 
             // Check if request was aborted before updating state
             if (signal?.aborted) return;
@@ -209,10 +212,14 @@ const Dashboard = React.memo(function Dashboard() {
         const safePatients = patients || [];
         const total = summary.total_assessments || safePatients.length;  // Use analytics total
 
-        // Use summary data from new endpoint
-        const critical = summary.critical_cases;
-        const accuracy = `${summary.avg_accuracy.toFixed(1)}%`;
-        const growth = summary.monthly_growth >= 0 ? `+${summary.monthly_growth}%` : `${summary.monthly_growth}%`;
+        // Use summary data from new endpoint with extreme safety guards
+        const critical = summary?.critical_cases ?? 0;
+
+        // CRITICAL FIX: Ensure toFixed is never called on undefined (React #310)
+        const accuracy = `${safeToFixed(summary?.avg_accuracy, 1, "0.0")}%`;
+
+        const growthVal = summary?.monthly_growth ?? 0;
+        const growth = growthVal >= 0 ? `+${growthVal}%` : `${growthVal}%`;
 
         // Calculate Gender Dist from real patients (legacy until chart migration)
         const maleCount = safePatients.filter(p => p.sex === 1).length;

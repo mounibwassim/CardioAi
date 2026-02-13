@@ -53,6 +53,18 @@ export const safeNumber = (val: any, fallback: number = 0): number => {
 };
 
 /**
+ * Safely formats a number to a fixed decimal precision
+ * CRITICAL: Prevents "cannot read property 'toFixed' of undefined" crashes (React #310)
+ */
+export const safeToFixed = (val: any, digits: number = 1, fallback: string = "0.0"): string => {
+    const num = Number(val);
+    if (typeof num !== 'number' || isNaN(num) || !isFinite(num)) {
+        return fallback;
+    }
+    return num.toFixed(digits);
+};
+
+/**
  * Sanitize an array of objects for chart consumption
  * Specifically targets keys named 'value', 'count', or 'score'
  */

@@ -4,6 +4,7 @@ import { Activity, AlertTriangle, CheckCircle, RefreshCw, Download, XCircle, Cal
 import { type PredictionResult, type PatientData } from '../lib/api';
 import { generatePDF } from '../lib/pdfGenerator';
 import { useState } from 'react';
+import { safeToFixed } from '../lib/utils';
 
 export default function Results() {
     const location = useLocation();
@@ -93,7 +94,7 @@ export default function Results() {
                         <RiskIcon className="h-10 w-10 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold mb-2">{result.risk_level} Risk Detected</h2>
-                    <p className="text-white/90 text-lg">AI Confidence Score: {(result.risk_score * 100).toFixed(1)}%</p>
+                    <p className="text-white/90 text-lg">AI Confidence Score: {safeToFixed(result.risk_score * 100, 1)}%</p>
                 </div>
 
                 <div className="p-8">
@@ -174,7 +175,7 @@ export default function Results() {
                         <h3 className="text-lg font-semibold text-slate-900 mb-3 underline decoration-primary-500/30">AI Analysis Summary</h3>
                         <div className="text-slate-700 leading-relaxed text-sm font-medium">
                             {result.explanation ? result.explanation.replace(/\*\*/g, "") : (
-                                `The patient presents a cardiovascular risk probability of ${(result.risk_score * 100).toFixed(1)}%. ` +
+                                `The patient presents a cardiovascular risk probability of ${safeToFixed(result.risk_score * 100, 1)}%. ` +
                                 `Model classifies this case as ${result.risk_level} Risk based on clinical thresholds.`
                             )}
                         </div>
