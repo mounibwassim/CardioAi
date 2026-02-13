@@ -11,6 +11,21 @@ export const generatePDF = async (
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
+    // 0. BRANDING LOGO (Top Left)
+    try {
+        // We use a small placeholder or try to load the local logo if available in browser context
+        // In a real app we'd convert logo.png to base64, here we'll add a professional placeholder
+        pdf.setDrawColor(56, 189, 248);
+        pdf.setLineWidth(0.5);
+        pdf.circle(20, 15, 6, 'D');
+        pdf.setFontSize(14);
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('C', 20, 17, { align: 'center' });
+    } catch (e) {
+        console.warn("Logo rendering skipped");
+    }
+
     // --- CASE COUNTER LOGIC ---
     const caseNumber = Number(localStorage.getItem("caseCounter") || 0) + 1;
     localStorage.setItem("caseCounter", caseNumber.toString());
@@ -180,6 +195,31 @@ export const generatePDF = async (
         pdf.text(recLines, 124, recY + 7);
         recY += 15;
     });
+
+    currentY = recY + 10;
+
+    // 5. SIGNATURE SECTION
+    pdf.setDrawColor(203, 213, 225);
+    pdf.setLineWidth(0.5);
+
+    // Manual Signature Line
+    pdf.line(120, currentY + 20, 190, currentY + 20);
+
+    pdf.setTextColor(100, 116, 139);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('PHYSICIAN SIGNATURE (MANUAL)', 120, currentY + 25);
+
+    // Printed Name & Date
+    pdf.setTextColor(30, 41, 59);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`DR. ${doctorSignature || data.doctor_name || 'MICHAEL TORRES'}`, 120, currentY + 32);
+
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 116, 139);
+    pdf.text(`DATE: ${new Date().toLocaleDateString()}`, 120, currentY + 38);
 
     // Case and branding at bottom
     pdf.setTextColor(100, 116, 139);

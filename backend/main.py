@@ -135,12 +135,12 @@ async def startup_event():
         
         if not admin:
             c.execute("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-                      ("admin", get_password_hash("Mounib$7"), "doctor"))
-            logger.info("Default admin user created: admin / Mounib$7")
+                      ("admin", get_password_hash("admin123"), "doctor"))
+            logger.info("Default admin user created: admin / admin123")
         else:
             # FORCE RESET PASSWORD ON STARTUP to ensure access
-            c.execute("UPDATE users SET password_hash = ? WHERE username = 'admin'", (get_password_hash("Mounib$7"),))
-            logger.info("Admin password reset to: admin / Mounib$7")
+            c.execute("UPDATE users SET password_hash = ? WHERE username = 'admin'", (get_password_hash("admin123"),))
+            logger.info("Admin password reset to: admin / admin123")
             
         conn.commit()
         conn.close()

@@ -1,34 +1,54 @@
 # CardioAI 🩺
+## Professional AI-Driven Cardiovascular Intelligence System
 
-**Professional Clinical AI Platform for Cardiovascular Risk Stratification**
+**CardioAI** is a state-of-the-art clinical decision support platform designed to revolutionize cardiovascular risk stratification. By combining advanced machine learning algorithms with high-fidelity visualization and professional medical reporting, CardioAI empowers cardiologists with precise, data-driven insights.
 
-CardioAI is a state-of-the-art health intelligence system designed for modern cardiology clinics. It provides physicians with deep diagnostic insights using advanced machine learning, while offering patients a seamless portal for educational resources and feedback.
+---
 
-## 🚀 Key Architectural Strengths
+### 🌟 Core Capabilities
 
-- **Clinical Integrity Engine**: Single-source-of-truth recommendation logic used across the dashboard and PDF reporting.
-- **Portal Isolation**: Strictly separate Doctor (`/doctor`) and Patient portals with independent theme engines and auth guards.
-- **Intelligent Diagnostics**: Professional PDF generation with real-time clinical marker injection and digital verification.
-- **Enterprise UI**: High-density calendar tracking, 3D heart visualizations, and premium glassmorphism aesthetics.
+#### 🔬 Clinical Intelligence Engine
+- **Predictive Risk Modeling**: Leverages trained neural networks to assess 13 clinical markers (Age, Chol, BP, etc.) for accurate cardiac risk stratification.
+- **Unified Diagnostic Logic**: Shared clinical logic ensures consistency between real-time dashboard analysis and generated clinical reports.
+- **Automated Verification**: Diagnostic integrity checks verified through high-precision probability scores.
 
-## 🛠️ Technical Stack
+#### 📊 Advanced Physician Analytics
+- **3D Heart Visualization**: Interactive Neural Pulse fields and volumetric risk distribution charts for intuitive data interpretation.
+- **Enterprise Dashboard**: High-density calendar tracking, patient history analytics, and multi-dimensional performance metrics.
+- **Forced Clinical Mode**: A focused, dark-themed professional environment designed for clinical precision.
 
-- **Framework**: React 18 + Vite (Frontend), FastAPI (Backend)
-- **Styling**: Tailwind CSS v4 with Scoped Portal Theming
-- **Visuals**: Framer Motion, Recharts, Three.js
-- **Reporting**: jsPDF with Clinical Data Binding
-- **Database**: SQLite with SQLAlchemy ORM
+#### 📄 Professional Clinical Reporting
+- **PDF Generation**: Automated generation of standardized clinical reports including risk banners and diagnostic interpretations.
+- **Branded Verification**: Support for system logos and designated manual physician signature blocks for legal and clinical validation.
 
-## 🔧 Installation & Setup
+#### 👨‍👩‍👧‍👦 Patient Engagement Portal
+- **Educational Hub**: Diagnostic FAQs and personalized cardiac health resources.
+- **Feedback Loop**: Integrated patient feedback system to improve clinical outcomes and patient satisfaction.
 
-### 1. Backend Service
+---
+
+### 🛠️ Professional Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 18, Vite, Framer Motion, Three.js (R3F) |
+| **Styling** | Vanilla CSS, Tailwind CSS v4, Glassmorphism Design System |
+| **Backend** | FastAPI (Python 3.11+), SQLite, SQLAlchemy |
+| **AI/ML** | Scikit-learn, joblib, Neural Pulse Engine |
+| **Reporting** | jsPDF, Clinical Data Binding |
+
+---
+
+### 🚀 Rapid Deployment
+
+#### 1. Clinical Backend
 ```bash
 cd backend
 pip install -r requirements.txt
 python main.py
 ```
 
-### 2. Clinical Frontend
+#### 2. Physician Frontend
 ```bash
 cd frontend
 npm install
@@ -36,4 +56,8 @@ npm run dev
 ```
 
 ---
-*Disclaimer: CardioAI is a clinical decision support tool. All AI assessments must be validated by a certified cardiologist before clinical application.*
+> [!IMPORTANT]
+> **Clinical Disclaimer**: CardioAI is a clinical decision support tool. It is designed to assist, not replace, professional medical judgment. All automated assessments must be validated by a board-certified cardiologist.
+
+---
+© 2026 CardioAI Systems. Advanced Medical Intelligence.

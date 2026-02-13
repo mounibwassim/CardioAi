@@ -264,8 +264,8 @@ export default function PatientPortal() {
 
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-slate-900 dark:text-white font-bold text-3xl md:text-4xl mb-6">Meet Our Specialists</h2>
-                        <p className="text-slate-800 dark:text-slate-200 text-lg md:text-xl font-medium">World-class cardiologists assisted by state-of-the-art AI.</p>
+                        <h2 className="text-slate-900 font-bold text-3xl md:text-4xl mb-6">Meet Our Specialists</h2>
+                        <p className="text-slate-700 text-lg md:text-xl font-medium">World-class cardiologists assisted by state-of-the-art AI.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
