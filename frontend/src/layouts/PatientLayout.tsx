@@ -52,7 +52,7 @@ export default function PatientLayout() {
                             {/* Hidden Portal Entry Dot - FAQ Page Only */}
                             {location.pathname === '/faq' && (
                                 <button
-                                    onClick={() => navigate("/doctor/login", { replace: true })}
+                                    onClick={() => navigate("/doctor", { replace: true })}
                                     className="w-1.5 h-1.5 rounded-full bg-slate-400/20 hover:bg-slate-400/40 transition-all duration-500 cursor-pointer ml-2"
                                     aria-label="Staff Access"
                                 />

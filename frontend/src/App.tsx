@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PatientLayout from './layouts/PatientLayout';
 import DoctorLayout from './layouts/DoctorLayout';
@@ -22,7 +22,7 @@ const OngoingMonitoring = lazy(() => import('./pages/services/OngoingMonitoring'
 const PatientReviews = lazy(() => import('./pages/PatientReviews'));
 const Settings = lazy(() => import('./pages/Settings'));
 
-const DoctorLoginPage = lazy(() => import('./pages/DoctorLoginPage'));
+// Doctor login page removed for direct access
 
 // Loading Screen
 const Loading = () => (
@@ -37,10 +37,23 @@ const Loading = () => (
   </div>
 );
 
-// Protected Doctor Route Guard
+// Helper to ensure a session exists for the UI
+const AutoSessionSeeder = () => {
+  useEffect(() => {
+    if (!localStorage.getItem('doctorSession')) {
+      localStorage.setItem('doctorSession', JSON.stringify({
+        name: "Doctor",
+        role: "doctor",
+        id: 1
+      }));
+    }
+  }, []);
+  return null;
+};
+
+// Bypass Guard - Always allow entry to doctor portal
 const ProtectedDoctorRoute = ({ children }: { children: React.ReactNode }) => {
-  const session = localStorage.getItem('doctorSession');
-  return session ? <>{children}</> : <Navigate to="/doctor/login" replace />;
+  return <>{children}</>;
 };
 
 function App() {
@@ -48,6 +61,7 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         <ScrollToTop />
+        <AutoSessionSeeder />
         <Suspense fallback={<Loading />}>
           <Routes>
             {/* Patient Portal Routes (Default) */}
@@ -64,7 +78,6 @@ function App() {
             </Route>
 
             {/* Doctor Portal Routes (Strict Separation) */}
-            <Route path="/doctor/login" element={<DoctorLoginPage />} />
             <Route path="/doctor" element={<ProtectedDoctorRoute><DoctorLayout /></ProtectedDoctorRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Navigate to="/doctor" replace />} />
