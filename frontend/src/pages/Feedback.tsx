@@ -14,7 +14,20 @@ export default function Feedback() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (rating === 0 || !name.trim()) return;
+
+        // Strict validation guards
+        if (rating === 0) {
+            alert("Please select a star rating");
+            return;
+        }
+        if (!name.trim()) {
+            alert("Please provide your name");
+            return;
+        }
+        if (!comment.trim() || comment.length < 5) {
+            alert("Please share a bit more detail (min 5 characters)");
+            return;
+        }
 
         const newFeedback = {
             id: crypto.randomUUID(),
@@ -55,7 +68,7 @@ export default function Feedback() {
                                 <input
                                     type="text"
                                     required
-                                    className="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                    className="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all bg-white text-slate-900 placeholder-slate-400"
                                     placeholder="John Doe"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}

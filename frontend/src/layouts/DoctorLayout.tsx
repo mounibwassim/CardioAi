@@ -1,23 +1,14 @@
-import { useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { useTheme } from '../context/ThemeContext';
 
 export default function DoctorLayout() {
     const location = useLocation();
+    const { doctorTheme } = useTheme();
     const isActive = (path: string) => location.pathname === path;
 
-    useEffect(() => {
-        // Isolation: Apply Doctor Portal Theme
-        const doctorTheme = localStorage.getItem("doctorTheme") || "dark";
-        if (doctorTheme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
-    }, []);
-
     return (
-        <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+        <div className={cn("min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100", doctorTheme)}>
             <header className="relative w-full bg-slate-900/80 backdrop-blur-md border-b border-white/5">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-20">

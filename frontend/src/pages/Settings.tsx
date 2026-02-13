@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Shield, AlertTriangle, Trash2, Key, Info, Moon, LogOut } from 'lucide-react';
 import { resetSystem } from '../lib/api';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Settings() {
     const navigate = useNavigate();
+    const { doctorTheme, setDoctorTheme } = useTheme();
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -13,22 +13,28 @@ export default function Settings() {
 
     // Handle Theme Toggle
     const toggleDarkMode = () => {
-        const newMode = !darkMode;
-        setDarkMode(newMode);
-        if (newMode) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('doctorTheme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('doctorTheme', 'light');
-        }
+        const newTheme = doctorTheme === 'dark' ? 'light' : 'dark';
+        setDoctorTheme(newTheme);
     };
 
     // Handle Logout
     const handleLogout = () => {
         if (confirm('Are you sure you want to sign out?')) {
-            localStorage.removeItem("doctorSession");
-            navigate('/');
+            // Hard Reset: Wipe all keys
+            const keysToRemove = [
+                'auth_token',
+                'doctorSession',
+                'doctorTheme',
+                'patientTheme',
+                'doctor_name',
+                'doctor_role',
+                'doctor_id'
+            ];
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+
+            // Force landing on login
+            navigate('/login', { replace: true });
+            window.location.reload(); // Hard reset app state
         }
     };
 
@@ -81,9 +87,9 @@ export default function Settings() {
                         </div>
                         <button
                             onClick={toggleDarkMode}
-                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${darkMode ? 'bg-indigo-600' : 'bg-slate-200'}`}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${doctorTheme === 'dark' ? 'bg-indigo-600' : 'bg-slate-200'}`}
                         >
-                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${darkMode ? 'translate-x-5' : 'translate-x-0'}`} />
+                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${doctorTheme === 'dark' ? 'translate-x-5' : 'translate-x-0'}`} />
                         </button>
                     </div>
 

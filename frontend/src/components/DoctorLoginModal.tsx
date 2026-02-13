@@ -25,10 +25,15 @@ export default function DoctorLoginModal({ isOpen, onClose }: DoctorLoginModalPr
             // Defaulting to 'admin' as a single-password system was requested
             const data = await loginDoctor('admin', password);
 
-            // Store auth data
+            // Store auth data - Standardized to doctorSession
             localStorage.setItem('auth_token', data.token);
-            localStorage.setItem('user_role', data.role);
-            localStorage.setItem('user_name', data.name);
+            localStorage.setItem('doctorSession', JSON.stringify({
+                name: data.name,
+                role: data.role,
+                token: data.token
+            }));
+            localStorage.setItem('doctor_name', data.name);
+            localStorage.setItem('doctor_role', data.role);
 
             // Redirect
             navigate('/doctor/dashboard');

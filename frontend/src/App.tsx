@@ -1,9 +1,9 @@
-
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PatientLayout from './layouts/PatientLayout';
 import DoctorLayout from './layouts/DoctorLayout';
 import ScrollToTop from './components/ScrollToTop';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Lazy Load Pages for Performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -24,58 +24,60 @@ const Settings = lazy(() => import('./pages/Settings'));
 
 // Loading Screen
 const Loading = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-slate-950">
+  <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-white">
     <div className="flex flex-col items-center space-y-4">
       <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
       <div className="flex flex-col items-center">
-        <span className="text-2xl font-bold text-white tracking-tight">CardioAI</span>
+        <span className="text-2xl font-bold tracking-tight">CardioAI</span>
         <span className="block text-xs font-semibold text-primary-600 uppercase tracking-wider">Loading System...</span>
       </div>
     </div>
   </div>
 );
 
-// Architectural Safeguard: Doctor Route Guard (Simple validation)
-const DoctorRoute = ({ children }: { children: React.ReactNode }) => {
-  // Check if user is trying to access doctor routes
-  const isDoctorView = window.location.pathname.startsWith("/doctor");
-  return isDoctorView ? <>{children}</> : <Navigate to="/" replace />;
+// Protected Doctor Route Guard
+const ProtectedDoctorRoute = ({ children }: { children: React.ReactNode }) => {
+  const session = localStorage.getItem('doctorSession');
+  return session ? <>{children}</> : <Navigate to="/" replace />;
 };
 
 function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <Suspense fallback={<Loading />}>
-        <Routes>
-          {/* Patient Portal Routes */}
-          <Route element={<PatientLayout />}>
-            <Route index element={<PatientPortal />} />
-            <Route path="feedback" element={<Feedback />} />
-            <Route path="reviews" element={<PatientReviews />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="faq" element={<PatientFAQ />} />
-            <Route path="services/comprehensive-care" element={<ComprehensiveCare />} />
-            <Route path="services/ai-risk-analysis" element={<AIRiskAnalysis />} />
-            <Route path="services/expert-consultation" element={<ExpertConsultation />} />
-            <Route path="services/ongoing-monitoring" element={<OngoingMonitoring />} />
-          </Route>
+    <ThemeProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {/* Patient Portal Routes (Default) */}
+            <Route element={<PatientLayout />}>
+              <Route index element={<PatientPortal />} />
+              <Route path="feedback" element={<Feedback />} />
+              <Route path="reviews" element={<PatientReviews />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="faq" element={<PatientFAQ />} />
+              <Route path="services/comprehensive-care" element={<ComprehensiveCare />} />
+              <Route path="services/ai-risk-analysis" element={<AIRiskAnalysis />} />
+              <Route path="services/expert-consultation" element={<ExpertConsultation />} />
+              <Route path="services/ongoing-monitoring" element={<OngoingMonitoring />} />
+            </Route>
 
-          {/* Doctor Analytics Routes (Guarded & Isolated) */}
-          <Route path="/doctor" element={<DoctorRoute><DoctorLayout /></DoctorRoute>}>
-            <Route index element={<Dashboard />} />
-            <Route path="patients" element={<PatientManagement />} />
-            <Route path="patients/:id" element={<PatientOverview />} />
-            <Route path="new-assessment" element={<Predict />} />
-            <Route path="results" element={<Results />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+            {/* Doctor Portal Routes (Strict Separation) */}
+            <Route path="/doctor" element={<ProtectedDoctorRoute><DoctorLayout /></ProtectedDoctorRoute>}>
+              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Navigate to="/doctor" replace />} />
+              <Route path="patients" element={<PatientManagement />} />
+              <Route path="patients/:id" element={<PatientOverview />} />
+              <Route path="new-assessment" element={<Predict />} />
+              <Route path="results" element={<Results />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
 
-          {/* Global Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+            {/* Global Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

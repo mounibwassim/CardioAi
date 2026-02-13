@@ -1,85 +1,39 @@
-# CardioAI
-
-CardioAI is a comprehensive clinical cardiovascular health system connecting patients with advanced AI diagnostics and expert cardiology care.
-
-## Overview
-
-- **Dual-Portal System**: 
-  - **Patient Portal**: Marketing, Service Information, Risk Assessment Booking, Contact, and Feedback.
-  - **Doctor Portal**: Protected dashboard for patient management, AI prediction analysis, and reporting.
-- **AI-Powered**: Uses machine learning to predict heart disease risk based on clinical data.
-- **Secure**: Role-based access control ensuring patient data privacy.
 # CardioAI 🩺
 
-**Production-Grade Clinical Heart Disease Prediction & Analytics System**
+**Professional Clinical AI Platform for Cardiovascular Risk Stratification**
 
-CardioAI is a state-of-the-art medical intelligence platform designed for cardiologists to assess patient cardiovascular health with high precision. Leveraging advanced machine learning models (70% high-risk sensitivity), the system provides instant risk stratification, professional medical summaries, and interactive 3D/2D analytics.
+CardioAI is a state-of-the-art health intelligence system designed for modern cardiology clinics. It provides physicians with deep diagnostic insights using advanced machine learning, while offering patients a seamless portal for educational resources and feedback.
 
-### Key Features
-- **Precision ML Prediction**: Real-time risk assessment based on clinical markers.
-- **Intelligent Reporting**: Automated AI analysis summaries with professional medical terminology.
-- **Interactive Dashboards**: Full-year trends, doctor performance monitoring, and risk distribution visualizations.
-- **Clinical Reporting**: Professional PDF export using standardized medical fonts (Times New Roman).
-- **Enterprise UX**: Full dark mode support, secure session management, and responsive medical interface.
+## 🚀 Key Architectural Strengths
+
+- **Clinical Integrity Engine**: Single-source-of-truth recommendation logic used across the dashboard and PDF reporting.
+- **Portal Isolation**: Strictly separate Doctor (`/doctor`) and Patient portals with independent theme engines and auth guards.
+- **Intelligent Diagnostics**: Professional PDF generation with real-time clinical marker injection and digital verification.
+- **Enterprise UI**: High-density calendar tracking, 3D heart visualizations, and premium glassmorphism aesthetics.
+
+## 🛠️ Technical Stack
+
+- **Framework**: React 18 + Vite (Frontend), FastAPI (Backend)
+- **Styling**: Tailwind CSS v4 with Scoped Portal Theming
+- **Visuals**: Framer Motion, Recharts, Three.js
+- **Reporting**: jsPDF with Clinical Data Binding
+- **Database**: SQLite with SQLAlchemy ORM
+
+## 🔧 Installation & Setup
+
+### 1. Backend Service
+```bash
+cd backend
+pip install -r requirements.txt
+python main.py
+```
+
+### 2. Clinical Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
-*Built for clinical excellence.*
-
-## Features
-
-- **For Patients**:
-  - Educational Service Pages (Comprehensive Care, AI Risk Analysis, etc.)
-  - Online Booking via WhatsApp integration.
-  - AI Risk Assessment (Preliminary).
-  - Feedback system with QR code support.
-
-- **For Doctors**:
-  - Secure Dashboard.
-  - Patient Management System.
-  - Advanced AI Prediction with risk probability.
-  - Detailed PDF Report Generation.
-
-## Tech Stack
-
-- **Frontend**: React, Vite, Tailwind CSS v4, Framer Motion, Recharts, Three.js (React Three Fiber).
-- **Backend**: Python, FastAPI, Scikit-learn, SQLite.
-
-## Setup
-
-1.  **Backend**:
-    ```bash
-    cd backend
-    pip install -r requirements.txt
-    python main.py
-    ```
-2.  **Frontend**:
-    ```bash
-    cd frontend
-    npm install
-    npm run dev
-    ```
-
-## Deployment
-
-### Backend (Render)
-1.  Connect your GitHub repository to Render.
-2.  Render will automatically detect the `render.yaml` file and configure the service.
-3.  Alternatively, create a new **Web Service**:
-    - **Root Directory**: `backend`
-    - **Environment**: Python 3
-    - **Build Command**: `pip install -r requirements.txt`
-    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-    - **Environment Variables**: Add `MAIL_USERNAME`, `MAIL_PASSWORD`, etc.
-
-### Frontend (Vercel)
-1.  Import the repository into Vercel.
-2.  Set the **Root Directory** to `frontend`.
-3.  Vercel should automatically detect Vite.
-    - **Build Command**: `npm run build`
-    - **Output Directory**: `dist`
-4.  Add Environment Variables:
-    - **`VITE_API_URL`** (Required): URL of your deployed Render backend (e.g., `https://cardioai-backend.onrender.com`). **Do not add a trailing slash.**
-
-## Contact
-
-For support or inquiries, please contact the administration team.
+*Disclaimer: CardioAI is a clinical decision support tool. All AI assessments must be validated by a certified cardiologist before clinical application.*

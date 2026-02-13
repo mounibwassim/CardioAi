@@ -92,24 +92,31 @@ export default function PatientOverview() {
             // Get latest record for assessment data
             const latestRecord = records[0];
 
-            // Mock PatientData for PDF generation (simplified - needs actual clinical data)
+            // Parse assessment data for PDF generation
+            let assessmentData: any = {};
+            try {
+                assessmentData = JSON.parse(latestRecord.input_data);
+            } catch (e) {
+                console.error("Failed to parse record data", e);
+            }
+
             const patientData: any = {
                 name: patient.name,
                 age: patient.age,
                 sex: patient.sex,
                 contact: patient.contact || '',
-                // Clinical data would need to be stored in records or fetched separately
-                cp: 0,
-                trestbps: 0,
-                chol: 0,
-                fbs: 0,
-                restecg: 0,
-                thalach: 0,
-                exang: 0,
-                oldpeak: 0,
-                slope: 0,
-                ca: 0,
-                thal: 0
+                cp: assessmentData.cp ?? 0,
+                trestbps: assessmentData.trestbps ?? 0,
+                chol: assessmentData.chol ?? 0,
+                fbs: assessmentData.fbs ?? 0,
+                restecg: assessmentData.restecg ?? 0,
+                thalach: assessmentData.thalach ?? 0,
+                exang: assessmentData.exang ?? 0,
+                oldpeak: assessmentData.oldpeak ?? 0,
+                slope: assessmentData.slope ?? 0,
+                ca: assessmentData.ca ?? 0,
+                thal: assessmentData.thal ?? 0,
+                doctor_name: latestRecord.doctor_name
             };
 
             const resultData: any = {

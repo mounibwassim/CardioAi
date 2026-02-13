@@ -1,24 +1,15 @@
-import { useEffect } from 'react';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { useTheme } from '../context/ThemeContext';
 
 export default function PatientLayout() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { patientTheme } = useTheme();
     const isActive = (path: string) => location.pathname === path;
 
-    useEffect(() => {
-        // Isolation: Apply Patient Portal Theme
-        const patientTheme = localStorage.getItem("patientTheme") || "light";
-        if (patientTheme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
-    }, []);
-
     return (
-        <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+        <div className={cn("min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100", patientTheme)}>
             {/* Hidden Portal Entry Dot */}
             <div className="fixed bottom-4 right-4 z-[9999]">
                 <button

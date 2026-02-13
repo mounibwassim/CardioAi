@@ -5,6 +5,7 @@ import { type PredictionResult, type PatientData } from '../lib/api';
 import { generatePDF } from '../lib/pdfGenerator';
 import { useState } from 'react';
 import { safeToFixed } from '../lib/utils';
+import { getCleanExplanation } from '../lib/clinicalLogic';
 
 export default function Results() {
     const location = useLocation();
@@ -181,7 +182,7 @@ export default function Results() {
                             <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Clinical Insight Engine (v20.0)</h3>
                         </div>
                         <div className="text-lg leading-relaxed font-medium tracking-tight whitespace-pre-wrap">
-                            {result.explanation || `The patient presents a cardiovascular risk probability of ${safeToFixed(result.risk_score * 100, 1)}%. AI model classifies this case as ${result.risk_level.toUpperCase()} risk.`}
+                            {getCleanExplanation(result, data)}
                         </div>
                     </div>
 

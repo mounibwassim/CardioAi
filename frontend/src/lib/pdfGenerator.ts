@@ -1,6 +1,4 @@
-// PDF Generation Utility - Matches Results Page Format Exactly
-import jsPDF from 'jspdf';
-import { type PredictionResult, type PatientData } from './api';
+import { generateClinicalRecommendations, getCleanExplanation } from './clinicalLogic';
 
 export const generatePDF = async (
     result: PredictionResult,
@@ -9,6 +7,9 @@ export const generatePDF = async (
     doctorSignature?: string
 ) => {
     const pdf = new jsPDF('p', 'mm', 'a4');
+    pdf.setProperties({
+        title: `CardioAI Report - ${data.name}`
+    });
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
@@ -56,24 +57,24 @@ export const generatePDF = async (
     const riskColors: { [key: string]: [number, number, number] } = {
         'Low': [22, 163, 74],    // green-600
         'Medium': [202, 138, 4], // yellow-600
-        'High': [220, 38, 38]    // red-600
+        'High': [220, 38, 38],   // red-600
+        'Critical': [153, 27, 27] // red-900
     };
-    const riskColor = riskColors[result.risk_level] || [71, 85, 105]; // slate-600
+    const riskColor = riskColors[result.risk_level] || [71, 85, 105];
 
     pdf.setFillColor(...riskColor);
-    pdf.rect(0, currentY, pdfWidth, 40, 'F');
+    pdf.rect(0, currentY, pdfWidth, 25, 'F');
 
-    // Risk text
     pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(24);
-    pdf.setFont('Times-Roman', 'bold');
-    pdf.text(`${result.risk_level} Risk Detected`, pdfWidth / 2, currentY + 20, { align: 'center' });
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`${result.risk_level.toUpperCase()} RISK DETECTED`, pdfWidth / 2, currentY + 12, { align: 'center' });
 
-    pdf.setFontSize(14);
-    pdf.setFont('Times-Roman', 'normal');
-    pdf.text(`AI Confidence Probability: ${(result.risk_score * 100).toFixed(1)}%`, pdfWidth / 2, currentY + 30, { align: 'center' });
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`AI Confidence Probability: ${(result.risk_score * 100).toFixed(1)}%`, pdfWidth / 2, currentY + 19, { align: 'center' });
 
-    currentY += 50;
+    currentY += 30;
 
     // Patient Information Section
     pdf.setFillColor(248, 250, 252); // slate-50
@@ -192,53 +193,26 @@ export const generatePDF = async (
 
     currentY += (wrappedAnalysis.length * 5) + 10;
 
-    // Doctor Notes Section (if provided)
+    // Doctor Notes Section
     if (doctorNotes) {
-        pdf.setFontSize(11);
-        pdf.setFont('Times-Roman', 'bold');
-        pdf.setTextColor(15, 23, 42);
-        pdf.text('Physician\'s Clinical Notes', 10, currentY);
-        currentY += 6;
-
         pdf.setFontSize(9);
-        pdf.setFont('Times-Roman', 'normal');
-        pdf.setTextColor(51, 65, 85); // slate-700
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(15, 23, 42);
+        pdf.text('PHYSICIAN\'S CLINICAL ASSESSMENT', 10, currentY);
+        currentY += 5;
+
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(51, 65, 85);
         const wrappedNotes = pdf.splitTextToSize(doctorNotes, pdfWidth - 20);
         pdf.text(wrappedNotes, 10, currentY);
-        currentY += (wrappedNotes.length * 5) + 12;
+        currentY += (wrappedNotes.length * 4) + 8;
     }
 
-    // Signature Area
-    if (currentY > pdfHeight - 50) {
-        pdf.addPage();
-        currentY = 20;
-    }
-
-    pdf.setDrawColor(203, 213, 225); // slate-300
-    pdf.line(10, currentY, 80, currentY);
-
-    if (doctorSignature) {
-        try {
-            pdf.addImage(doctorSignature, 'PNG', 10, currentY - 15, 40, 15);
-        } catch (error) {
-            console.warn('Could not add signature image to PDF', error);
-        }
-    }
-
-    currentY += 5;
-    pdf.setFontSize(10);
-    pdf.setFont('Times-Roman', 'bold');
-    pdf.setTextColor(15, 23, 42);
-    pdf.text('Physician Signature:', 10, currentY);
-
-    currentY += 5;
-    pdf.setFontSize(9);
-    pdf.setFont('Times-Roman', 'normal');
-    pdf.text(data.doctor_name || 'Dr. Sarah Chen', 10, currentY);
-
+    // Verified Footer
     pdf.setFontSize(7);
-    pdf.setTextColor(148, 163, 184); // slate-400
-    pdf.text(`Electronically verified on ${new Date().toLocaleDateString()}`, 10, currentY + 4);
+    pdf.setTextColor(148, 163, 184);
+    pdf.text(`Electronically verified on ${new Date().toLocaleDateString()} by ${data.doctor_name || 'CardioAI System'}`, 10, currentY);
 
     // Footer
     pdf.setFontSize(8);

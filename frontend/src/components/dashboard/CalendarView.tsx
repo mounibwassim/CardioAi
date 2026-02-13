@@ -19,9 +19,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ assessmentMap }) => {
     const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
     const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
 
-    // Calculate days for current month ONLY (as requested)
+    // Calculate days for current month with correct alignment
     const generateGrid = () => {
         const days = [];
+        const firstDayIdx = new Date(year, month, 1).getDay();
+
+        // Add padding days for alignment
+        for (let p = 0; p < firstDayIdx; p++) {
+            days.push({ day: null, month, year, isCurrentMonth: false });
+        }
+
         for (let i = 1; i <= numDays; i++) {
             days.push({
                 day: i,
@@ -83,14 +90,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({ assessmentMap }) => {
 
             <div className="grid grid-cols-7 gap-2 flex-1 pb-2">
                 {gridDays.map((item, idx) => {
+                    if (item.day === null) {
+                        return <div key={`empty-${idx}`} className="aspect-square" />;
+                    }
+
                     const count = getCount(item.day, item.month, item.year);
                     const today = isToday(item.day, item.month, item.year);
 
                     return (
                         <div
                             key={idx}
-                            onClick={() => setSelectedDay({ ...item, count })}
-                            onKeyDown={(e) => e.key === 'Enter' && setSelectedDay({ ...item, count })}
+                            onClick={() => setSelectedDay({ day: item.day as number, count, month: item.month, year: item.year })}
+                            onKeyDown={(e) => e.key === 'Enter' && setSelectedDay({ day: item.day as number, count, month: item.month, year: item.year })}
                             role="button"
                             tabIndex={0}
                             className={cn(
@@ -113,13 +124,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ assessmentMap }) => {
                                         "h-1 w-1 rounded-full",
                                         today ? "bg-white" : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                                     )} />
-                                </div>
-                            )}
-
-                            {/* Hover Badge */}
-                            {count > 0 && !today && (
-                                <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-primary-500 text-white text-[8px] font-black px-1 py-0.5 rounded-md shadow-lg z-20">
-                                    {count}
                                 </div>
                             )}
                         </div>
