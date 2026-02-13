@@ -17,7 +17,7 @@ export default function DoctorLayout() {
     }, []);
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+        <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
             <header className="relative w-full bg-slate-900/80 backdrop-blur-md border-b border-white/5">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-20">
@@ -50,7 +50,7 @@ export default function DoctorLayout() {
                 <Outlet />
             </main>
 
-            <footer className="bg-slate-950 border-t border-white/5 mt-auto">
+            <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/5 mt-auto">
                 <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-center items-center gap-2 text-xs text-slate-500">
                         <p>

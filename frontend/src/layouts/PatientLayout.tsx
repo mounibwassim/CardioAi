@@ -18,7 +18,7 @@ export default function PatientLayout() {
     }, []);
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+        <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
             {/* Hidden Portal Entry Dot */}
             <div className="fixed bottom-4 right-4 z-[9999]">
                 <button
@@ -60,7 +60,7 @@ export default function PatientLayout() {
                 <Outlet />
             </main>
 
-            <footer className="bg-slate-950 border-t border-white/5 mt-auto">
+            <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-white/5 mt-auto">
                 <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-center items-center gap-2 text-xs text-slate-500">
                         <p>

@@ -154,9 +154,9 @@ export default function PatientOverview() {
 
     if (!patient) {
         return (
-            <div className="text-center py-20 bg-slate-950 min-h-screen">
-                <AlertCircle className="mx-auto h-16 w-16 text-slate-800 mb-4" />
-                <h3 className="text-xl font-bold text-white">Patient Record Not Located</h3>
+            <div className="text-center py-20 bg-white dark:bg-slate-950 min-h-screen">
+                <AlertCircle className="mx-auto h-16 w-16 text-slate-300 dark:text-slate-800 mb-4" />
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Patient Record Not Located</h3>
                 <button
                     onClick={() => navigate('/doctor')}
                     className="mt-6 inline-flex items-center px-8 py-3 bg-primary-600 hover:bg-primary-500 rounded-xl text-white font-bold transition-all"
@@ -173,7 +173,7 @@ export default function PatientOverview() {
             <div className="flex items-center justify-between">
                 <button
                     onClick={() => navigate('/doctor')}
-                    className="inline-flex items-center text-sm font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest"
+                    className="inline-flex items-center text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Hub
@@ -181,16 +181,16 @@ export default function PatientOverview() {
             </div>
 
             {/* Patient Header Card */}
-            <div className="bg-slate-900/50 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/5 p-8 transition-all hover:border-white/10">
+            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl shadow-2xl rounded-3xl border border-slate-200 dark:border-white/5 p-8 transition-all hover:border-slate-300 dark:hover:border-white/10">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                     <div className="flex items-center space-x-6">
                         <div className="h-20 w-20 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center">
                             <User className="h-10 w-10 text-primary-500" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-extrabold text-white tracking-tight">{patient.name}</h1>
+                            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{patient.name}</h1>
                             <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-slate-400 font-medium">
-                                <span className="bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold text-slate-300 uppercase tracking-tighter">ID: #{patient.id}</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-tighter">ID: #{patient.id}</span>
                                 <span>•</span>
                                 <span>{patient.age} YRS</span>
                                 <span>•</span>
@@ -219,11 +219,11 @@ export default function PatientOverview() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8 pt-8 border-t border-white/5">
                     <div>
                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Assessments</div>
-                        <div className="text-3xl font-mono font-bold text-white">{patient.assessment_count || 0}</div>
+                        <div className="text-3xl font-mono font-bold text-slate-900 dark:text-white">{patient.assessment_count || 0}</div>
                     </div>
                     <div>
                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Diagnostic Sync</div>
-                        <div className="text-2xl font-mono font-bold text-slate-200">
+                        <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-200">
                             {new Date(patient.last_updated || patient.created_at).toLocaleDateString()}
                         </div>
                     </div>
@@ -269,20 +269,20 @@ export default function PatientOverview() {
                         className="space-y-6"
                     >
                         {/* Report Header (Glassmorphism) */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-8 bg-slate-900/40 border border-white/5 rounded-3xl gap-6">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-8 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 rounded-3xl gap-6">
                             <div className="flex items-center space-x-4">
                                 <div className="bg-primary-600 p-3 rounded-2xl shadow-lg shadow-primary-600/20">
                                     <Activity className="h-8 w-8 text-white" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-black text-white tracking-tighter">CardioAI <span className="text-primary-500">EXPERT</span></div>
+                                    <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">CardioAI <span className="text-primary-500">EXPERT</span></div>
                                     <div className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Professional Clinical Report</div>
                                 </div>
                             </div>
                             <div className="flex flex-col sm:items-end">
                                 <button
                                     onClick={handleDownloadOverviewPDF}
-                                    className="mb-4 inline-flex items-center px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold rounded-xl text-white transition-all active:scale-95 no-report-export"
+                                    className="mb-4 inline-flex items-center px-6 py-3 bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-bold rounded-xl text-slate-900 dark:text-white transition-all active:scale-95 no-report-export"
                                 >
                                     <Download className="h-4 w-4 mr-2" />
                                     EXPORT AS PDF
@@ -296,8 +296,8 @@ export default function PatientOverview() {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* System Analysis (Primary Focus) */}
-                            <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8">
-                                <h3 className="text-lg font-black text-white mb-6 flex items-center gap-3">
+                            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/5 p-8">
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
                                     <Shield className="h-6 w-6 text-primary-500" />
                                     NEURAL ANALYSIS SUMMARY
                                 </h3>
@@ -317,7 +317,7 @@ export default function PatientOverview() {
                                                 {records[0]?.risk_score ? (records[0].risk_score * 100).toFixed(1) : 0}%
                                             </span>
                                         </div>
-                                        <div className="bg-white/5 rounded-full h-3 overflow-hidden border border-white/5">
+                                        <div className="bg-slate-100 dark:bg-white/5 rounded-full h-3 overflow-hidden border border-slate-200 dark:border-white/5">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${records[0]?.risk_score ? (records[0].risk_score * 100).toFixed(0) : 0}%` }}
@@ -335,7 +335,7 @@ export default function PatientOverview() {
                                                 { text: "Monitor daily blood pressure readings", icon: Shield },
                                                 { text: "Discuss low-sodium dietary adjustments", icon: TrendingUp }
                                             ].map((rec, i) => (
-                                                <div key={i} className="flex items-center p-3 bg-white/5 rounded-xl border border-white/5 text-[11px] font-bold text-slate-300">
+                                                <div key={i} className="flex items-center p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 text-[11px] font-bold text-slate-700 dark:text-slate-300">
                                                     <rec.icon className="h-4 w-4 mr-3 text-primary-500" />
                                                     {rec.text}
                                                 </div>
@@ -347,8 +347,8 @@ export default function PatientOverview() {
 
                             {/* Latest Clinical Parameters */}
                             {records.length > 0 && (
-                                <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8">
-                                    <h3 className="text-lg font-black text-white mb-6 flex items-center gap-3">
+                                <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/5 p-8">
+                                    <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
                                         <TrendingUp className="h-6 w-6 text-indigo-500" />
                                         LAST ASSESSMENT METRICS
                                     </h3>
@@ -359,9 +359,9 @@ export default function PatientOverview() {
                                             { label: 'Profile Class', value: records[0].risk_level, font: 'font-black uppercase tracking-widest', color: getRiskColor(records[0].risk_level).split(' ')[0] },
                                             { label: 'Validator', value: records[0].doctor_name, font: 'font-bold' },
                                         ].map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center py-4 border-b border-white/5 last:border-0">
+                                            <div key={idx} className="flex justify-between items-center py-4 border-b border-slate-100 dark:border-white/5 last:border-0">
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
-                                                <span className={cn("text-sm text-white", item.font, item.color)}>{item.value}</span>
+                                                <span className={cn("text-sm text-slate-900 dark:text-white", item.font, item.color)}>{item.value}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -371,12 +371,12 @@ export default function PatientOverview() {
 
                         {/* Doctor Notes Display (Professional Card) */}
                         {patient.doctor_notes && (
-                            <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8">
-                                <h3 className="text-lg font-black text-white mb-6 flex items-center gap-3">
+                            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/5 p-8">
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
                                     <FileText className="h-6 w-6 text-amber-500" />
                                     PHYSICIAN'S CLINICAL NOTES
                                 </h3>
-                                <div className="text-sm font-medium text-slate-300 whitespace-pre-line leading-relaxed pb-6 border-b border-white/5">
+                                <div className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed pb-6 border-b border-slate-100 dark:border-white/5">
                                     {patient.doctor_notes}
                                 </div>
                                 <div className="mt-4 flex justify-between items-center text-[10px] font-black tracking-widest text-slate-500">
@@ -388,7 +388,7 @@ export default function PatientOverview() {
 
                         {/* Signature Authentication */}
                         {patient.doctor_signature && (
-                            <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8">
+                            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/5 p-8">
                                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6">Digital Forensic Signature</h3>
                                 <div className="inline-block p-6 bg-white rounded-2xl border border-white/10 shadow-inner">
                                     <img src={patient.doctor_signature} alt="Diagnostic Signature" className="h-16 object-contain" />
@@ -400,11 +400,11 @@ export default function PatientOverview() {
 
                 {/* diagnostic history & notes tabs omitted for brevity, assuming standard implementation or updated styles */}
                 {activeTab === 'history' && (
-                    <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8">
-                        <h3 className="text-lg font-black text-white mb-8">DIAGNOSTIC TIMELINE</h3>
+                    <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/5 p-8">
+                        <h3 className="text-lg font-black text-slate-900 dark:text-white mb-8">DIAGNOSTIC TIMELINE</h3>
                         <div className="space-y-6">
                             {records.map((record, index) => (
-                                <div key={record.id} className="flex items-center p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/[0.07] transition-all">
+                                <div key={record.id} className="flex items-center p-6 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/[0.07] transition-all">
                                     <div className={cn(
                                         "h-12 w-12 rounded-xl flex items-center justify-center font-black text-lg mr-6",
                                         record.risk_level === 'High' ? "bg-red-500 text-white" : "bg-slate-800 text-slate-400"
@@ -414,7 +414,7 @@ export default function PatientOverview() {
                                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-6 items-center">
                                         <div>
                                             <div className="text-[9px] font-black text-slate-500 tracking-widest mb-1">RECORD</div>
-                                            <div className="text-xs font-mono font-bold text-white">#{record.id}</div>
+                                            <div className="text-xs font-mono font-bold text-slate-900 dark:text-white">#{record.id}</div>
                                         </div>
                                         <div>
                                             <div className="text-[9px] font-black text-slate-500 tracking-widest mb-1">TIMESTAMP</div>
@@ -439,17 +439,17 @@ export default function PatientOverview() {
 
                 {activeTab === 'notes' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8">
-                            <h3 className="text-lg font-black text-white mb-6">PHYSICIAN CONSOLE</h3>
+                        <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/5 p-8">
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">PHYSICIAN CONSOLE</h3>
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Lead Investigator</label>
                                     <select
                                         value={selectedDoctor}
                                         onChange={(e) => setSelectedDoctor(e.target.value)}
-                                        className="w-full bg-slate-950/50 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                                        className="w-full bg-slate-100 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                                     >
-                                        {doctorList.map((d) => <option key={d} value={d} className="bg-slate-900">{d}</option>)}
+                                        {doctorList.map((d) => <option key={d} value={d} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{d}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -458,7 +458,7 @@ export default function PatientOverview() {
                                         value={doctorNotes}
                                         onChange={(e) => setDoctorNotes(e.target.value)}
                                         rows={8}
-                                        className="w-full bg-slate-950/50 border border-white/10 rounded-2xl p-5 text-slate-300 font-medium outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                                        className="w-full bg-slate-100 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-slate-700 dark:text-slate-300 font-medium outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                                         placeholder="Enter clinical assessment..."
                                     />
                                 </div>
@@ -473,9 +473,9 @@ export default function PatientOverview() {
                         </div>
 
                         <div className="space-y-8">
-                            <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-white/5 p-8">
+                            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/5 p-8">
                                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4">Neural Signature Index</h3>
-                                <div className="p-6 bg-black/40 rounded-3xl border border-white/5 min-h-[200px] flex items-center justify-center relative group">
+                                <div className="p-6 bg-slate-100 dark:bg-black/40 rounded-3xl border border-slate-200 dark:border-white/5 min-h-[200px] flex items-center justify-center relative group">
                                     {patient.doctor_signature ? (
                                         <img src={patient.doctor_signature} alt="Doctor Signature" className="h-24 object-contain invert" />
                                     ) : (

@@ -102,7 +102,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ assessmentMap }) => {
                         >
                             <span className={cn(
                                 "text-xs font-medium",
-                                today ? "text-white" : "text-slate-700 dark:text-slate-200"
+                                today ? "text-white" : "text-slate-800 dark:text-slate-200"
                             )}>
                                 {item.day}
                             </span>

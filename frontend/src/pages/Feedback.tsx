@@ -17,7 +17,7 @@ export default function Feedback() {
         if (rating === 0 || !name.trim()) return;
 
         const newFeedback = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             name,
             message: comment,
             rating,
@@ -88,8 +88,8 @@ export default function Feedback() {
                                     bg-white text-slate-800
                                     dark:bg-slate-800 dark:text-slate-100
                                     border border-slate-300 dark:border-slate-600
-                                    focus:outline-none focus:ring-2 focus:ring-blue-500
-                                    transition-all
+                                    focus:ring-2 focus:ring-blue-500
+                                    placeholder-slate-400 dark:placeholder-slate-500
                                 "
                                 rows={4}
                                 required

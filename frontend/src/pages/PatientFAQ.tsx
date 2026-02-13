@@ -42,7 +42,7 @@ export default function PatientFAQ() {
     const feedbackList = JSON.parse(localStorage.getItem("feedback") || "[]");
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-16">
                     <motion.div
@@ -123,7 +123,16 @@ export default function PatientFAQ() {
                                     key={feedback.id}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="p-6 rounded-2xl shadow-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between"
+                                    className="
+                                        p-6 rounded-2xl
+                                        bg-gradient-to-br from-white to-slate-100
+                                        dark:from-slate-800 dark:to-slate-900
+                                        border border-slate-200 dark:border-slate-700
+                                        shadow-xl
+                                        hover:shadow-2xl hover:scale-[1.02]
+                                        transition-all duration-300
+                                        flex flex-col justify-between
+                                    "
                                 >
                                     <div>
                                         <div className="flex mb-3">
@@ -131,12 +140,12 @@ export default function PatientFAQ() {
                                                 <Star key={i} className={cn("h-3 w-3", i < feedback.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-600")} />
                                             ))}
                                         </div>
-                                        <p className="text-slate-300 italic text-sm leading-relaxed mb-4">
+                                        <p className="text-slate-800 dark:text-slate-100 italic text-sm leading-relaxed mb-4">
                                             "{feedback.message}"
                                         </p>
                                     </div>
-                                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                                        <span className="text-xs font-bold text-primary-400">{feedback.name}</span>
+                                    <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-white/5">
+                                        <span className="text-xs font-bold text-primary-500 dark:text-primary-400">{feedback.name}</span>
                                         <span className="text-[10px] text-slate-500 font-mono">
                                             {new Date(feedback.createdAt).toLocaleDateString()}
                                         </span>
