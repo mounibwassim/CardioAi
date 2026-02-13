@@ -97,86 +97,96 @@ export default function Results() {
                     <p className="text-white/90 text-lg">AI Confidence Score: {safeToFixed(result.risk_score * 100, 1)}%</p>
                 </div>
 
-                <div className="p-8">
+                <div className="p-8 font-serif" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
                     {/* Patient Information */}
-                    <div className="mb-8 bg-slate-50 rounded-xl p-6 border border-slate-200">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                            <User className="h-5 w-5 mr-2 text-primary-600" />
+                    <div className="mb-8 bg-slate-50 rounded-xl p-6 border-l-4 border-slate-900 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center uppercase tracking-tight">
+                            <User className="h-5 w-5 mr-2 text-slate-900" aria-hidden="true" />
                             Patient Information
                         </h3>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-6">
                             <div>
-                                <span className="text-sm text-slate-500">Full Name</span>
-                                <p className="font-semibold text-slate-900">{data.name}</p>
+                                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Full Name</span>
+                                <p className="text-lg font-bold text-slate-900 leading-tight">{data.name}</p>
                             </div>
-                            {/* Doctor Selection */}
                             <div>
-                                <span className="block text-sm text-slate-500">Assigned Doctor</span>
-                                <p className="font-semibold text-slate-900">{selectedDoctor}</p>
+                                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Assigned Physician</span>
+                                <p className="text-lg font-bold text-slate-900 leading-tight">{selectedDoctor}</p>
                             </div>
                             {data.contact && (
-                                <div>
-                                    <span className="text-sm text-slate-500">Contact</span>
-                                    <p className="font-semibold text-slate-900">{data.contact}</p>
+                                <div className="col-span-2">
+                                    <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Primary Contact</span>
+                                    <p className="text-base font-bold text-slate-900">{data.contact}</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Clinical Data Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
                         <div>
-                            <h3 className="text-lg font-semibold text-slate-900 mb-4 border-b pb-2">Patient Profile</h3>
-                            <dl className="space-y-3">
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">Age</dt>
-                                    <dd className="font-medium text-slate-900">{data.age} years</dd>
+                            <h3 className="text-sm font-bold text-slate-900 mb-4 border-b-2 border-slate-900 pb-1 uppercase tracking-widest">Diagnostic Profile</h3>
+                            <dl className="space-y-4">
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">Patient Age</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">{data.age} YRS</dd>
                                 </div>
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">Sex</dt>
-                                    <dd className="font-medium text-slate-900">{data.sex === 1 ? 'Male' : 'Female'}</dd>
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">Patient Sex</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">{data.sex === 1 ? 'MALE' : 'FEMALE'}</dd>
                                 </div>
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">Blood Pressure</dt>
-                                    <dd className="font-medium text-slate-900">{data.trestbps} mm Hg</dd>
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">Blood Pressure</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">{data.trestbps} MM HG</dd>
                                 </div>
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">Cholesterol</dt>
-                                    <dd className="font-medium text-slate-900">{data.chol} mg/dl</dd>
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">Cholesterol</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">{data.chol} MG/DL</dd>
                                 </div>
                             </dl>
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-semibold text-slate-900 mb-4 border-b pb-2">Clinical Indicators</h3>
-                            <dl className="space-y-3">
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">Chest Pain Type</dt>
-                                    <dd className="font-medium text-slate-900">Type {data.cp}</dd>
+                            <h3 className="text-sm font-bold text-slate-900 mb-4 border-b-2 border-slate-900 pb-1 uppercase tracking-widest">Cardiac Markers</h3>
+                            <dl className="space-y-4">
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">Chest Pain Type</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">TYPE {data.cp}</dd>
                                 </div>
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">Max Heart Rate</dt>
-                                    <dd className="font-medium text-slate-900">{data.thalach} bpm</dd>
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">Max Heart Rate</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">{data.thalach} BPM</dd>
                                 </div>
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">ST Depression</dt>
-                                    <dd className="font-medium text-slate-900">{data.oldpeak}</dd>
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">ST Depression</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">{data.oldpeak}</dd>
                                 </div>
-                                <div className="flex justify-between">
-                                    <dt className="text-slate-500">Exercise Angina</dt>
-                                    <dd className="font-medium text-slate-900">{data.exang === 1 ? 'Yes' : 'No'}</dd>
+                                <div className="flex justify-between items-end">
+                                    <dt className="text-slate-600 text-sm">Exercise Angina</dt>
+                                    <dd className="font-bold text-slate-900 border-b border-dotted border-slate-300 flex-1 mx-2"></dd>
+                                    <dd className="font-bold text-slate-900">{data.exang === 1 ? 'YES' : 'NO'}</dd>
                                 </div>
                             </dl>
                         </div>
                     </div>
 
-                    {/* AI Analysis Summary */}
-                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-8 break-words whitespace-pre-wrap">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-3 underline decoration-primary-500/30">AI Analysis Summary</h3>
-                        <div className="text-slate-700 leading-relaxed text-sm font-medium">
+                    {/* AI Analysis Summary - High Contrast Clinical Box */}
+                    <div className="bg-slate-950 text-white rounded-xl p-6 mb-8 shadow-xl border border-white/10">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-primary-500 h-2 w-2 rounded-full animate-pulse" />
+                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Clinical Insight Engine (v6.1)</h3>
+                        </div>
+                        <div className="text-lg leading-relaxed font-medium tracking-tight">
                             {result.explanation ? result.explanation.replace(/\*\*/g, "") : (
                                 `The patient presents a cardiovascular risk probability of ${safeToFixed(result.risk_score * 100, 1)}%. ` +
-                                `Model classifies this case as ${result.risk_level} Risk based on clinical thresholds.`
+                                `System model classifies this case as ${result.risk_level.toUpperCase()} risk based on current clinical vectors.`
                             )}
                         </div>
                     </div>

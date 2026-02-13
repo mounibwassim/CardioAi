@@ -5,9 +5,12 @@ import { motion } from 'framer-motion';
 import * as THREE from 'three';
 
 const ParticleWave = ({ count = 200 }) => {
+    // NaN Guard for particle count
+    const safeCount = isNaN(count) ? 200 : Math.max(0, Math.min(1000, count));
+
     const points = useMemo(() => {
-        const p = new Float32Array(count * 3);
-        for (let i = 0; i < count; i++) {
+        const p = new Float32Array(safeCount * 3);
+        for (let i = 0; i < safeCount; i++) {
             const r = 2 + Math.random() * 2;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.random() * Math.PI;
@@ -16,15 +19,36 @@ const ParticleWave = ({ count = 200 }) => {
             p[i * 3 + 2] = r * Math.cos(phi);
         }
         return p;
-    }, [count]);
+    }, [safeCount]);
 
     const ref = useRef<THREE.Points>(null);
+    const lastFrameTime = useRef(0);
 
     useFrame((state) => {
         if (!ref.current) return;
-        ref.current.rotation.y = state.clock.getElapsedTime() * 0.1;
-        ref.current.rotation.z = state.clock.getElapsedTime() * 0.05;
+        const time = state.clock.getElapsedTime();
+
+        // GPU Protection: FPS Throttle
+        if (time - lastFrameTime.current < 0.033) return;
+        lastFrameTime.current = time;
+
+        ref.current.rotation.y = time * 0.1;
+        ref.current.rotation.z = time * 0.05;
     });
+
+    // Explicit Disposal
+    useEffect(() => {
+        return () => {
+            if (ref.current) {
+                ref.current.geometry.dispose();
+                if (Array.isArray(ref.current.material)) {
+                    ref.current.material.forEach(m => m.dispose());
+                } else {
+                    ref.current.material.dispose();
+                }
+            }
+        };
+    }, []);
 
     return (
         <Points ref={ref} positions={points} stride={3}>
@@ -44,19 +68,25 @@ const PulsingRing = ({ riskTrend = 'stable', assessmentCount = 0 }) => {
     const mesh = useRef<THREE.Mesh>(null);
     const lastCount = useRef(assessmentCount);
     const expandScale = useRef(1);
+    const lastFrameTime = useRef(0);
 
     const baseColor = riskTrend === 'up' ? '#ef4444' : riskTrend === 'down' ? '#10b981' : '#6366f1';
 
     useEffect(() => {
-        if (assessmentCount > lastCount.current) {
+        const safeAssessmentCount = isNaN(assessmentCount) ? lastCount.current : assessmentCount;
+        if (safeAssessmentCount > lastCount.current) {
             expandScale.current = 1.4;
-            lastCount.current = assessmentCount;
+            lastCount.current = safeAssessmentCount;
         }
     }, [assessmentCount]);
 
     useFrame((state) => {
         if (!mesh.current) return;
         const time = state.clock.getElapsedTime();
+
+        // GPU Protection
+        if (time - lastFrameTime.current < 0.033) return;
+        lastFrameTime.current = time;
 
         // Base pulse
         const s = 1 + Math.sin(time * 3) * 0.05;
@@ -66,11 +96,25 @@ const PulsingRing = ({ riskTrend = 'stable', assessmentCount = 0 }) => {
             expandScale.current = THREE.MathUtils.lerp(expandScale.current, 1, 0.1);
         }
 
-        const finalScale = s * expandScale.current;
+        const finalScale = isNaN(expandScale.current) ? s : s * expandScale.current;
         mesh.current.scale.set(finalScale, finalScale, finalScale);
 
         mesh.current.rotation.z = time * 0.5;
     });
+
+    // Explicit Disposal
+    useEffect(() => {
+        return () => {
+            if (mesh.current) {
+                mesh.current.geometry.dispose();
+                if (Array.isArray(mesh.current.material)) {
+                    mesh.current.material.forEach(m => m.dispose());
+                } else {
+                    mesh.current.material.dispose();
+                }
+            }
+        };
+    }, []);
 
     return (
         <Float speed={4} rotationIntensity={0.2} floatIntensity={0.5}>
@@ -84,7 +128,6 @@ const PulsingRing = ({ riskTrend = 'stable', assessmentCount = 0 }) => {
                     opacity={0.8}
                 />
             </mesh>
-            {/* Inner Glow Sphere */}
             <Sphere args={[0.5, 32, 32]}>
                 <MeshDistortMaterial
                     color={baseColor}
@@ -109,6 +152,12 @@ interface LiveSystemPulseProps {
 }
 
 const LiveSystemPulse = ({ stats }: LiveSystemPulseProps) => {
+    // Health Check / Fallback
+    const onContextLost = (event: React.SyntheticEvent) => {
+        event.preventDefault();
+        console.warn("CardioAI: WebGL context lost in LiveSystemPulse. Attempting stability recovery...");
+    };
+
     return (
         <div className="h-[400px] w-full bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative group">
             <div className="absolute top-6 left-6 z-10">
@@ -119,7 +168,13 @@ const LiveSystemPulse = ({ stats }: LiveSystemPulseProps) => {
                 <p className="text-slate-400 text-sm mt-1">Real-time analytical activity stream</p>
             </div>
 
-            <Canvas camera={{ position: [0, 0, 6], fov: 45 }} dpr={[1, 2]}>
+            <Canvas
+                camera={{ position: [0, 0, 6], fov: 45 }}
+                dpr={[1, 2]}
+                onCreated={({ gl }) => {
+                    gl.domElement.addEventListener('webglcontextlost', onContextLost as any, false);
+                }}
+            >
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
                 <PulsingRing riskTrend={stats.trend} assessmentCount={stats.total} />

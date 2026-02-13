@@ -29,10 +29,10 @@ const COLOR_MAP: Record<string, string[]> = {
 
 const DoctorPerformance: React.FC<DoctorPerformanceProps> = ({ data }) => {
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 hover:shadow-2xl group">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 hover:shadow-2xl group" role="region" aria-label="Doctor Assessment Performance">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <Briefcase className="w-5 h-5 text-indigo-500" />
+                    <Briefcase className="w-5 h-5 text-indigo-500" aria-hidden="true" />
                     Doctor Performance
                 </h3>
             </div>
@@ -59,7 +59,7 @@ const DoctorPerformance: React.FC<DoctorPerformanceProps> = ({ data }) => {
                                 </feMerge>
                             </filter>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:opacity-10" />
                         <XAxis
                             dataKey="name"
                             axisLine={false}
@@ -72,29 +72,33 @@ const DoctorPerformance: React.FC<DoctorPerformanceProps> = ({ data }) => {
                             tick={{ fontSize: 12, fontWeight: 600, fill: '#64748B' }}
                         />
                         <Tooltip
-                            contentStyle={{
-                                backgroundColor: '#0f172a',
-                                border: '1px solid #334155',
-                                borderRadius: '12px',
-                                color: '#f8fafc',
-                                padding: '12px',
-                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                            }}
-                            itemStyle={{ color: '#f8fafc' }}
                             cursor={{ fill: 'transparent' }}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    return (
+                                        <div className="bg-slate-900 border border-slate-700 p-3 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">{payload[0].payload.name}</p>
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLOR_MAP[payload[0].payload.color][0] }} />
+                                                <span className="text-sm font-bold text-white">{payload[0].value} Assessments</span>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
                         />
                         <Bar
                             dataKey="count"
                             radius={[8, 8, 0, 0]}
                             isAnimationActive={false}
-                            className="transition-transform duration-300"
                         >
                             {data.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
                                     fill={`url(#grad-${entry.color})`}
                                     filter="url(#shadow)"
-                                    className="cursor-pointer hover:opacity-90 transition-all duration-300"
+                                    className="cursor-pointer hover:opacity-95 transition-all duration-300"
                                 />
                             ))}
                         </Bar>

@@ -38,10 +38,11 @@ export default function Layout({ children }: LayoutProps) {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-20">
                         <div className="flex items-center">
-                            <Link to={isDoctor ? "/doctor/dashboard" : "/"} className="flex-shrink-0 flex items-center group">
+                            <Link to={isDoctor ? "/doctor/dashboard" : "/"} className="flex-shrink-0 flex items-center group" aria-label="CardioAI Home">
                                 <img
                                     src="/assets/images/logo.png"
-                                    alt="CardioAI Logo"
+                                    alt=""
+                                    aria-hidden="true"
                                     className="h-14 w-auto mr-3 transition-transform duration-300 group-hover:scale-105"
                                 />
                                 <div>
@@ -51,7 +52,7 @@ export default function Layout({ children }: LayoutProps) {
                             </Link>
                         </div>
 
-                        <div className="hidden md:flex items-center space-x-8">
+                        <div className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main Navigation">
                             {!isDoctor ? (
                                 <>
                                     <Link to="/" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/') ? "text-primary-600" : "text-slate-600")}>Home</Link>
@@ -61,6 +62,7 @@ export default function Layout({ children }: LayoutProps) {
 
                                     <Link
                                         to="/feedback"
+                                        aria-label="Submit system feedback"
                                         className={cn(
                                             "inline-flex items-center px-4 py-2 border border-primary-200 rounded-full text-sm font-medium transition-all hover:bg-primary-50 hover:border-primary-300",
                                             isActive('/feedback') ? "text-primary-700 bg-primary-50 border-primary-300" : "text-primary-600"
@@ -71,12 +73,13 @@ export default function Layout({ children }: LayoutProps) {
                                 </>
                             ) : (
                                 <>
-                                    <Link to="/doctor/dashboard" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/dashboard') ? "text-primary-600" : "text-slate-600")}>Dashboard</Link>
-                                    <Link to="/doctor/patients" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/patients') ? "text-primary-600" : "text-slate-600")}>Patients</Link>
-                                    <Link to="/doctor/predict" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/predict') ? "text-primary-600" : "text-slate-600")}>New Assessment</Link>
-                                    <Link to="/doctor/settings" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/settings') ? "text-primary-600" : "text-slate-600")}>Settings</Link>
+                                    <Link to="/doctor/dashboard" aria-current={isActive('/doctor/dashboard') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/dashboard') ? "text-primary-600" : "text-slate-600")}>Dashboard</Link>
+                                    <Link to="/doctor/patients" aria-current={isActive('/doctor/patients') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/patients') ? "text-primary-600" : "text-slate-600")}>Patients</Link>
+                                    <Link to="/doctor/predict" aria-current={isActive('/doctor/predict') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/predict') ? "text-primary-600" : "text-slate-600")}>New Assessment</Link>
+                                    <Link to="/doctor/settings" aria-current={isActive('/doctor/settings') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/settings') ? "text-primary-600" : "text-slate-600")}>Settings</Link>
                                     <button
                                         onClick={handleLogout}
+                                        aria-label="Logout from doctor portal"
                                         className="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors"
                                     >
                                         Logout

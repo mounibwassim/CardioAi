@@ -157,10 +157,10 @@ export const generatePDF = async (
 
     clinicalData.forEach(([label, value]) => {
         pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'normal');
+        pdf.setFont('Times-Roman', 'normal');
         pdf.setTextColor(100, 116, 139);
         pdf.text(label, rightColX, currentY);
-        pdf.setFont('helvetica', 'bold');
+        pdf.setFont('Times-Roman', 'bold');
         pdf.setTextColor(15, 23, 42);
         pdf.text(value, rightColX + 70, currentY, { align: 'right' });
         currentY += 6;
@@ -168,39 +168,38 @@ export const generatePDF = async (
 
     currentY += 10;
 
-    // AI Analysis Summary - Clean bullet point format
-    pdf.setFillColor(241, 245, 249); // slate-100
-    pdf.rect(10, currentY, pdfWidth - 20, 45, 'F');
+    // AI Analysis Summary - High Contrast Clinical Formatting
+    pdf.setFillColor(248, 250, 252); // slate-50
+    pdf.setDrawColor(15, 23, 42); // slate-900 border
+    pdf.setLineWidth(0.3);
+    pdf.rect(10, currentY, pdfWidth - 20, 48, 'FD');
 
     pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(15, 23, 42); // Dark text for clarity
+    pdf.setFont('Times-Roman', 'bold');
+    pdf.setTextColor(15, 23, 42);
     pdf.text('AI Analysis Summary', 15, currentY + 8);
 
     currentY += 14;
 
-    // Parse explanation into bullet points
-    pdf.setFontSize(9.5);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(30, 41, 59); // Darker slate for better readability
+    // Parse explanation into bullet points - ENSURING TIMES ROMAN
+    pdf.setFontSize(10);
+    pdf.setFont('Times-Roman', 'normal');
+    pdf.setTextColor(30, 41, 59);
 
     const analysisText = result.explanation || `The patient exhibits ${result.risk_level.toLowerCase()} risk markers based on provided clinical data. Professional review recommended.`;
 
-    // Split by bullet characters or newlines
     const bullets = analysisText.split(/[•\n]/).filter(item => item.trim().length > 0);
 
     bullets.forEach((bullet) => {
         const cleanBullet = bullet.trim();
         if (cleanBullet) {
-            // Add bullet point symbol
-            pdf.setFont('helvetica', 'bold');
+            pdf.setFont('Times-Roman', 'bold');
             pdf.text('•', 17, currentY);
 
-            // Add bullet text
-            pdf.setFont('helvetica', 'normal');
+            pdf.setFont('Times-Roman', 'normal');
             const wrappedBullet = pdf.splitTextToSize(cleanBullet, pdfWidth - 35);
             pdf.text(wrappedBullet, 23, currentY);
-            currentY += wrappedBullet.length * 4.2 + 1;
+            currentY += wrappedBullet.length * 4.5 + 1;
         }
     });
 
@@ -208,13 +207,13 @@ export const generatePDF = async (
 
     // Clinical Recommendations
     pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('Times-Roman', 'bold');
     pdf.setTextColor(15, 23, 42);
     pdf.text('Clinical Recommendations', 15, currentY);
 
     currentY += 6;
     pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('Times-Roman', 'normal');
     pdf.setTextColor(71, 85, 105);
     const recommendations = [
         "- Schedule follow-up lipid profile in 3 months",
@@ -231,13 +230,13 @@ export const generatePDF = async (
     // Doctor Notes (if provided)
     if (doctorNotes && doctorNotes.trim()) {
         pdf.setFontSize(11);
-        pdf.setFont('helvetica', 'bold');
+        pdf.setFont('Times-Roman', 'bold');
         pdf.setTextColor(15, 23, 42);
         pdf.text('Doctor Notes', 15, currentY);
 
         currentY += 6;
         pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'normal');
+        pdf.setFont('Times-Roman', 'normal');
         pdf.setTextColor(51, 65, 85);
         const notesSplit = pdf.splitTextToSize(doctorNotes, pdfWidth - 30);
         pdf.text(notesSplit, 15, currentY);
@@ -247,7 +246,7 @@ export const generatePDF = async (
     // Signature (if provided)
     if (doctorSignature) {
         pdf.setFontSize(11);
-        pdf.setFont('helvetica', 'bold');
+        pdf.setFont('Times-Roman', 'bold');
         pdf.setTextColor(15, 23, 42);
         pdf.text('Signature', 15, currentY);
 
@@ -262,6 +261,7 @@ export const generatePDF = async (
 
     // Footer
     pdf.setFontSize(8);
+    pdf.setFont('Times-Roman', 'normal');
     pdf.setTextColor(148, 163, 184);
     pdf.text(`Generated on: ${new Date().toLocaleString()}`, pdfWidth / 2, pdfHeight - 10, { align: 'center' });
     pdf.text('CardioAI - Clinical Heart Disease Prediction System', pdfWidth / 2, pdfHeight - 6, { align: 'center' });

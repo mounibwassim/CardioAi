@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Sphere, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -6,14 +6,20 @@ import * as THREE from 'three';
 const PulseOrb = ({ riskWeights, isClicked, setIsClicked }: { riskWeights?: { green: number, yellow: number, red: number }, isClicked: boolean, setIsClicked: (v: boolean) => void }) => {
     const mesh = useRef<THREE.Mesh>(null);
     const targetScale = useRef(1);
+    const lastFrameTime = useRef(0);
 
     // Dynamic color calculation based on weights
-    // Green: #10b981, Yellow: #fab005 (Amber), Red: #ef4444
+    // Green: #10b981 (16, 185, 129), Yellow: #fab005 (250, 176, 5), Red: #ef4444 (239, 68, 68), White: (255, 255, 255)
     const orbColor = useMemo(() => {
-        if (!riskWeights) return '#0ea5e9'; // Fallback Blue
-        const r = riskWeights.red * 239 + riskWeights.yellow * 250 + riskWeights.green * 16;
-        const g = riskWeights.red * 68 + riskWeights.yellow * 176 + riskWeights.green * 185;
-        const b = riskWeights.red * 68 + riskWeights.yellow * 5 + riskWeights.green * 129;
+        // Guard against missing or NaN weights
+        if (!riskWeights || isNaN(riskWeights.green) || isNaN(riskWeights.yellow) || isNaN(riskWeights.red)) {
+            return '#ffffff'; // Professional White Initial/Fallback
+        }
+
+        const r = Math.max(0, Math.min(255, riskWeights.red * 239 + riskWeights.yellow * 250 + riskWeights.green * 16));
+        const g = Math.max(0, Math.min(255, riskWeights.red * 68 + riskWeights.yellow * 176 + riskWeights.green * 185));
+        const b = Math.max(0, Math.min(255, riskWeights.red * 68 + riskWeights.yellow * 5 + riskWeights.green * 129));
+
         return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
     }, [riskWeights]);
 
@@ -21,25 +27,49 @@ const PulseOrb = ({ riskWeights, isClicked, setIsClicked }: { riskWeights?: { gr
         if (!mesh.current) return;
         const time = state.clock.getElapsedTime();
 
+        // GPU Optimization: FPS Throttling (30 FPS target for background animations)
+        // We calculate every frame but only apply logic if enough time passed, 
+        // OR we can just let it run but ensure it's lightweight. 
+        // Throttling here helps on low-end clinical hardware.
+        if (time - lastFrameTime.current < 0.033) return;
+        lastFrameTime.current = time;
+
+        // NaN Guard for scale/position
+        if (isNaN(targetScale.current)) targetScale.current = 1;
+
         // Balloon Push Interaction
         if (isClicked) {
             targetScale.current = 1.6;
             setIsClicked(false);
         }
 
-        // Lerp back to center position (in case we added offset)
+        // Lerp back to center position
         mesh.current.position.lerp(new THREE.Vector3(0, 0, 0), 0.05);
 
         // Return scale
         targetScale.current = THREE.MathUtils.lerp(targetScale.current, 1, 0.1);
         const pulse = 1 + Math.sin(time * 2) * 0.05;
-        const s = targetScale.current * pulse;
+        const s = Math.max(0.1, Math.min(3, targetScale.current * pulse)); // Clamped & NaN safe
         mesh.current.scale.set(s, s, s);
 
         // Rotation
         mesh.current.rotation.y = time * 0.3;
         mesh.current.rotation.x = time * 0.2;
     });
+
+    // Explicit Disposal on Unmount
+    useEffect(() => {
+        return () => {
+            if (mesh.current) {
+                mesh.current.geometry.dispose();
+                if (Array.isArray(mesh.current.material)) {
+                    mesh.current.material.forEach(m => m.dispose());
+                } else {
+                    mesh.current.material.dispose();
+                }
+            }
+        };
+    }, []);
 
     return (
         <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>

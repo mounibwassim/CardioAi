@@ -17,7 +17,6 @@ import {
     type AnalyticsSummary,
     type MonthlyTrend
 } from '../lib/api';
-import DashboardSkeleton from '../components/DashboardSkeleton';
 import { safeArray, safeToFixed } from '../lib/utils';
 
 // Modular Components
@@ -26,6 +25,7 @@ import RiskDistributionChart from '../components/dashboard/RiskDistribution';
 import ModelAccuracyChart from '../components/dashboard/ModelAccuracy';
 import WeeklyTrend from '../components/dashboard/WeeklyTrend';
 import GenderDistribution from '../components/dashboard/GenderDistribution';
+import DashboardSkeleton from '../components/DashboardSkeleton';
 import DoctorPerformance from '../components/dashboard/DoctorPerformance';
 import CalendarView from '../components/dashboard/CalendarView';
 
@@ -52,12 +52,14 @@ const StatCard = ({ title, value, icon: Icon, color = "text-blue-500", delay = 0
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.4 }}
             onClick={onClick}
-            role="region"
-            aria-label={title}
+            onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
+            role="button"
+            tabIndex={0}
+            aria-label={`${title}: ${value}. ${subtitle || ''}`}
             className="relative p-6 rounded-2xl shadow-xl bg-gradient-to-br from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 cursor-pointer group"
         >
             <div className="flex items-center justify-between">
-                <Icon className={`w-10 h-10 ${color} drop-shadow-lg transition-transform group-hover:rotate-12 duration-300`} />
+                <Icon className={`w-10 h-10 ${color} drop-shadow-lg transition-transform group-hover:rotate-12 duration-300`} aria-hidden="true" />
                 <span className="text-4xl font-bold tracking-tight">{value}</span>
             </div>
 
@@ -69,7 +71,7 @@ const StatCard = ({ title, value, icon: Icon, color = "text-blue-500", delay = 0
             )}
 
             {/* Subtle gloss effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none" aria-hidden="true" />
         </motion.div>
     );
 };
@@ -80,6 +82,7 @@ const Dashboard = React.memo(function Dashboard() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [patients, setPatients] = useState<Patient[]>([]);
+    const [isGPUUnstable, setIsGPUUnstable] = useState(false);
 
     const [summary, setSummary] = useState<AnalyticsSummary>({
         critical_cases: 0,
@@ -127,14 +130,33 @@ const Dashboard = React.memo(function Dashboard() {
     useEffect(() => {
         const controller = new AbortController();
         fetchAllData(true, controller.signal);
+
+        // Global GPU Stability Monitor
+        const handleContextLost = (e: Event) => {
+            e.preventDefault();
+            console.warn("CardioAI: Global WebGL context loss detected. Stability safeguarding active.");
+            setIsGPUUnstable(true);
+        };
+
+        const handleContextRestored = () => {
+            console.info("CardioAI: WebGL context restored.");
+            setIsGPUUnstable(false);
+        };
+
+        window.addEventListener('webglcontextlost', handleContextLost, false);
+        window.addEventListener('webglcontextrestored', handleContextRestored, false);
+
         const interval = setInterval(() => {
             if (!controller.signal.aborted) {
                 fetchAllData(false, controller.signal);
             }
         }, 30000);
+
         return () => {
             controller.abort();
             clearInterval(interval);
+            window.removeEventListener('webglcontextlost', handleContextLost);
+            window.removeEventListener('webglcontextrestored', handleContextRestored);
         };
     }, [fetchAllData]);
 
@@ -295,9 +317,19 @@ const Dashboard = React.memo(function Dashboard() {
     }
 
     return (
-        <div className="space-y-10 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-10 space-y-10">
+            {isGPUUnstable && (
+                <div className="bg-amber-500/10 border border-amber-500 text-amber-500 px-6 py-3 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
+                    <p className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        GPU Instability Detected - Reverting to Safe Rendering Mode
+                    </p>
+                    <button onClick={() => window.location.reload()} className="underline text-xs font-bold hover:text-amber-400 transition-colors">RELOAD SYSTEM</button>
+                </div>
+            )}
+
             {/* Clinical Header */}
-            <div className="relative bg-slate-900 rounded-3xl p-8 overflow-hidden shadow-2xl border border-white/5">
+            <div className="relative bg-slate-900 rounded-3xl p-8 overflow-hidden shadow-2xl border border-white/5" role="banner">
                 <div className="absolute inset-0 z-0 opacity-10">
                     <img
                         src="/assets/images/medical abstract background blue.jpg"
@@ -410,15 +442,23 @@ const Dashboard = React.memo(function Dashboard() {
                         <p className="text-slate-500 font-mono text-sm tracking-widest uppercase">Syncing Neural Weights...</p>
                     </div>
                 }>
-                    <AIVisualization3D
-                        stats={{
-                            total: computedMetrics.total,
-                            critical: computedMetrics.critical,
-                            accuracy: computedMetrics.accuracy,
-                            trend: computedMetrics.trend,
-                            riskWeights: riskWeights
-                        }}
-                    />
+                    {!isGPUUnstable ? (
+                        <AIVisualization3D
+                            stats={{
+                                total: computedMetrics.total,
+                                critical: computedMetrics.critical,
+                                accuracy: computedMetrics.accuracy,
+                                trend: computedMetrics.trend,
+                                riskWeights: riskWeights
+                            }}
+                        />
+                    ) : (
+                        <div className="h-[400px] w-full bg-slate-900 rounded-2xl flex flex-col items-center justify-center border border-slate-800 p-8 text-center space-y-4">
+                            <Activity className="h-12 w-12 text-slate-700 mx-auto" aria-hidden="true" />
+                            <p className="text-slate-500 font-mono text-xs uppercase tracking-widest">3D Visualizer Disabled (Stability Mode)</p>
+                            <p className="text-slate-600 text-sm">Hardware graphics acceleration interrupted. System remains functional in 2D mode.</p>
+                        </div>
+                    )}
                 </Suspense>
 
                 <Suspense fallback={
@@ -426,12 +466,14 @@ const Dashboard = React.memo(function Dashboard() {
                         <p className="text-slate-500 font-mono text-sm tracking-widest uppercase">Modulating System Pulse...</p>
                     </div>
                 }>
-                    <LiveSystemPulse
-                        stats={{
-                            total: computedMetrics.total,
-                            trend: computedMetrics.trend
-                        }}
-                    />
+                    {!isGPUUnstable && (
+                        <LiveSystemPulse
+                            stats={{
+                                total: computedMetrics.total,
+                                trend: computedMetrics.trend
+                            }}
+                        />
+                    )}
                 </Suspense>
             </div>
         </div>
