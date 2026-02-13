@@ -57,12 +57,15 @@ const MonthlyTrend: React.FC<MonthlyTrendProps> = ({ data }) => {
                         />
                         <Tooltip
                             contentStyle={{
+                                backgroundColor: '#0f172a',
+                                border: '1px solid #334155',
                                 borderRadius: '12px',
-                                border: 'none',
-                                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                                backgroundColor: '#fff'
+                                color: '#f8fafc',
+                                padding: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                             }}
-                            cursor={{ fill: '#f1f5f9' }}
+                            itemStyle={{ color: '#f8fafc' }}
+                            cursor={{ fill: '#f1f5f9', opacity: 0.1 }}
                         />
                         <Bar
                             dataKey="count"

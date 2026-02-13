@@ -56,11 +56,14 @@ const GenderDistribution: React.FC<GenderDistributionProps> = ({ data }) => {
                         </Pie>
                         <Tooltip
                             contentStyle={{
+                                backgroundColor: '#0f172a',
+                                border: '1px solid #334155',
                                 borderRadius: '12px',
-                                border: 'none',
-                                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                                backgroundColor: '#fff'
+                                color: '#f8fafc',
+                                padding: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                             }}
+                            itemStyle={{ color: '#f8fafc' }}
                         />
                         <Legend
                             verticalAlign="bottom"

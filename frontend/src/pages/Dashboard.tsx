@@ -14,14 +14,12 @@ import {
     getPatients,
     getAnalyticsSummary,
     getMonthlyTrends,
-    getRiskDistribution,
     type Patient,
     type AnalyticsSummary,
-    type MonthlyTrend,
-    type RiskDistribution
+    type MonthlyTrend
 } from '../lib/api';
 import DashboardSkeleton from '../components/DashboardSkeleton';
-import { safeArray, safeNumber, safeToFixed } from '../lib/utils';
+import { safeArray, safeToFixed } from '../lib/utils';
 
 // Modular Components
 import AssessmentTrend from '../components/dashboard/AssessmentTrend';
@@ -89,7 +87,6 @@ const Dashboard = React.memo(function Dashboard() {
         monthly_growth: 0
     });
     const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
-    const [riskDist, setRiskDist] = useState<RiskDistribution[]>([]);
 
     const [stats, setStats] = useState<any>({
         gender_distribution: [],
@@ -106,13 +103,11 @@ const Dashboard = React.memo(function Dashboard() {
             const [
                 summaryData,
                 trendsData,
-                riskData,
                 patientsData,
                 legacyStats
             ] = await Promise.all([
                 getAnalyticsSummary(),
                 getMonthlyTrends(),
-                getRiskDistribution(),
                 getPatients(),
                 getDashboardStats()
             ]);
@@ -126,7 +121,6 @@ const Dashboard = React.memo(function Dashboard() {
                 monthly_growth: 0
             });
             setMonthlyTrends(Array.isArray(trendsData) ? trendsData : []);
-            setRiskDist(Array.isArray(riskData) ? riskData : []);
             setPatients(Array.isArray(patientsData) ? patientsData : []);
 
             setStats({
@@ -142,7 +136,6 @@ const Dashboard = React.memo(function Dashboard() {
             console.error("Failed to fetch dashboard data", error);
             setSummary({ critical_cases: 0, avg_accuracy: 0, total_assessments: 0, monthly_growth: 0 });
             setMonthlyTrends([]);
-            setRiskDist([]);
             setPatients([]);
             setStats({
                 gender_distribution: [],
@@ -173,24 +166,53 @@ const Dashboard = React.memo(function Dashboard() {
 
     const computedMetrics = useMemo(() => {
         const safePatients = patients || [];
-        const total = summary.total_assessments || safePatients.length;
-        const critical = summary?.critical_cases ?? 0;
+        const total = safePatients.length;
+
+        // Critical Cases Logic
+        const critical = safePatients.filter(p => p.risk_level === 'High' || p.risk_level === 'Critical').length;
+
+        // Accuracy fallback
         const accuracy = `${safeToFixed(summary?.avg_accuracy, 1, "0.0")}%`;
-        const growthVal = summary?.monthly_growth ?? 0;
+
+        // Dynamic Growth Rate (MoM)
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+
+        const thisMonthCount = safePatients.filter(p => new Date(p.created_at || Date.now()).getMonth() === currentMonth).length;
+        const lastMonthCount = safePatients.filter(p => new Date(p.created_at || Date.now()).getMonth() === lastMonth).length;
+
+        let growthVal = 0;
+        if (lastMonthCount > 0) {
+            growthVal = Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100);
+        } else if (thisMonthCount > 0) {
+            growthVal = 100; // First month growth
+        }
+
         const growth = growthVal >= 0 ? `+${growthVal}%` : `${growthVal}%`;
 
         return {
             total,
             critical,
             accuracy,
-            growth
+            growth,
+            trend: growthVal >= 0 ? 'up' : 'down'
         };
     }, [summary, patients]);
 
-    const riskDistData = useMemo(() => safeArray<RiskDistribution>(riskDist).map((r) => ({
-        name: r?.level || 'Unknown',
-        value: safeNumber(r?.count)
-    })), [riskDist]);
+    const riskDistData = useMemo(() => {
+        const levels = ['Low', 'Medium', 'High', 'Critical'];
+        const counts = safeArray<Patient>(patients).reduce((acc: Record<string, number>, p) => {
+            const lvl = p.risk_level || 'Low';
+            acc[lvl] = (acc[lvl] || 0) + 1;
+            return acc;
+        }, {});
+
+        return levels.map(level => ({
+            name: level,
+            value: counts[level] || 0
+        }));
+    }, [patients]);
 
     // Mock/Transformed data for Clinical Charts
     const assessmentTrendData = useMemo(() => {
@@ -215,21 +237,41 @@ const Dashboard = React.memo(function Dashboard() {
     }, [summary?.avg_accuracy]);
 
     const weeklyTrendData = useMemo(() => {
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        return days.map(day => ({
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const counts: Record<string, number> = { 'Sun': 0, 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0 };
+
+        const now = new Date();
+        const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+        weekStart.setHours(0, 0, 0, 0);
+
+        safeArray<Patient>(patients).forEach(p => {
+            const date = new Date(p.created_at || Date.now());
+            if (date >= weekStart) {
+                const dayName = days[date.getDay()];
+                counts[dayName]++;
+            }
+        });
+
+        // Clinical order starting Monday
+        const clinicalOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        return clinicalOrder.map(day => ({
             day,
-            count: Math.floor(Math.random() * 5) + (day === 'Mon' || day === 'Wed' ? 3 : 1)
+            count: counts[day]
         }));
-    }, []);
+    }, [patients]);
 
     const genderDistData = useMemo(() => {
-        const males = stats.gender_distribution?.find((g: any) => g.sex === 1)?.count || 0;
-        const females = stats.gender_distribution?.find((g: any) => g.sex === 0)?.count || 0;
+        const counts = { Male: 0, Female: 0 };
+        safeArray<Patient>(patients).forEach(p => {
+            if (p.sex === 1) counts.Male++;
+            else counts.Female++;
+        });
+
         return [
-            { name: 'Male', value: males },
-            { name: 'Female', value: females }
+            { name: 'Male', value: counts.Male },
+            { name: 'Female', value: counts.Female }
         ];
-    }, [stats.gender_distribution]);
+    }, [patients]);
 
     const handleAddPatient = () => {
         navigate('/doctor/patients');
@@ -345,7 +387,14 @@ const Dashboard = React.memo(function Dashboard() {
                         <p className="text-slate-500 font-mono text-sm tracking-widest uppercase">Initializing Neural Surface...</p>
                     </div>
                 }>
-                    <AIVisualization3D />
+                    <AIVisualization3D
+                        stats={{
+                            total: computedMetrics.total,
+                            critical: computedMetrics.critical,
+                            accuracy: computedMetrics.accuracy,
+                            trend: computedMetrics.trend
+                        }}
+                    />
                 </Suspense>
             </div>
         </div>
