@@ -4,7 +4,9 @@ import { type PredictionResult, type PatientData } from './api';
 
 export const generatePDF = async (
     result: PredictionResult,
-    data: PatientData
+    data: PatientData,
+    doctorNotes?: string,
+    doctorSignature?: string
 ) => {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -188,21 +190,55 @@ export const generatePDF = async (
     pdf.setTextColor(30, 41, 59);
     pdf.text(wrappedAnalysis, 15, currentY);
 
-    currentY += (wrappedAnalysis.length * 5) + 15;
+    currentY += (wrappedAnalysis.length * 5) + 10;
+
+    // Doctor Notes Section (if provided)
+    if (doctorNotes) {
+        pdf.setFontSize(11);
+        pdf.setFont('Times-Roman', 'bold');
+        pdf.setTextColor(15, 23, 42);
+        pdf.text('Physician\'s Clinical Notes', 10, currentY);
+        currentY += 6;
+
+        pdf.setFontSize(9);
+        pdf.setFont('Times-Roman', 'normal');
+        pdf.setTextColor(51, 65, 85); // slate-700
+        const wrappedNotes = pdf.splitTextToSize(doctorNotes, pdfWidth - 20);
+        pdf.text(wrappedNotes, 10, currentY);
+        currentY += (wrappedNotes.length * 5) + 12;
+    }
 
     // Signature Area
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(15, currentY, 100, currentY);
+    if (currentY > pdfHeight - 50) {
+        pdf.addPage();
+        currentY = 20;
+    }
+
+    pdf.setDrawColor(203, 213, 225); // slate-300
+    pdf.line(10, currentY, 80, currentY);
+
+    if (doctorSignature) {
+        try {
+            pdf.addImage(doctorSignature, 'PNG', 10, currentY - 15, 40, 15);
+        } catch (error) {
+            console.warn('Could not add signature image to PDF', error);
+        }
+    }
+
     currentY += 5;
-    pdf.setFontSize(11);
+    pdf.setFontSize(10);
     pdf.setFont('Times-Roman', 'bold');
-    pdf.text('Physician Signature:', 15, currentY);
-    currentY += 6;
+    pdf.setTextColor(15, 23, 42);
+    pdf.text('Physician Signature:', 10, currentY);
+
+    currentY += 5;
+    pdf.setFontSize(9);
     pdf.setFont('Times-Roman', 'normal');
-    pdf.text(data.doctor_name || 'Dr. Sarah Chen', 15, currentY);
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 116, 139);
-    pdf.text(`Electronically verified on ${new Date().toLocaleDateString()}`, 15, currentY + 5);
+    pdf.text(data.doctor_name || 'Dr. Sarah Chen', 10, currentY);
+
+    pdf.setFontSize(7);
+    pdf.setTextColor(148, 163, 184); // slate-400
+    pdf.text(`Electronically verified on ${new Date().toLocaleDateString()}`, 10, currentY + 4);
 
     // Footer
     pdf.setFontSize(8);
