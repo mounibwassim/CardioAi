@@ -1,7 +1,9 @@
 
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
+import PatientLayout from './layouts/PatientLayout';
+import DoctorLayout from './layouts/DoctorLayout';
+import ScrollToTop from './components/ScrollToTop';
 
 // Lazy Load Pages for Performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -11,13 +13,15 @@ const PatientManagement = lazy(() => import('./pages/PatientManagement'));
 const PatientDetails = lazy(() => import('./pages/PatientDetails'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Feedback = lazy(() => import('./pages/Feedback'));
-const PatientPortal = lazy(() => import('./pages/PatientPortal')); // Re-added PatientPortal
+const PatientPortal = lazy(() => import('./pages/PatientPortal'));
 const ComprehensiveCare = lazy(() => import('./pages/services/ComprehensiveCare'));
 const AIRiskAnalysis = lazy(() => import('./pages/services/AIRiskAnalysis'));
 const ExpertConsultation = lazy(() => import('./pages/services/ExpertConsultation'));
 const OngoingMonitoring = lazy(() => import('./pages/services/OngoingMonitoring'));
 const PatientReviews = lazy(() => import('./pages/PatientReviews'));
 const Settings = lazy(() => import('./pages/Settings'));
+const PatientNotFound = lazy(() => import('./pages/patient/PatientNotFound'));
+const DoctorNotFound = lazy(() => import('./pages/doctor/DoctorNotFound'));
 
 // Loading Screen
 const Loading = () => (
@@ -32,34 +36,48 @@ const Loading = () => (
   </div>
 );
 
+// Architectural Safeguard: Doctor Route Guard (Simple validation)
+const DoctorRoute = ({ children }: { children: React.ReactNode }) => {
+  const isDoctorView = window.location.pathname.startsWith("/doctor") ||
+    window.location.pathname.startsWith("/patients") ||
+    window.location.pathname.startsWith("/patient") ||
+    window.location.pathname.startsWith("/predict") ||
+    window.location.pathname.startsWith("/settings") ||
+    window.location.pathname.startsWith("/results");
+  return isDoctorView ? <>{children}</> : <Navigate to="/" replace />;
+};
+
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Suspense fallback={<Loading />}>
         <Routes>
-          {/* Default Route - Patient Dashboard */}
-          <Route path="/" element={<Layout><PatientPortal /></Layout>} />
+          {/* Patient Portal Routes */}
+          <Route element={<PatientLayout />}>
+            <Route path="/" element={<PatientPortal />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/reviews" element={<PatientReviews />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/services/comprehensive-care" element={<ComprehensiveCare />} />
+            <Route path="/services/ai-risk-analysis" element={<AIRiskAnalysis />} />
+            <Route path="/services/expert-consultation" element={<ExpertConsultation />} />
+            <Route path="/services/ongoing-monitoring" element={<OngoingMonitoring />} />
+            <Route path="*" element={<PatientNotFound />} />
+          </Route>
 
-          {/* Hidden/Specific Routing */}
-          <Route path="/doctor" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/patients" element={<Layout><PatientManagement /></Layout>} />
-          <Route path="/patient/:id" element={<Layout><PatientDetails /></Layout>} />
-          <Route path="/predict" element={<Layout><Predict /></Layout>} />
-          <Route path="/results" element={<Layout><Results /></Layout>} />
-          <Route path="/settings" element={<Layout><Settings /></Layout>} />
+          {/* Doctor Analytics Routes (Guarded & Isolated) */}
+          <Route element={<DoctorRoute><DoctorLayout /></DoctorRoute>}>
+            <Route path="/doctor" element={<Dashboard />} />
+            <Route path="/patients" element={<PatientManagement />} />
+            <Route path="/patient/:id" element={<PatientDetails />} />
+            <Route path="/predict" element={<Predict />} />
+            <Route path="/results" element={<Results />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/doctor/*" element={<DoctorNotFound />} />
+          </Route>
 
-          {/* Public Views */}
-          <Route path="/feedback" element={<Layout><Feedback /></Layout>} />
-          <Route path="/reviews" element={<Layout><PatientReviews /></Layout>} />
-          <Route path="/contact" element={<Layout><Contact /></Layout>} />
-
-          {/* Service Pages */}
-          <Route path="/services/comprehensive-care" element={<Layout><ComprehensiveCare /></Layout>} />
-          <Route path="/services/ai-risk-analysis" element={<Layout><AIRiskAnalysis /></Layout>} />
-          <Route path="/services/expert-consultation" element={<Layout><ExpertConsultation /></Layout>} />
-          <Route path="/services/ongoing-monitoring" element={<Layout><OngoingMonitoring /></Layout>} />
-
-          {/* Wildcard Fallback */}
+          {/* Global Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
