@@ -285,7 +285,9 @@ const Dashboard = React.memo(function Dashboard() {
     const assessmentCountMap = useMemo(() => {
         const map: Record<string, number> = {};
         safeArray<Patient>(patients).forEach(p => {
-            const dateStr = new Date(p.created_at || Date.now()).toISOString().split('T')[0];
+            const date = new Date(p.created_at || Date.now());
+            // Use en-CA as it produces YYYY-MM-DD format regardless of locale
+            const dateStr = date.toLocaleDateString('en-CA');
             map[dateStr] = (map[dateStr] || 0) + 1;
         });
         return map;

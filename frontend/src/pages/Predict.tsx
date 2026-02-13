@@ -195,7 +195,7 @@ export default function Predict() {
 
                             <div className="flex justify-between items-center py-4 border-b border-white/5">
                                 <span className="text-slate-400 font-medium">Model Confidence</span>
-                                <span className="text-white font-mono font-bold">{(predictionResult.result.probability * 100).toFixed(1)}%</span>
+                                <span className="text-white font-mono font-bold">{(predictionResult.result.risk_score * 100).toFixed(1)}%</span>
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 pt-4">
