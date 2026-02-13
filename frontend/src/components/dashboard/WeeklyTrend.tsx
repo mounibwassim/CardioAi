@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-    LineChart,
-    Line,
+    AreaChart,
+    Area,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -21,7 +21,7 @@ interface WeeklyTrendProps {
 
 const WeeklyTrend: React.FC<WeeklyTrendProps> = ({ data }) => {
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 hover:shadow-2xl">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 hover:shadow-2xl group">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-blue-500" />
@@ -34,13 +34,23 @@ const WeeklyTrend: React.FC<WeeklyTrendProps> = ({ data }) => {
 
             <div className="flex-1 min-h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <defs>
+                            <linearGradient id="colorWave" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                            </linearGradient>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="4" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
                         <XAxis
                             dataKey="day"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 12, fontWeight: 600, fill: '#64748B' }}
+                            tick={{ fontSize: 12, fontWeight: 700, fill: '#64748B' }}
                             dy={10}
                         />
                         <YAxis
@@ -58,18 +68,19 @@ const WeeklyTrend: React.FC<WeeklyTrendProps> = ({ data }) => {
                                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                             }}
                             itemStyle={{ color: '#f8fafc' }}
-                            cursor={{ stroke: '#3b82f6', strokeWidth: 2 }}
                         />
-                        <Line
+                        <Area
                             type="monotone"
                             dataKey="count"
                             stroke="#3b82f6"
                             strokeWidth={4}
-                            dot={{ r: 6, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
-                            activeDot={{ r: 8, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
+                            fill="url(#colorWave)"
+                            filter="url(#glow)"
+                            dot={{ r: 6, fill: '#3b82f6', strokeWidth: 3, stroke: '#fff' }}
+                            activeDot={{ r: 8, fill: '#1d4ed8', strokeWidth: 3, stroke: '#fff' }}
                             isAnimationActive={false}
                         />
-                    </LineChart>
+                    </AreaChart>
                 </ResponsiveContainer>
             </div>
         </div>

@@ -60,7 +60,7 @@ export default function PatientManagement() {
     };
 
     return (
-        <div className="space-y-6 py-6 relative">
+        <div className="pt-8 px-6 pb-6 mb-6 relative">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">Patient Management</h1>

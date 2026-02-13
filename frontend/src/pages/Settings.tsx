@@ -29,7 +29,7 @@ export default function Settings() {
         if (confirm('Are you sure you want to sign out?')) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            navigate('/login');
+            navigate('/patient');
         }
     };
 

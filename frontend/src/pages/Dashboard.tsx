@@ -10,7 +10,6 @@ import {
     RefreshCw
 } from 'lucide-react';
 import {
-    getDashboardStats,
     getPatients,
     getAnalyticsSummary,
     getMonthlyTrends,
@@ -22,15 +21,17 @@ import DashboardSkeleton from '../components/DashboardSkeleton';
 import { safeArray, safeToFixed } from '../lib/utils';
 
 // Modular Components
-import AssessmentTrend from '../components/dashboard/AssessmentTrend';
 import MonthlyTrendChart from '../components/dashboard/MonthlyTrend';
 import RiskDistributionChart from '../components/dashboard/RiskDistribution';
 import ModelAccuracyChart from '../components/dashboard/ModelAccuracy';
 import WeeklyTrend from '../components/dashboard/WeeklyTrend';
 import GenderDistribution from '../components/dashboard/GenderDistribution';
+import DoctorPerformance from '../components/dashboard/DoctorPerformance';
+import CalendarView from '../components/dashboard/CalendarView';
 
 // Isolated 3D Visualization (Lazy Loaded)
 const AIVisualization3D = React.lazy(() => import('../components/dashboard/AIVisualization3D'));
+const LiveSystemPulse = React.lazy(() => import('../components/dashboard/LiveSystemPulse'));
 
 // Define StatCard props to match usage
 interface StatCardProps {
@@ -88,14 +89,6 @@ const Dashboard = React.memo(function Dashboard() {
     });
     const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
 
-    const [stats, setStats] = useState<any>({
-        gender_distribution: [],
-        age_distribution: [],
-        assessment_trends: [],
-        risk_trends: [],
-        recent_activity: [],
-        monthly_stats: []
-    });
 
     const fetchAllData = useCallback(async (showLoading = false, signal?: AbortSignal) => {
         if (showLoading) setLoading(true);
@@ -103,13 +96,11 @@ const Dashboard = React.memo(function Dashboard() {
             const [
                 summaryData,
                 trendsData,
-                patientsData,
-                legacyStats
+                patientsData
             ] = await Promise.all([
                 getAnalyticsSummary(),
                 getMonthlyTrends(),
-                getPatients(),
-                getDashboardStats()
+                getPatients()
             ]);
 
             if (signal?.aborted) return;
@@ -122,29 +113,12 @@ const Dashboard = React.memo(function Dashboard() {
             });
             setMonthlyTrends(Array.isArray(trendsData) ? trendsData : []);
             setPatients(Array.isArray(patientsData) ? patientsData : []);
-
-            setStats({
-                gender_distribution: safeArray(legacyStats?.gender_distribution),
-                age_distribution: safeArray(legacyStats?.age_distribution),
-                assessment_trends: safeArray(legacyStats?.assessment_trends),
-                risk_trends: safeArray(legacyStats?.risk_trends),
-                recent_activity: safeArray(legacyStats?.recent_activity),
-                monthly_stats: safeArray(legacyStats?.monthly_stats)
-            });
         } catch (error) {
             if (signal?.aborted) return;
             console.error("Failed to fetch dashboard data", error);
             setSummary({ critical_cases: 0, avg_accuracy: 0, total_assessments: 0, monthly_growth: 0 });
             setMonthlyTrends([]);
             setPatients([]);
-            setStats({
-                gender_distribution: [],
-                age_distribution: [],
-                assessment_trends: [],
-                risk_trends: [],
-                recent_activity: [],
-                monthly_stats: []
-            });
         } finally {
             if (showLoading && !signal?.aborted) setLoading(false);
         }
@@ -215,13 +189,6 @@ const Dashboard = React.memo(function Dashboard() {
     }, [patients]);
 
     // Mock/Transformed data for Clinical Charts
-    const assessmentTrendData = useMemo(() => {
-        // Transform recent activity into a trend line
-        return safeArray(stats?.recent_activity).slice(0, 10).reverse().map((item: any) => ({
-            date: item?.date ? new Date(item.date).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A',
-            score: item?.risk_score || (item?.risk_level === 'High' ? 85 : item?.risk_level === 'Medium' ? 45 : 15)
-        }));
-    }, [stats?.recent_activity]);
 
     const accuracyTrendData = useMemo(() => {
         // Generate a synthetic trend based on current accuracy
@@ -272,6 +239,51 @@ const Dashboard = React.memo(function Dashboard() {
             { name: 'Female', value: counts.Female }
         ];
     }, [patients]);
+
+    const doctorPerformanceData = useMemo(() => {
+        const doctorsList = [
+            { id: 1, name: 'Dr. Sarah Chen', color: 'blue' },
+            { id: 2, name: 'Dr. Emily Ross', color: 'purple' },
+            { id: 3, name: 'Dr. Michael Torres', color: 'emerald' }
+        ];
+
+        const counts: Record<string, number> = {};
+        safeArray<Patient>(patients).forEach(p => {
+            const name = p.doctor_name || 'Dr. Sarah Chen';
+            counts[name] = (counts[name] || 0) + 1;
+        });
+
+        return doctorsList.map(doc => ({
+            name: doc.name,
+            count: counts[doc.name] || 0,
+            color: doc.color
+        }));
+    }, [patients]);
+
+    const assessmentCountMap = useMemo(() => {
+        const map: Record<string, number> = {};
+        safeArray<Patient>(patients).forEach(p => {
+            const dateStr = new Date(p.created_at || Date.now()).toISOString().split('T')[0];
+            map[dateStr] = (map[dateStr] || 0) + 1;
+        });
+        return map;
+    }, [patients]);
+
+    const riskWeights = useMemo(() => {
+        const total = riskDistData.reduce((sum, d) => sum + d.value, 0);
+        if (total === 0) return { green: 1, yellow: 0, red: 0 };
+
+        const low = riskDistData.find(d => d.name === 'Low')?.value || 0;
+        const med = riskDistData.find(d => d.name === 'Medium')?.value || 0;
+        const high = (riskDistData.find(d => d.name === 'High')?.value || 0) +
+            (riskDistData.find(d => d.name === 'Critical')?.value || 0);
+
+        return {
+            green: low / total,
+            yellow: med / total,
+            red: high / total
+        };
+    }, [riskDistData]);
 
     const handleAddPatient = () => {
         navigate('/doctor/patients');
@@ -360,14 +372,25 @@ const Dashboard = React.memo(function Dashboard() {
                 />
             </div>
 
-            {/* Middle: 2D Clinical Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <AssessmentTrend data={assessmentTrendData} />
+            {/* Middle: 2D Clinical Charts Grid - V6 Layout */}
+
+            {/* Row 1: Trends & Performance */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <WeeklyTrend data={weeklyTrendData} />
                 <MonthlyTrendChart data={monthlyTrends} />
-                <GenderDistribution data={genderDistData} />
+                <DoctorPerformance data={doctorPerformanceData} />
+            </div>
+
+            {/* Row 2: Distribution & Accuracy */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <RiskDistributionChart data={riskDistData} />
+                <GenderDistribution data={genderDistData} />
                 <ModelAccuracyChart data={accuracyTrendData} />
+            </div>
+
+            {/* Row 3: Calendar View */}
+            <div className="grid grid-cols-1 gap-8">
+                <CalendarView assessmentMap={assessmentCountMap} />
             </div>
 
             {/* Divider */}
@@ -376,15 +399,15 @@ const Dashboard = React.memo(function Dashboard() {
                     <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
                 </div>
                 <div className="relative flex justify-center text-sm uppercase tracking-widest font-bold">
-                    <span className="bg-slate-50 dark:bg-slate-950 px-4 text-slate-500">Visualization Layer</span>
+                    <span className="bg-slate-50 dark:bg-slate-950 px-4 text-slate-500">3D Simulation Layer</span>
                 </div>
             </div>
 
-            {/* Bottom: 3D AI Visualization Section (isolated) */}
-            <div className="relative">
+            {/* Bottom: 3D Dual Engine Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-12">
                 <Suspense fallback={
                     <div className="h-[400px] w-full bg-slate-900 rounded-2xl flex items-center justify-center animate-pulse border border-slate-800">
-                        <p className="text-slate-500 font-mono text-sm tracking-widest uppercase">Initializing Neural Surface...</p>
+                        <p className="text-slate-500 font-mono text-sm tracking-widest uppercase">Syncing Neural Weights...</p>
                     </div>
                 }>
                     <AIVisualization3D
@@ -392,6 +415,20 @@ const Dashboard = React.memo(function Dashboard() {
                             total: computedMetrics.total,
                             critical: computedMetrics.critical,
                             accuracy: computedMetrics.accuracy,
+                            trend: computedMetrics.trend,
+                            riskWeights: riskWeights
+                        }}
+                    />
+                </Suspense>
+
+                <Suspense fallback={
+                    <div className="h-[400px] w-full bg-slate-900 rounded-2xl flex items-center justify-center animate-pulse border border-slate-800">
+                        <p className="text-slate-500 font-mono text-sm tracking-widest uppercase">Modulating System Pulse...</p>
+                    </div>
+                }>
+                    <LiveSystemPulse
+                        stats={{
+                            total: computedMetrics.total,
                             trend: computedMetrics.trend
                         }}
                     />
