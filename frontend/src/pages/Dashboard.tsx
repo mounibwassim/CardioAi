@@ -308,7 +308,7 @@ const Dashboard = React.memo(function Dashboard() {
     }, [riskDistData]);
 
     const handleAddPatient = () => {
-        navigate('/doctor/patients');
+        navigate('/doctor/new-assessment');
     };
 
     // CRITICAL: Early return must be AFTER all hooks

@@ -200,7 +200,7 @@ export default function Predict() {
 
                             <div className="grid grid-cols-1 gap-3 pt-4">
                                 <button
-                                    onClick={() => navigate('/results', { state: { ...predictionResult, data: formData } })}
+                                    onClick={() => navigate('/doctor/results', { state: { ...predictionResult, data: formData } })}
                                     className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-bold transition-all active:scale-[0.98]"
                                 >
                                     View Full Clinical Report

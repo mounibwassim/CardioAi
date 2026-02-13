@@ -222,7 +222,7 @@ export default function Results() {
                     {isDownloading ? 'Generating PDF...' : 'Download Report'}
                 </button>
                 <Link
-                    to="/doctor/predict"
+                    to="/doctor/new-assessment"
                     className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm"
                 >
                     <RefreshCw className="mr-2 h-5 w-5" />
