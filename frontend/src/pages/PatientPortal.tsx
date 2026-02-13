@@ -481,19 +481,16 @@ export default function PatientPortal() {
                             <p className="text-sm">&copy; {new Date().getFullYear()} Professional Medical Intelligence. All rights reserved.</p>
                         </div>
                         <div className="flex space-x-6">
-
+                            {/* Hidden Portal Entry Dot - Relocated to Footer Flow */}
+                            <button
+                                onClick={() => navigate("/doctor/login", { replace: true })}
+                                className="w-4 h-4 rounded-full bg-white dark:bg-slate-950 opacity-10 hover:opacity-50 transition-all duration-500 cursor-pointer border border-white/20"
+                                aria-label="Staff Access"
+                            />
                         </div>
                     </div>
                 </div>
             </footer>
-            {/* Hidden Portal Entry Dot - Relocated & Subtle */}
-            <div className="fixed bottom-4 right-4 z-[9999] pointer-events-none">
-                <button
-                    onClick={() => navigate("/doctor/login", { replace: true })}
-                    className="w-4 h-4 rounded-full bg-white dark:bg-slate-950 opacity-30 hover:opacity-80 transition-all duration-500 pointer-events-auto cursor-pointer border border-white/20"
-                    aria-label="Staff Access"
-                />
-            </div>
         </div>
     );
 }
