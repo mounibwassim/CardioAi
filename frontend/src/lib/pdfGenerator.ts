@@ -1,7 +1,5 @@
 import { jsPDF } from 'jspdf';
 import { type PredictionResult, type PatientData } from './api';
-import { jsPDF } from 'jspdf';
-import { type PredictionResult, type PatientData } from './api';
 import { getCleanExplanation } from './clinicalLogic';
 
 export const generatePDF = async (
