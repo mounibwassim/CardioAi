@@ -29,7 +29,8 @@ origins = [
     "http://127.0.0.1:5173",
     "https://cardio-ai-frontend.vercel.app",
     "https://cardio-ai.vercel.app",
-    "https://cardio-ai-pi.vercel.app"
+    "https://cardio-ai-pi.vercel.app",
+    "https://cardio-ai-delta.vercel.app"
 ]
 
 app.add_middleware(
