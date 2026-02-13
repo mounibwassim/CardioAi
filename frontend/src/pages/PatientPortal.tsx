@@ -484,7 +484,7 @@ export default function PatientPortal() {
                             {/* Hidden Portal Entry Dot - Relocated to Footer Flow */}
                             <button
                                 onClick={() => navigate("/doctor/login", { replace: true })}
-                                className="w-4 h-4 rounded-full bg-white dark:bg-slate-950 opacity-10 hover:opacity-50 transition-all duration-500 cursor-pointer border border-white/20"
+                                className="w-4 h-4 rounded-full bg-white dark:bg-white/80 opacity-40 hover:opacity-80 hover:scale-125 transition-all duration-500 cursor-pointer border border-white/40"
                                 aria-label="Staff Access"
                             />
                         </div>
