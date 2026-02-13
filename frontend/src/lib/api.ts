@@ -22,6 +22,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        if (!error.response && error.config) {
+            console.error('🌐 Network Error: Please check if the backend is running and reachable at:', error.config.baseURL);
+        }
         // Auth gate removed: Silently cleanup token if expired, but do not redirect
         if (error.response?.status === 401) {
             localStorage.removeItem('auth_token');
