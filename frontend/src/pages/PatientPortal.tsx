@@ -490,7 +490,7 @@ export default function PatientPortal() {
             <div className="fixed bottom-4 right-4 z-[9999] pointer-events-none">
                 <button
                     onClick={() => navigate("/doctor/login", { replace: true })}
-                    className="w-4 h-4 rounded-full bg-white dark:bg-slate-950 opacity-[0.03] hover:opacity-100 transition-all duration-500 pointer-events-auto cursor-default"
+                    className="w-4 h-4 rounded-full bg-white dark:bg-slate-950 opacity-30 hover:opacity-80 transition-all duration-500 pointer-events-auto cursor-pointer border border-white/20"
                     aria-label="Staff Access"
                 />
             </div>

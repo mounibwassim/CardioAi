@@ -145,26 +145,6 @@ export default function PatientFAQ() {
                     </div>
                 </div>
 
-                <div className="bg-primary-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl shadow-primary-600/20">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="text-center md:text-left">
-                            <h3 className="text-2xl font-black mb-2 uppercase tracking-tighter">Diagnostic Verification Protocol</h3>
-                            <p className="text-primary-100 max-w-md font-medium text-sm leading-relaxed">
-                                Our AI system operates under strict clinical oversight. High-risk predictions are prioritized for manual review by a licensed cardiologist.
-                            </p>
-                        </div>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="bg-white text-primary-600 px-8 py-4 rounded-2xl font-black tracking-widest uppercase text-xs shadow-xl"
-                        >
-                            Open Review Portal
-                        </motion.button>
-                    </div>
-                    {/* Abstract background elements */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl"></div>
-                </div>
             </div>
         </div>
     );
