@@ -22,14 +22,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        // Auth gate removed: Silently cleanup token if expired, but do not redirect
         if (error.response?.status === 401) {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('doctor_name');
             localStorage.removeItem('doctor_role');
-
-            if (window.location.pathname !== '/doctor-secure-access-portal') {
-                window.location.href = '/doctor-secure-access-portal';
-            }
         }
         return Promise.reject(error);
     }

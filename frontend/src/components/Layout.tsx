@@ -1,7 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { useState } from 'react';
-import DoctorLoginModal from './DoctorLoginModal';
 
 interface LayoutProps {
     children?: React.ReactNode;
@@ -11,34 +9,21 @@ export default function Layout({ children }: LayoutProps) {
     const location = useLocation();
     const isActive = (path: string) => location.pathname === path;
 
-    const userRole = localStorage.getItem('user_role');
-    const isDoctorAuth = userRole === 'doctor'; // Renamed for clarity
-    const isDoctorSection = location.pathname.startsWith('/doctor'); // Check if looking at doctor pages
-
-    const isDoctor = isDoctorAuth && isDoctorSection; // Only show doctor UI if auth AND in doctor section
-
-    // Modal State
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    // Direct Access: Portal UI is shown by default
+    const isDoctor = true;
 
     const handleLogout = () => {
-        localStorage.removeItem('user_role');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_name');
+        localStorage.clear();
         window.location.href = '/';
     };
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
-            <DoctorLoginModal
-                isOpen={isLoginModalOpen}
-                onClose={() => setIsLoginModalOpen(false)}
-            />
-
             <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-20">
                         <div className="flex items-center">
-                            <Link to={isDoctor ? "/doctor/dashboard" : "/"} className="flex-shrink-0 flex items-center group" aria-label="CardioAI Home">
+                            <Link to="/" className="flex-shrink-0 flex items-center group" aria-label="CardioAI Home">
                                 <img
                                     src="/assets/images/logo.png"
                                     alt=""
@@ -47,45 +32,23 @@ export default function Layout({ children }: LayoutProps) {
                                 />
                                 <div>
                                     <span className="text-2xl font-bold text-slate-900 tracking-tight">CardioAI</span>
-                                    {isDoctor && <span className="block text-xs font-semibold text-primary-600 uppercase tracking-wider">Doctor Portal</span>}
+                                    {isDoctor && <span className="block text-xs font-semibold text-primary-600 uppercase tracking-wider">Clinical Portal</span>}
                                 </div>
                             </Link>
                         </div>
 
                         <div className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main Navigation">
-                            {!isDoctor ? (
-                                <>
-                                    <Link to="/" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/') ? "text-primary-600" : "text-slate-600")}>Home</Link>
-                                    <a href="/#services" className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Services</a>
-                                    <Link to="/reviews" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/reviews') ? "text-primary-600" : "text-slate-600")}>Reviews</Link>
-                                    <Link to="/contact" className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/contact') ? "text-primary-600" : "text-slate-600")}>Contact</Link>
-
-                                    <Link
-                                        to="/feedback"
-                                        aria-label="Submit system feedback"
-                                        className={cn(
-                                            "inline-flex items-center px-4 py-2 border border-primary-200 rounded-full text-sm font-medium transition-all hover:bg-primary-50 hover:border-primary-300",
-                                            isActive('/feedback') ? "text-primary-700 bg-primary-50 border-primary-300" : "text-primary-600"
-                                        )}
-                                    >
-                                        Share Feedback
-                                    </Link>
-                                </>
-                            ) : (
-                                <>
-                                    <Link to="/doctor/dashboard" aria-current={isActive('/doctor/dashboard') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/dashboard') ? "text-primary-600" : "text-slate-600")}>Dashboard</Link>
-                                    <Link to="/doctor/patients" aria-current={isActive('/doctor/patients') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/patients') ? "text-primary-600" : "text-slate-600")}>Patients</Link>
-                                    <Link to="/doctor/predict" aria-current={isActive('/doctor/predict') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/predict') ? "text-primary-600" : "text-slate-600")}>New Assessment</Link>
-                                    <Link to="/doctor/settings" aria-current={isActive('/doctor/settings') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/doctor/settings') ? "text-primary-600" : "text-slate-600")}>Settings</Link>
-                                    <button
-                                        onClick={handleLogout}
-                                        aria-label="Logout from doctor portal"
-                                        className="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors"
-                                    >
-                                        Logout
-                                    </button>
-                                </>
-                            )}
+                            <Link to="/" aria-current={isActive('/') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/') ? "text-primary-600" : "text-slate-600")}>Dashboard</Link>
+                            <Link to="/patients" aria-current={isActive('/patients') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/patients') ? "text-primary-600" : "text-slate-600")}>Patients</Link>
+                            <Link to="/predict" aria-current={isActive('/predict') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/predict') ? "text-primary-600" : "text-slate-600")}>New Assessment</Link>
+                            <Link to="/settings" aria-current={isActive('/settings') ? 'page' : undefined} className={cn("text-sm font-medium transition-colors hover:text-primary-600", isActive('/settings') ? "text-primary-600" : "text-slate-600")}>Settings</Link>
+                            <button
+                                onClick={handleLogout}
+                                aria-label="Reset application state"
+                                className="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-600 transition-colors"
+                            >
+                                Reset UX
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -99,14 +62,6 @@ export default function Layout({ children }: LayoutProps) {
                         <p>
                             &copy; {new Date().getFullYear()} CardioAI. Professional Medical Intelligence System. All rights reserved.
                         </p>
-                        {!isDoctor && (
-                            <button
-                                onClick={() => setIsLoginModalOpen(true)}
-                                className="text-xs text-slate-300 hover:text-slate-500 transition-colors ml-4 cursor-pointer focus:outline-none"
-                            >
-                                Doctor Access
-                            </button>
-                        )}
                     </div>
                 </div>
             </footer>
