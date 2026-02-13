@@ -90,15 +90,11 @@ const NeuralPulseField = memo(function NeuralPulseField() {
                     <bufferGeometry>
                         <bufferAttribute
                             attach="attributes-position"
-                            count={particles.positions.length / 3}
-                            array={particles.positions}
-                            itemSize={3}
+                            args={[particles.positions, 3]}
                         />
                         <bufferAttribute
                             attach="attributes-size"
-                            count={particles.sizes.length}
-                            array={particles.sizes}
-                            itemSize={1}
+                            args={[particles.sizes, 1]}
                         />
                     </bufferGeometry>
                     <pointsMaterial
