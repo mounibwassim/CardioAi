@@ -1,22 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, Trash2, Key, Info, Moon, LogOut } from 'lucide-react';
+import { Shield, AlertTriangle, Trash2, Key, Info, LogOut } from 'lucide-react';
 import { resetSystem } from '../lib/api';
-import { useTheme } from '../context/ThemeContext';
 
 export default function Settings() {
     const navigate = useNavigate();
-    const { doctorTheme, setDoctorTheme } = useTheme();
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Handle Theme Toggle
-    const toggleDarkMode = () => {
-        const newTheme = doctorTheme === 'dark' ? 'light' : 'dark';
-        setDoctorTheme(newTheme);
-    };
 
     // Handle Logout
     const handleLogout = () => {
@@ -72,37 +65,21 @@ export default function Settings() {
                 <p className="text-slate-500 dark:text-slate-400">Manage hospital configuration and system security</p>
             </div>
 
-            {/* General Section */}
+            {/* Session Section */}
             <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-                    <div className="flex items-center">
-                        <Moon className="h-5 w-5 text-indigo-600 mr-2" />
-                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Appearance & Session</h2>
-                    </div>
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center">
+                    <LogOut className="h-5 w-5 text-indigo-600 mr-2" />
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Account Session</h2>
                 </div>
-                <div className="p-6 space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Dark Mode</h3>
-                            <p className="text-xs text-slate-500 mt-1">Switch between light and dark clinical themes</p>
-                        </div>
-                        <button
-                            onClick={toggleDarkMode}
-                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${doctorTheme === 'dark' ? 'bg-indigo-600' : 'bg-slate-200'}`}
-                        >
-                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${doctorTheme === 'dark' ? 'translate-x-5' : 'translate-x-0'}`} />
-                        </button>
-                    </div>
-
-                    <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
-                        <button
-                            onClick={handleLogout}
-                            className="inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-700 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            <LogOut className="h-4 w-4 mr-2" />
-                            Logout of System
-                        </button>
-                    </div>
+                <div className="p-6">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Manage your current active session and security credentials.</p>
+                    <button
+                        onClick={handleLogout}
+                        className="inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-700 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout of System
+                    </button>
                 </div>
             </div>
 
