@@ -106,11 +106,15 @@ export default function PatientPortal() {
                                 camera={{ position: [0, 0, 30], fov: 50 }}
                                 onCreated={({ gl }) => {
                                     // Resilience: Handle WebGL context recovery
-                                    const canvas = gl.domElement;
-                                    canvas.addEventListener('webglcontextlost', (event) => {
+                                    const handleLoss = (event: Event) => {
                                         event.preventDefault();
                                         console.warn('WebGL context lost - CardioAI UI stability feature triggered');
-                                    }, false);
+                                    };
+                                    const canvas = gl.domElement;
+                                    canvas.addEventListener('webglcontextlost', handleLoss, false);
+
+                                    // Cleanup listener on unmount is tricky inside onCreated
+                                    // We rely on standard R3F cleanup for the rest
                                 }}
                             >
                                 <ambientLight intensity={0.6} />

@@ -22,6 +22,8 @@ const OngoingMonitoring = lazy(() => import('./pages/services/OngoingMonitoring'
 const PatientReviews = lazy(() => import('./pages/PatientReviews'));
 const Settings = lazy(() => import('./pages/Settings'));
 
+const DoctorLoginPage = lazy(() => import('./pages/DoctorLoginPage'));
+
 // Loading Screen
 const Loading = () => (
   <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-white">
@@ -38,7 +40,7 @@ const Loading = () => (
 // Protected Doctor Route Guard
 const ProtectedDoctorRoute = ({ children }: { children: React.ReactNode }) => {
   const session = localStorage.getItem('doctorSession');
-  return session ? <>{children}</> : <Navigate to="/" replace />;
+  return session ? <>{children}</> : <Navigate to="/doctor/login" replace />;
 };
 
 function App() {
@@ -62,6 +64,7 @@ function App() {
             </Route>
 
             {/* Doctor Portal Routes (Strict Separation) */}
+            <Route path="/doctor/login" element={<DoctorLoginPage />} />
             <Route path="/doctor" element={<ProtectedDoctorRoute><DoctorLayout /></ProtectedDoctorRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Navigate to="/doctor" replace />} />

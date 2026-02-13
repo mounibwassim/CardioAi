@@ -13,7 +13,7 @@ export default function PatientLayout() {
             {/* Hidden Portal Entry Dot */}
             <div className="fixed bottom-4 right-4 z-[9999]">
                 <button
-                    onClick={() => navigate("/doctor", { replace: true })}
+                    onClick={() => navigate("/doctor/login", { replace: true })}
                     className="w-3 h-3 rounded-full bg-slate-700 hover:bg-primary-500 transition-all duration-300 opacity-20 hover:opacity-100"
                     aria-label="Doctor Portal"
                 />
