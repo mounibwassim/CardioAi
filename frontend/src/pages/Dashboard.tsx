@@ -259,12 +259,24 @@ const Dashboard = React.memo(function Dashboard() {
         };
     }, [summary, patients]);
 
+    // NEW: Lifted hooks from JSX to satisfy Hook Order Rules (Fixes #310)
+    const doctorPerfData = useMemo(() => safeArray<DoctorPerformance>(doctorPerf).map((d) => ({
+        doctor: d?.name || 'Unknown',
+        patients: safeNumber(d?.assessments)
+    })), [doctorPerf]);
+
+    const riskDistData = useMemo(() => safeArray<RiskDistribution>(riskDist).map((r) => ({
+        name: r?.level || 'Unknown',
+        value: safeNumber(r?.count)
+    })), [riskDist]);
+
     const handleAddPatient = () => {
         // Navigating to Patient Management where the modal is
         navigate('/doctor/patients');
     };
 
     // Skeleton Loading State (Production Pattern)
+    // CRITICAL: Must be AFTER all Hook declarations to prevent Order Violations (#310)
     if (loading && patients.length === 0) {
         return <DashboardSkeleton />;
     }
@@ -376,10 +388,7 @@ const Dashboard = React.memo(function Dashboard() {
                     </h3>
                     <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={useMemo(() => safeArray<DoctorPerformance>(doctorPerf).map((d) => ({
-                                doctor: d?.name || 'Unknown',
-                                patients: safeNumber(d?.assessments)
-                            })), [doctorPerf])}>
+                            <BarChart data={doctorPerfData}>
                                 <XAxis
                                     dataKey="doctor"
                                     tick={{ fontSize: 14, fontWeight: 600, fill: '#475569' }}
@@ -410,10 +419,7 @@ const Dashboard = React.memo(function Dashboard() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={useMemo(() => safeArray<RiskDistribution>(riskDist).map((r) => ({
-                                        name: r?.level || 'Unknown',
-                                        value: safeNumber(r?.count)
-                                    })), [riskDist])}
+                                    data={riskDistData}
                                     dataKey="value"
                                     nameKey="name"
                                     cx="50%"
