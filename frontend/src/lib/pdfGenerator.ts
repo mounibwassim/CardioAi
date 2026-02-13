@@ -173,7 +173,7 @@ export const generatePDF = async (
     }
 
     // 6. SIGNATURE SECTION (PROFESSIONAL & CLEAN)
-    const sigY = pdfHeight - 60;
+    const sigY = pdfHeight - 35;
 
     // Draw signature image if exists
     if (signatureImage && signatureImage.startsWith('data:image')) {
