@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain, HeartPulse, Stethoscope, CheckCircle, X } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
@@ -11,7 +11,6 @@ import HealthTechBackground from '../components/HealthTechBackground';
 export default function PatientPortal() {
     const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
     const [bgIndex, setBgIndex] = useState(0);
-    const navigate = useNavigate();
 
     const backgrounds = [
         "/assets/images/cardiology clinic.jpg",
@@ -481,12 +480,6 @@ export default function PatientPortal() {
                             <p className="text-sm">&copy; {new Date().getFullYear()} Professional Medical Intelligence. All rights reserved.</p>
                         </div>
                         <div className="flex space-x-6">
-                            {/* Hidden Portal Entry Dot - Relocated to Footer Flow */}
-                            <button
-                                onClick={() => navigate("/doctor/login", { replace: true })}
-                                className="w-4 h-4 rounded-full bg-white dark:bg-white/80 opacity-40 hover:opacity-80 hover:scale-125 transition-all duration-500 cursor-pointer border border-white/40"
-                                aria-label="Staff Access"
-                            />
                         </div>
                     </div>
                 </div>

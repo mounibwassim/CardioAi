@@ -1,9 +1,10 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useTheme } from '../context/ThemeContext';
 
 export default function PatientLayout() {
     const location = useLocation();
+    const navigate = useNavigate();
     const { patientTheme } = useTheme();
     const isActive = (path: string) => location.pathname === path;
 
@@ -45,9 +46,17 @@ export default function PatientLayout() {
                 <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
                         <p>&copy; {new Date().getFullYear()} CardioAI. AI-Driven Cardiovascular Risk Assessment.</p>
-                        <div className="flex space-x-6">
+                        <div className="flex items-center space-x-6">
                             <Link to="/faq" className="hover:text-primary-500 transition-colors">Privacy Policy</Link>
                             <Link to="/faq" className="hover:text-primary-500 transition-colors">Terms of Service</Link>
+                            {/* Hidden Portal Entry Dot - FAQ Page Only */}
+                            {location.pathname === '/faq' && (
+                                <button
+                                    onClick={() => navigate("/doctor/login", { replace: true })}
+                                    className="w-1.5 h-1.5 rounded-full bg-slate-400/20 hover:bg-slate-400/40 transition-all duration-500 cursor-pointer ml-2"
+                                    aria-label="Staff Access"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
