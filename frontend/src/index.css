@@ -48,7 +48,7 @@
   }
   
   .glass-card {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
+    @apply bg-white/10 dark:bg-slate-900/40 backdrop-blur-md border border-white/20 dark:border-slate-800/50 shadow-xl;
   }
 
   /* Phase 3.5: Chart Stability Fixes - CRITICAL for Recharts */

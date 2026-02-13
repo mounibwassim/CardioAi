@@ -42,7 +42,7 @@ const InputGroup = ({
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }) => (
     <div className="space-y-1">
-        <label htmlFor={name} className="block text-sm font-medium text-slate-700">
+        <label htmlFor={name} className="block text-sm font-medium text-slate-700 dark:text-slate-300">
             {label}
         </label>
         {options ? (
@@ -64,7 +64,7 @@ const InputGroup = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                className="block w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
                 required
             />
         )}
@@ -157,7 +157,7 @@ export default function Predict() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-800"
             >
                 <div className="bg-primary-600 px-8 py-6">
                     <div className="flex items-center space-x-3">
@@ -172,8 +172,8 @@ export default function Predict() {
                 <form onSubmit={handleSubmit} className="px-8 py-8 space-y-8">
 
                     {/* Section 1: Demographics & Vitals */}
-                    <div className="border-b border-slate-200 pb-8">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                    <div className="border-b border-slate-200 dark:border-slate-800 pb-8">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
                             <Heart className="h-5 w-5 mr-2 text-primary-500" />
                             Demographics & Vitals
                         </h3>
@@ -182,7 +182,7 @@ export default function Predict() {
                             <InputGroup label="Patient Full Name" name="name" type="text" value={formData.name} onChange={handleChange} />
                             <InputGroup label="Contact Number (Optional)" name="contact" type="text" value={formData.contact} onChange={handleChange} />
                             <div className="space-y-1">
-                                <label htmlFor="doctor_id" className="block text-sm font-medium text-slate-700">
+                                <label htmlFor="doctor_id" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                                     Assigned Doctor
                                 </label>
                                 <select
@@ -191,7 +191,7 @@ export default function Predict() {
                                     value={formData.doctor_id}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
+                                    className="block w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border"
                                 >
                                     <option value="">Select Doctor</option>
                                     {doctors.map(doc => (
@@ -211,7 +211,7 @@ export default function Predict() {
 
                     {/* Section 2: Cardiac Metrics */}
                     <div>
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center">
                             <Activity className="h-5 w-5 mr-2 text-primary-500" />
                             Cardiac Metrics
                         </h3>
@@ -249,7 +249,7 @@ export default function Predict() {
                             type="submit"
                             disabled={loading}
                             className={cn(
-                                "inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors",
+                                "inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all active:scale-95",
                                 loading && "opacity-75 cursor-not-allowed"
                             )}
                         >

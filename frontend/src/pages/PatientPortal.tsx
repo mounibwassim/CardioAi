@@ -33,7 +33,7 @@ export default function PatientPortal() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-200">
 
             {/* Hero Section */}
             <section className="relative overflow-hidden bg-slate-900 text-white min-h-screen flex items-center">
@@ -155,13 +155,13 @@ export default function PatientPortal() {
                 {/* Wave Divider */}
                 <div className="absolute bottom-0 left-0 w-full leading-none z-10 w-full overflow-hidden">
                     <svg className="block w-full h-24 md:h-48" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-slate-50"></path>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-slate-50 dark:fill-slate-950"></path>
                     </svg>
                 </div>
             </section>
 
             {/* Services Section */}
-            <div id="services" className="py-24 bg-slate-50 relative">
+            <div id="services" className="py-24 bg-slate-50 dark:bg-slate-950 relative">
                 <div className="absolute inset-0 z-0">
                     <img
                         src="/assets/images/medical abstract background blue.jpg"
@@ -171,8 +171,8 @@ export default function PatientPortal() {
                 </div>
                 <div className="container mx-auto px-6 lg:px-12 relative z-10">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Explore Our Services</h2>
-                        <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-6">Explore Our Services</h2>
+                        <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
                             Comprehensive cardiovascular care powered by advanced technology and medical expertise.
                         </p>
                     </div>
@@ -211,7 +211,7 @@ export default function PatientPortal() {
                             <motion.div
                                 key={index}
                                 whileHover={{ y: -10 }}
-                                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 flex flex-col h-full"
+                                className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 dark:border-slate-800 flex flex-col h-full"
                             >
                                 <div className="h-48 overflow-hidden relative">
                                     <div className="absolute inset-0 bg-primary-900/10 group-hover:bg-primary-900/0 transition-all z-10" />
@@ -228,8 +228,8 @@ export default function PatientPortal() {
                                     <div className="h-12 w-12 bg-primary-50 rounded-xl flex items-center justify-center mb-6 text-primary-600 shadow-sm">
                                         <service.icon className="h-6 w-6" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-3">{service.title}</h3>
-                                    <p className="text-slate-600 mb-8 flex-grow leading-relaxed">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">{service.title}</h3>
+                                    <p className="text-slate-600 dark:text-slate-400 mb-8 flex-grow leading-relaxed">
                                         {service.desc}
                                     </p>
                                     <Link
@@ -259,8 +259,8 @@ export default function PatientPortal() {
 
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Meet Our Specialists</h2>
-                        <p className="text-slate-600 text-xl">World-class cardiologists assisted by state-of-the-art AI.</p>
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">Meet Our Specialists</h2>
+                        <p className="text-slate-600 dark:text-slate-300 text-xl">World-class cardiologists assisted by state-of-the-art AI.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -290,7 +290,7 @@ export default function PatientPortal() {
                             <motion.div
                                 key={idx}
                                 whileHover={{ y: -10 }}
-                                className="bg-white rounded-3xl p-4 shadow-xl border border-slate-100 hover:shadow-2xl transition-all text-center relative group cursor-pointer"
+                                className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-xl border border-slate-100 dark:border-slate-800 hover:shadow-2xl transition-all text-center relative group cursor-pointer"
                                 onClick={() => setSelectedDoctor(doc)}
                             >
                                 <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-br from-primary-50 to-white rounded-t-3xl z-0" />
@@ -307,12 +307,12 @@ export default function PatientPortal() {
 
                                     {/* Name Logic Fix: Ensure visibility above image or clearly below */}
                                     <div className="px-4">
-                                        <h3 className="text-2xl font-bold text-slate-900 mb-1">{doc.name}</h3>
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{doc.name}</h3>
                                         <p className="text-secondary-500 font-bold uppercase text-xs tracking-wider mb-4">{doc.role}</p>
 
-                                        <p className="text-slate-500 italic mb-6">"{doc.quote}"</p>
+                                        <p className="text-slate-500 dark:text-slate-400 italic mb-6">"{doc.quote}"</p>
 
-                                        <button className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 transition-all active:scale-95">
+                                        <button className="w-full py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 hover:border-primary-200 transition-all active:scale-95">
                                             View Profile
                                         </button>
                                     </div>
