@@ -1,11 +1,10 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Sun, Moon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTheme } from '../context/ThemeContext';
 
 export default function PatientLayout() {
     const location = useLocation();
-    const { patientTheme, setPatientTheme } = useTheme();
+    const { patientTheme } = useTheme();
     const isActive = (path: string) => location.pathname === path;
 
     return (
@@ -33,14 +32,6 @@ export default function PatientLayout() {
                             <Link to="/faq" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/faq') ? "text-primary-400" : "text-slate-400")}>FAQ</Link>
                             <Link to="/contact" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/contact') ? "text-primary-400" : "text-slate-400")}>Support Center</Link>
                             <Link to="/feedback" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/feedback') ? "text-primary-400" : "text-slate-400")}>Feedback</Link>
-
-                            <button
-                                onClick={() => setPatientTheme(patientTheme === 'dark' ? 'light' : 'dark')}
-                                className="ml-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all active:scale-95"
-                                aria-label={patientTheme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                            >
-                                {patientTheme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-300" />}
-                            </button>
                         </nav>
                     </div>
                 </div>

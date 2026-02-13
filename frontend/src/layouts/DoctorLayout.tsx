@@ -1,16 +1,11 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Sun, Moon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTheme } from '../context/ThemeContext';
 
 export default function DoctorLayout() {
     const location = useLocation();
-    const { doctorTheme, setDoctorTheme } = useTheme();
+    const { doctorTheme } = useTheme();
     const isActive = (path: string) => location.pathname === path;
-
-    const toggleTheme = () => {
-        setDoctorTheme(doctorTheme === 'dark' ? 'light' : 'dark');
-    };
 
     return (
         <div className={cn("min-h-screen flex flex-col transition-colors duration-300", doctorTheme === 'dark' ? 'doctor-dark' : 'doctor-light')}>
@@ -38,14 +33,6 @@ export default function DoctorLayout() {
                                 <Link to="/doctor/patients" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor/patients') ? "text-primary-400" : "text-slate-400")}>Patients</Link>
                                 <Link to="/doctor/new-assessment" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor/new-assessment') ? "text-primary-400" : "text-slate-400")}>New Assessment</Link>
                                 <Link to="/doctor/settings" className={cn("text-sm font-semibold transition-colors hover:text-primary-400", isActive('/doctor/settings') ? "text-primary-400" : "text-slate-400")}>Settings</Link>
-
-                                <button
-                                    onClick={toggleTheme}
-                                    className="ml-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all active:scale-95"
-                                    aria-label={doctorTheme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                                >
-                                    {doctorTheme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-300" />}
-                                </button>
                             </nav>
                         </div>
                     </div>

@@ -62,5 +62,5 @@ export const getCleanExplanation = (result: ClinicalResult, data: PredictionData
     if (data.thalach < 120 && data.age < 60) points.push("Sub-optimal peak heart rate observed relative to age group.");
     if (data.oldpeak > 1.5) points.push("ST-segment depression indicates potential myocardial ischemia during exertion.");
 
-    return points;
+    return points.map(p => p.replace(/[#*\[\]{}&]/g, ''));
 };
