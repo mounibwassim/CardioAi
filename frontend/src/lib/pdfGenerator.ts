@@ -1,6 +1,8 @@
 import { jsPDF } from 'jspdf';
 import { type PredictionResult, type PatientData } from './api';
-import { generateClinicalRecommendations, getCleanExplanation } from './clinicalLogic';
+import { jsPDF } from 'jspdf';
+import { type PredictionResult, type PatientData } from './api';
+import { getCleanExplanation } from './clinicalLogic';
 
 export const generatePDF = async (
     result: PredictionResult,
@@ -34,24 +36,36 @@ export const generatePDF = async (
         console.warn('Logo not loaded, continuing without it');
     }
 
-    // Header - Clinical Assessment Report
-    pdf.setFontSize(22);
-    pdf.setFont('Times-Roman', 'bold');
-    pdf.setTextColor(15, 23, 42); // slate-900
-    pdf.text('Cardiovascular Risk Assessment Report', 10, 32);
-
-    // Date and Report ID (top right)
-    pdf.setFontSize(10);
+    // Signature and Date (top right)
+    pdf.setFontSize(8);
     pdf.setFont('Times-Roman', 'normal');
-    pdf.setTextColor(100, 116, 139); // slate-500
+    pdf.setTextColor(100, 116, 139);
+
     const assessmentDate = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     });
-    pdf.text(assessmentDate, pdfWidth - 10, 15, { align: 'right' });
-    pdf.setFontSize(8);
-    pdf.text(`Report ID: ${result.record_id}`, pdfWidth - 10, 20, { align: 'right' });
+
+    // Top right placement
+    let rightY = 15;
+    if (doctorSignature) {
+        pdf.setFont('Times-Roman', 'italic');
+        pdf.setTextColor(15, 23, 42);
+        pdf.text(`Signed: ${doctorSignature}`, pdfWidth - 10, rightY, { align: 'right' });
+        rightY += 5;
+    }
+
+    pdf.setFont('Times-Roman', 'normal');
+    pdf.setTextColor(100, 116, 139);
+    pdf.text(assessmentDate, pdfWidth - 10, rightY, { align: 'right' });
+    pdf.text(`Report ID: ${result.record_id}`, pdfWidth - 10, rightY + 4, { align: 'right' });
+
+    // Header - Clinical Assessment Report
+    pdf.setFontSize(22);
+    pdf.setFont('Times-Roman', 'bold');
+    pdf.setTextColor(15, 23, 42);
+    pdf.text('Cardiovascular Risk Assessment Report', 10, 32);
 
     currentY = 40;
 
@@ -148,7 +162,6 @@ export const generatePDF = async (
     pdf.text('Diagnostic Indicators', rightColX, currentY);
     pdf.line(rightColX, currentY + 1, rightColX + 80, currentY + 1);
 
-
     currentY += 8;
 
     const clinicalData = [
@@ -177,7 +190,7 @@ export const generatePDF = async (
     pdf.setLineWidth(0.3);
 
     // Calculate height based on text
-    const analysisText = result.explanation || `The patient presents a cardiovascular risk probability of ${(result.risk_score * 100).toFixed(1)}%. AI model classifies this case as ${result.risk_level.toUpperCase()} risk.`;
+    const analysisText = getCleanExplanation(result, data);
     const wrappedAnalysis = pdf.splitTextToSize(analysisText, pdfWidth - 30);
     const rectHeight = (wrappedAnalysis.length * 5) + 15;
 
@@ -214,7 +227,7 @@ export const generatePDF = async (
     // Verified Footer
     pdf.setFontSize(7);
     pdf.setTextColor(148, 163, 184);
-    pdf.text(`Electronically verified on ${new Date().toLocaleDateString()} by ${data.doctor_name || 'CardioAI System'}`, 10, currentY);
+    pdf.text(`Electronically verified on ${new Date().toLocaleDateString()} by ${doctorSignature || data.doctor_name || 'CardioAI System'}`, 10, currentY);
 
     // Footer
     pdf.setFontSize(8);
