@@ -135,12 +135,12 @@ async def startup_event():
         
         if not admin:
             c.execute("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-                      ("admin", hashed_default, "doctor"))
-            logger.info("Default admin user created: admin / admin123")
+                      ("admin", get_password_hash("Mounib$7"), "doctor"))
+            logger.info("Default admin user created: admin / Mounib$7")
         else:
             # FORCE RESET PASSWORD ON STARTUP to ensure access
-            c.execute("UPDATE users SET password_hash = ? WHERE username = 'admin'", (hashed_default,))
-            logger.info("Admin password reset to default: admin / admin123")
+            c.execute("UPDATE users SET password_hash = ? WHERE username = 'admin'", (get_password_hash("Mounib$7"),))
+            logger.info("Admin password reset to: admin / Mounib$7")
             
         conn.commit()
         conn.close()
@@ -950,15 +950,12 @@ def get_feedbacks():
 
 @app.post("/reset")
 def reset_database(data: ResetRequest):
-    # Security: Verify against hashed ADMIN_PASSWORD from env
-    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+    # Security: Verify against PIN for master reset
+    master_password = os.getenv("ADMIN_PASSWORD", "Mounib$7")
     
-    # We support either plain comparison for dev or verify_password if we want strict production
-    # Best practice is to check against a hash.
-    # For simplicity in this demo environment, we check against the env string.
-    if data.password != admin_password:
+    if data.password != master_password:
         logger.warning("Unauthorized Reset attempt blocked.")
-        raise HTTPException(status_code=401, detail="Invalid admin password")
+        raise HTTPException(status_code=401, detail="Invalid master password")
         
     wipe_data()
     return {"message": "System reset complete. All data wiped."}

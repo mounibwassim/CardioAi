@@ -123,45 +123,61 @@ export const generatePDF = async (
 
     currentY += 22;
 
-    // Clinical Analysis Section
-    pdf.setFontSize(12);
-    pdf.setFont('Times-Roman', 'bold');
-    pdf.setTextColor(15, 23, 42);
-    pdf.text('Clinical Analysis', 10, currentY);
-    pdf.line(10, currentY + 1, pdfWidth - 10, currentY + 1);
+    // --- CLINICAL ANALYSIS SECTION ---
+    currentY += 10;
 
-    currentY += 8;
-    pdf.setFontSize(10);
-    pdf.setFont('Times-Roman', 'normal');
+    // Section Background (Subtle 3D Effect)
+    pdf.setFillColor(248, 250, 252); // Light Slate
+    pdf.rect(10, currentY - 5, 190, 45, 'F');
+    // Border bottom for depth
+    pdf.setDrawColor(226, 232, 240);
+    pdf.line(10, currentY + 40, 200, currentY + 40);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(14);
     pdf.setTextColor(30, 41, 59);
+    pdf.text('Clinical Analysis', 15, currentY + 2);
 
-    const analysisPoints = getCleanExplanation(result, data);
-    analysisPoints.forEach(point => {
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.setTextColor(71, 85, 105);
+
+    const clinicalPoints = getCleanExplanation(result, data); // Adapted from record.risk_level
+    let analysisY = currentY + 10;
+    clinicalPoints.forEach(point => {
         const wrapped = pdf.splitTextToSize(`• ${point}`, pdfWidth - 25);
-        pdf.text(wrapped, 15, currentY);
-        currentY += (wrapped.length * 5);
+        pdf.text(wrapped, 15, analysisY);
+        analysisY += (wrapped.length * 5); // Adjusted for multi-line text
     });
 
-    currentY += 5;
+    // --- CORE RECOMMENDATIONS SECTION ---
+    currentY = analysisY + 15; // Space between sections (Increased)
 
-    // Core Recommendations Section
-    pdf.setFontSize(12);
-    pdf.setFont('Times-Roman', 'bold');
-    pdf.setTextColor(15, 23, 42);
-    pdf.text('Core Recommendations', 10, currentY);
-    pdf.line(10, currentY + 1, pdfWidth - 10, currentY + 1);
+    // Section Background (Subtle 3D Effect)
+    pdf.setFillColor(240, 249, 255); // Light Blue-ish
+    pdf.rect(10, currentY - 5, 190, 45, 'F');
+    // Border bottom for depth
+    pdf.setDrawColor(186, 230, 253);
+    pdf.line(10, currentY + 40, 200, currentY + 40);
 
-    currentY += 8;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(14);
+    pdf.setTextColor(7, 89, 133);
+    pdf.text('Core Recommendations', 15, currentY + 2);
+
+    pdf.setFont("helvetica", "normal");
     pdf.setFontSize(10);
-    pdf.setFont('Times-Roman', 'normal');
-    pdf.setTextColor(30, 41, 59);
+    pdf.setTextColor(12, 74, 110);
 
-    const recommendations = generateClinicalRecommendations(result, data);
-    recommendations.forEach(rec => {
+    const recs = generateClinicalRecommendations(result, data); // Adapted from record.risk_level, record.input_data
+    let recY = currentY + 10;
+    recs.forEach(rec => {
         const wrapped = pdf.splitTextToSize(`• ${rec}`, pdfWidth - 25);
-        pdf.text(wrapped, 15, currentY);
-        currentY += (wrapped.length * 5);
+        pdf.text(wrapped, 15, recY);
+        recY += (wrapped.length * 5); // Adjusted for multi-line text
     });
+
+    currentY = recY + 5; // Update currentY after recommendations
 
     // Physician's Notes (if any)
     if (doctorNotes) {

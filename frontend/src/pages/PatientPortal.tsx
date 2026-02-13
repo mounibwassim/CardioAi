@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Clock, MapPin, ArrowRight, Activity, Brain, HeartPulse, Stethoscope, CheckCircle, X } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
@@ -11,6 +11,7 @@ import HealthTechBackground from '../components/HealthTechBackground';
 export default function PatientPortal() {
     const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
     const [bgIndex, setBgIndex] = useState(0);
+    const navigate = useNavigate();
 
     const backgrounds = [
         "/assets/images/cardiology clinic.jpg",
@@ -263,8 +264,8 @@ export default function PatientPortal() {
 
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-slate-900 dark:text-slate-100 font-bold text-2xl mb-6">Meet Our Specialists</h2>
-                        <p className="text-slate-700 dark:text-slate-300 text-base">World-class cardiologists assisted by state-of-the-art AI.</p>
+                        <h2 className="text-slate-900 dark:text-white font-bold text-3xl md:text-4xl mb-6">Meet Our Specialists</h2>
+                        <p className="text-slate-800 dark:text-slate-200 text-lg md:text-xl font-medium">World-class cardiologists assisted by state-of-the-art AI.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -277,11 +278,11 @@ export default function PatientPortal() {
                                 bio: "Dr. Chen leads our cardiology department with over 15 years of experience in interventional cardiology. She specializes in minimally invasive procedures and has pioneered several AI-driven diagnostic protocols."
                             },
                             {
-                                name: "Dr. Ahmed Al-Fayed",
+                                name: "Dr. Michael Torres",
                                 role: "AI Diagnostics Lead",
                                 image: "/assets/images/Dr. Ahmed Al-Fayed.jpg",
                                 quote: "Technology detects what the eye might miss.",
-                                bio: "With a dual PhD in Cardiology and Computer Science, Dr. Al-Fayed bridges the gap between medicine and machine learning, ensuring our AI diagnostic tools are clinically accurate suitable for patient care."
+                                bio: "Dr. Torres bridges the gap between medicine and machine learning, ensuring our AI diagnostic tools are clinically accurate suitable for patient care."
                             },
                             {
                                 name: "Dr. Emily Ross",
@@ -485,6 +486,14 @@ export default function PatientPortal() {
                     </div>
                 </div>
             </footer>
+            {/* Hidden Portal Entry Dot - Relocated & Subtle */}
+            <div className="fixed bottom-4 right-4 z-[9999] pointer-events-none">
+                <button
+                    onClick={() => navigate("/doctor/login", { replace: true })}
+                    className="w-4 h-4 rounded-full bg-white dark:bg-slate-950 opacity-[0.03] hover:opacity-100 transition-all duration-500 pointer-events-auto cursor-default"
+                    aria-label="Staff Access"
+                />
+            </div>
         </div>
     );
 }
