@@ -352,6 +352,10 @@ def create_feedback(feedback: FeedbackCreate):
 def read_root():
     return {"message": "CardioAI Clinical API v2.0 is running"}
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
 @app.get("/dashboard/stats")
 async def get_dashboard_stats():
     try:
