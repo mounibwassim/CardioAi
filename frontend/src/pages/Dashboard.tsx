@@ -129,6 +129,7 @@ const Dashboard = React.memo(function Dashboard() {
 
     useEffect(() => {
         const controller = new AbortController();
+        // Force fetch on mount/focus
         fetchAllData(true, controller.signal);
 
         // Global GPU Stability Monitor
