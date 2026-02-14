@@ -29,6 +29,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://cardio-ai-delta.vercel.app",
+        "https://cardio-.*-mounib-s-projects-.*.vercel.app",
         "http://localhost:3000",
         "http://localhost:5173"
     ],
