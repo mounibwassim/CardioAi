@@ -23,7 +23,7 @@ import { safeArray, safeToFixed } from '../lib/utils';
 import MonthlyTrendChart from '../components/dashboard/MonthlyTrend';
 import RiskDistributionChart from '../components/dashboard/RiskDistribution';
 import ModelAccuracyChart from '../components/dashboard/ModelAccuracy';
-import WeeklyTrend from '../components/dashboard/WeeklyTrend';
+import ModelAccuracyChart from '../components/dashboard/ModelAccuracy';
 import GenderDistribution from '../components/dashboard/GenderDistribution';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import DoctorPerformance from '../components/dashboard/DoctorPerformance';
@@ -32,6 +32,7 @@ import CalendarView from '../components/dashboard/CalendarView';
 // Isolated 3D Visualization (Lazy Loaded)
 const AIVisualization3D = React.lazy(() => import('../components/dashboard/AIVisualization3D'));
 const LiveSystemPulse = React.lazy(() => import('../components/dashboard/LiveSystemPulse'));
+const WeeklyTrend3D = React.lazy(() => import('../components/dashboard/WeeklyTrend3D'));
 
 // Define StatCard props to match usage
 interface StatCardProps {
@@ -415,7 +416,9 @@ const Dashboard = React.memo(function Dashboard() {
 
             {/* Row 1: Trends & Performance */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <WeeklyTrend data={weeklyTrendData} />
+                <Suspense fallback={<div className="h-[400px] bg-slate-900 rounded-2xl animate-pulse" />}>
+                    <WeeklyTrend3D data={weeklyTrendData} />
+                </Suspense>
                 <MonthlyTrendChart data={monthlyTrends} />
                 <DoctorPerformance data={doctorPerformanceData} />
             </div>
