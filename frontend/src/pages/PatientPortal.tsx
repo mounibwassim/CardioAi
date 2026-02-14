@@ -54,24 +54,24 @@ export default function PatientPortal() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-900/90 via-primary-800/80 to-slate-900/90" />
                 </div>
 
-                <div className="container mx-auto px-6 lg:px-12 py-16 relative z-10 pt-16 lg:pt-24">
+                <div className="container mx-auto px-6 lg:px-12 py-16 relative z-10 pt-10 lg:pt-12">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8 }}
                         >
-                            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium mb-4 backdrop-blur-md shadow-lg">
+                            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium mb-3 backdrop-blur-md shadow-lg">
                                 <span className="flex h-2 w-2 rounded-full bg-secondary-400 mr-2 animate-pulse"></span>
                                 Accepting New Patients
                             </div>
-                            <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-4 tracking-tight">
+                            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-3 tracking-tight">
                                 Advanced AI <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-300 to-secondary-100 filter drop-shadow-lg">
                                     Cardiac Care
                                 </span>
                             </h1>
-                            <p className="text-xl text-slate-200 mb-6 leading-relaxed max-w-lg font-light">
+                            <p className="text-lg text-slate-200 mb-5 leading-relaxed max-w-lg font-light">
                                 Experience the future of heart health. Our AI-assisted diagnostic center combines medical expertise with cutting-edge technology for precise assessments.
                             </p>
 
@@ -172,7 +172,7 @@ export default function PatientPortal() {
 
                 {/* Wave Divider */}
                 <div className="absolute bottom-0 left-0 w-full leading-none z-10 w-full overflow-hidden">
-                    <svg className="block w-full h-24 md:h-48" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <svg className="block w-full h-16 md:h-32" viewBox="0 0 1200 120" preserveAspectRatio="none">
                         <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-slate-50 dark:fill-slate-950"></path>
                     </svg>
                 </div>
