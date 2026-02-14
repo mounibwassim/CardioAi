@@ -7,6 +7,7 @@ import os
 import json
 import logging
 from typing import List, Optional
+import traceback
 from backend.database import init_db, wipe_data, get_db_connection
 from backend.audit import log_audit
 from backend.utils import generate_system_notes
@@ -182,8 +183,9 @@ class PredictionResult(BaseModel):
     prediction: int
     risk_score: float
     risk_level: str
-    patient_id: int # NEW
-    record_id: int # NEW
+    patient_id: int
+    record_id: int
+    explanation: Optional[str] = None # V20: Single Source of Truth for frontend
 
 class PatientCreate(BaseModel):
     name: str
@@ -797,29 +799,27 @@ def predict_heart_disease(data: PatientData):
         conn.commit()
         conn.close()
 
+        logger.info(f"Prediction successful: Patient ID {patient_id}, Record ID {record_id}, Risk: {risk_level}")
+
         return {
             "prediction": int(prediction),
             "risk_score": float(risk_probability),
             "risk_level": risk_level,
             "patient_id": patient_id,
             "record_id": record_id,
-            "explanation": system_notes  # V20: The Single Source of Truth
-        }
-
-        logger.info(f"Prediction saved: Patient ID {patient_id}, Record ID {record_id}, Risk: {risk_level}, Probability: {risk_probability:.4f}")
-
-        return {
-            "prediction": int(prediction),
-            "risk_score": float(risk_probability),  # 🐛 FIX: Use risk_probability not risk_score
-            "risk_level": risk_level,
-            "patient_id": patient_id,
-            "record_id": record_id
+            "explanation": system_notes
         }
     except HTTPException:
-        raise  # Re-raise HTTP exceptions
+        raise
     except Exception as e:
-        logger.error(f"Prediction error: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        logger.error(f"Prediction error: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500, 
+            detail={
+                "error": f"Internal Prediction Engine Error: {str(e)}",
+                "trace": traceback.format_exc() if os.getenv("DEBUG") == "True" else "Check server logs"
+            }
+        )
 
 @app.post("/patients")
 def create_patient(patient: PatientCreate):
