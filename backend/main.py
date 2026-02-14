@@ -350,7 +350,7 @@ def create_feedback(feedback: FeedbackCreate):
 
 @app.get("/")
 def read_root():
-    return {"message": "CardioAI Clinical API v2.0 is running"}
+    return {"message": "CardioAI Clinical API v2.1 is running"}
 
 @app.get("/health")
 def health_check():
