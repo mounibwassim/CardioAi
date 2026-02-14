@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi import FastAPI, HTTPException, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 import pickle
@@ -27,20 +27,30 @@ app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart D
 # CORS Configuration
 origins = [
     "https://cardio-ai-delta.vercel.app",
-    "https://cardio-jecm71lr8-mounib-s-projects-5d640824.vercel.app", # User's current specific deployment
+    "https://cardio-jecm71lr8-mounib-s-projects-5d640824.vercel.app",
     "http://localhost:3000",
     "http://localhost:5173",
 ]
 
+# Adding more permissive regex for all Vercel deployments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"https://cardio-.*-mounib-s-projects-.*\.vercel\.app", # Allow all Vercel preview/branch deployments
+    allow_origin_regex=r"https://.*\.vercel\.app", 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"]
 )
+
+# Custom Middleware to Log Origins (Helps identify why CORS fails)
+from fastapi import Request
+@app.middleware("http")
+async def log_request_info(request: Request, call_next):
+    origin = request.headers.get("origin")
+    logger.info(f"Incoming Request: {request.method} {request.url} | Origin: {origin}")
+    response = await call_next(request)
+    return response
 
 # Load Model and Scaler (Absolute Paths)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -182,7 +192,7 @@ class PatientData(BaseModel):
     thal: int
 
     class Config:
-        coerce_numbers_to_str = True # Ensure strings are coerced to numbers where possible
+        extra = "allow" # Be flexible with extra fields
 
 class PredictionResult(BaseModel):
     prediction: int
