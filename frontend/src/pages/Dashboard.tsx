@@ -23,7 +23,6 @@ import { safeArray, safeToFixed } from '../lib/utils';
 import MonthlyTrendChart from '../components/dashboard/MonthlyTrend';
 import RiskDistributionChart from '../components/dashboard/RiskDistribution';
 import ModelAccuracyChart from '../components/dashboard/ModelAccuracy';
-import ModelAccuracyChart from '../components/dashboard/ModelAccuracy';
 import GenderDistribution from '../components/dashboard/GenderDistribution';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import DoctorPerformance from '../components/dashboard/DoctorPerformance';
