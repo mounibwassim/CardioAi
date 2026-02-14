@@ -54,43 +54,57 @@ export default function PatientPortal() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-900/90 via-primary-800/80 to-slate-900/90" />
                 </div>
 
-                <div className="container mx-auto px-6 lg:px-12 py-16 relative z-10 pt-32">
+                <div className="container mx-auto px-6 lg:px-12 py-16 relative z-10 pt-16 lg:pt-24">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8 }}
                         >
-                            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium mb-8 backdrop-blur-md shadow-lg">
+                            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium mb-4 backdrop-blur-md shadow-lg">
                                 <span className="flex h-2 w-2 rounded-full bg-secondary-400 mr-2 animate-pulse"></span>
                                 Accepting New Patients
                             </div>
-                            <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-8 tracking-tight">
+                            <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-4 tracking-tight">
                                 Advanced AI <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-300 to-secondary-100 filter drop-shadow-lg">
                                     Cardiac Care
                                 </span>
                             </h1>
-                            <p className="text-xl text-slate-200 mb-10 leading-relaxed max-w-lg font-light">
+                            <p className="text-xl text-slate-200 mb-6 leading-relaxed max-w-lg font-light">
                                 Experience the future of heart health. Our AI-assisted diagnostic center combines medical expertise with cutting-edge technology for precise assessments.
                             </p>
 
                             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
-                                <a
+                                <motion.a
                                     href="https://wa.me/601111769636"
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex justify-center items-center px-8 py-4 bg-secondary-500 text-white font-bold rounded-xl shadow-lg shadow-secondary-500/30 hover:bg-secondary-400 hover:scale-105 transition-all duration-300"
+                                    whileHover={{ y: -5, scale: 1.05 }}
+                                    whileTap={{ y: 2, scale: 0.98 }}
+                                    animate={{ y: [0, -4, 0] }}
+                                    transition={{
+                                        y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+                                        scale: { duration: 0.2 }
+                                    }}
+                                    className="inline-flex justify-center items-center px-8 py-4 bg-secondary-500 text-white font-bold rounded-xl shadow-[0_10px_20px_-10px_rgba(251,191,36,0.5),0_5px_15px_rgba(0,0,0,0.3)] hover:bg-secondary-400 transition-all duration-300 border-b-4 border-secondary-700 active:border-b-0"
                                 >
                                     <MessageCircle className="mr-2 h-5 w-5" />
                                     Book via WhatsApp
-                                </a>
-                                <a
+                                </motion.a>
+                                <motion.a
                                     href="#services"
-                                    className="inline-flex justify-center items-center px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300"
+                                    whileHover={{ y: -5, scale: 1.05 }}
+                                    whileTap={{ y: 2, scale: 0.98 }}
+                                    animate={{ y: [0, -4, 0] }}
+                                    transition={{
+                                        y: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 },
+                                        scale: { duration: 0.2 }
+                                    }}
+                                    className="inline-flex justify-center items-center px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 shadow-[0_10px_20px_-10px_rgba(255,255,255,0.1),0_5px_15px_rgba(0,0,0,0.3)] border-b-4 border-white/5 active:border-b-0"
                                 >
                                     Explore Services
-                                </a>
+                                </motion.a>
                             </div>
                         </motion.div>
 
@@ -404,15 +418,19 @@ export default function PatientPortal() {
                         Take the first step towards a healthier heart today. Our AI-powered assessment takes only minutes and provides instant insights.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-6">
-                        <a
+                        <motion.a
                             href="https://wa.me/601111769636?text=I%20am%20ready%20for%20my%20assessment"
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center justify-center px-10 py-5 bg-[#25D366] text-white rounded-full font-bold text-xl hover:bg-[#20bd5a] transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl"
+                            whileHover={{ y: -5, scale: 1.05 }}
+                            whileTap={{ y: 2, scale: 0.98 }}
+                            animate={{ y: [0, -4, 0] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="inline-flex items-center justify-center px-10 py-5 bg-[#25D366] text-white rounded-full font-bold text-xl transition-all shadow-[0_15px_30px_-10px_rgba(37,211,102,0.4),0_10px_20px_rgba(0,0,0,0.3)] border-b-4 border-[#1ea851] active:border-b-0"
                         >
                             <MessageCircle className="mr-3 h-7 w-7" />
                             Book via WhatsApp
-                        </a>
+                        </motion.a>
                     </div>
                 </div>
             </div>
