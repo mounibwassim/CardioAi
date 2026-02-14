@@ -23,14 +23,13 @@ logger = logging.getLogger(__name__)
 # Initialize App
 app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart Disease Prediction System")
 
-# CORS - Strict Allow List
+# CORS - Enhanced security with production allow-list
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://cardio-ai-frontend.vercel.app",
+    "https://cardio-ai-delta.vercel.app",
     "https://cardio-ai.vercel.app",
-    "https://cardio-ai-pi.vercel.app",
-    "https://cardio-ai-delta.vercel.app"
+    "https://cardio-ai-frontend.vercel.app"
 ]
 
 app.add_middleware(
@@ -39,6 +38,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Load Model and Scaler (Absolute Paths)
