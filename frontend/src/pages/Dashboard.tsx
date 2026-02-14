@@ -162,7 +162,7 @@ const Dashboard = React.memo(function Dashboard() {
             window.removeEventListener('webglcontextlost', handleContextLost);
             window.removeEventListener('webglcontextrestored', handleContextRestored);
         };
-    }, [fetchAllData]);
+    }, [fetchAllData, location.state]);
 
     const computedMetrics = useMemo(() => {
         const safePatients = patients || [];
