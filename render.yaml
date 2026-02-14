@@ -3,12 +3,10 @@ services:
   - type: web
     name: cardioai-backend
     env: python
-    rootDir: backend
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    python_version: 3.11.8
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 10000
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.8
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD
