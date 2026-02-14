@@ -227,7 +227,7 @@ export default function Predict() {
                                         New Analysis
                                     </button>
                                     <button
-                                        onClick={() => navigate('/doctor')}
+                                        onClick={() => navigate('/doctor', { state: { refresh: true } })}
                                         className="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold transition-all"
                                     >
                                         Go to Dashboard
