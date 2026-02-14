@@ -161,12 +161,12 @@ async def startup_event():
 
 # Pydantic Models for Prediction Input (Updated with Name/Contact)
 class PatientData(BaseModel):
-    name: str # NEW
+    name: str 
     age: int
     sex: int
-    contact: Optional[str] = None # NEW
-    doctor_name: str = "Dr. Sarah Chen"  # Default doctor, can be changed
-    doctor_id: Optional[int] = None # NEW: Link to doctors table
+    contact: Optional[str] = None
+    doctor_name: Optional[str] = "Dr. Sarah Chen"
+    doctor_id: Optional[int] = None 
     cp: int
     trestbps: int
     chol: int
@@ -178,6 +178,9 @@ class PatientData(BaseModel):
     slope: int
     ca: int
     thal: int
+
+    class Config:
+        coerce_numbers_to_str = True # Ensure strings are coerced to numbers where possible
 
 class PredictionResult(BaseModel):
     prediction: int
@@ -698,11 +701,14 @@ def get_doctors_list():
 
 @app.post("/predict", response_model=PredictionResult)
 def predict_heart_disease(data: PatientData):
-    logger.info(f"Prediction requested for: {data.name}")
+    # Log the incoming data for debugging
+    logger.info(f"--- PREDICTION START ---")
+    logger.info(f"Patient: {data.name}, Doctor ID: {data.doctor_id}")
+    logger.debug(f"Full Input Data: {data.dict()}")
     
     if model is None or scaler is None:
         logger.error("Model or Scaler not loaded.")
-        raise HTTPException(status_code=500, detail="Model service unavailable")
+        raise HTTPException(status_code=500, detail="Model service unavailable - check server logs for loading errors")
 
     try:
         # 🚨 CRITICAL: Validate input features for NaN BEFORE preprocessing
