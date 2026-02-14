@@ -27,13 +27,15 @@ app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart D
 # CORS Configuration
 origins = [
     "https://cardio-ai-delta.vercel.app",
+    "https://cardio-jecm71lr8-mounib-s-projects-5d640824.vercel.app", # User's current specific deployment
     "http://localhost:3000",
-    "http://localhost:5173", # Vite default
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://cardio-.*-mounib-s-projects-.*\.vercel\.app", # Allow all Vercel preview/branch deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
