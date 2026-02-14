@@ -7,14 +7,14 @@ import os
 import json
 import logging
 from typing import List, Optional
-from database import init_db, wipe_data, get_db_connection
-from audit import log_audit
-from utils import generate_system_notes
+from backend.database import init_db, wipe_data, get_db_connection
+from backend.audit import log_audit
+from backend.utils import generate_system_notes
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from config import RISK_THRESHOLDS, classify_risk
+from backend.config import RISK_THRESHOLDS, classify_risk
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)

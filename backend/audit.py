@@ -4,7 +4,7 @@ Phase 4.5: Compliance & Audit Trail
 """
 import json
 import logging
-from database import get_db_connection
+from backend.database import get_db_connection
 
 logger = logging.getLogger(__name__)
 
