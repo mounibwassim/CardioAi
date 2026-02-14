@@ -24,23 +24,35 @@ logger = logging.getLogger(__name__)
 # Initialize App
 app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart Disease Prediction System")
 
-# CORS Configuration - Failsafe for Debugging
+# CORS Configuration - Production Standard
+origins = [
+    "https://cardio-ai-delta.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # TEMPORARY: Allow all origins to eliminate CORS as a variable
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"]
 )
 
-# Custom Middleware to Log Origins (Helps identify why CORS fails)
-from fastapi import Request
+# Custom Middleware to Log Origins and Handle Dynamic CORS
 @app.middleware("http")
 async def log_request_info(request: Request, call_next):
     origin = request.headers.get("origin")
     logger.info(f"Incoming Request: {request.method} {request.url} | Origin: {origin}")
+    
     response = await call_next(request)
+    
+    # Optional: Force allow dynamic Vercel subdomains if not in explicit list
+    if origin and (".vercel.app" in origin or "localhost" in origin):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        
     return response
 
 # Load Model and Scaler (Absolute Paths)
