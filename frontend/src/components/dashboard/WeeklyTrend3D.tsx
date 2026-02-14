@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, Float } from "@react-three/drei";
-import { Vector3 } from "three";
+import { OrbitControls, Text } from "@react-three/drei";
 
 interface WeeklyTrend3DProps {
     data: { day: string; count: number }[];
