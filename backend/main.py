@@ -24,19 +24,10 @@ logger = logging.getLogger(__name__)
 # Initialize App
 app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart Disease Prediction System")
 
-# CORS Configuration
-origins = [
-    "https://cardio-ai-delta.vercel.app",
-    "https://cardio-jecm71lr8-mounib-s-projects-5d640824.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:5173",
-]
-
-# Adding more permissive regex for all Vercel deployments
+# CORS Configuration - Failsafe for Debugging
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_origin_regex=r"https://.*\.vercel\.app", 
+    allow_origins=["*"], # TEMPORARY: Allow all origins to eliminate CORS as a variable
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -715,8 +706,8 @@ def get_doctors_list():
 def predict_heart_disease(data: PatientData):
     # Log the incoming data for debugging
     logger.info(f"--- PREDICTION START ---")
-    logger.info(f"Patient: {data.name}, Doctor ID: {data.doctor_id}")
-    logger.debug(f"Full Input Data: {data.dict()}")
+    logger.info(f"Patient Name: {data.name}, Type: {type(data.name)}")
+    logger.info(f"Doctor ID: {data.doctor_id}, Type: {type(data.doctor_id)}")
     
     if model is None or scaler is None:
         logger.error("Model or Scaler not loaded.")
@@ -763,19 +754,25 @@ def predict_heart_disease(data: PatientData):
         system_notes = generate_system_notes(risk_level, risk_probability, data.dict())
 
         # --- SAVE TO DATABASE ---
+        logger.info("Connecting to database...")
         conn = get_db_connection()
         c = conn.cursor()
+        logger.info("Database connection established.")
         
         # 1. Find or Create Patient
         patient_id = None
+        logger.info(f"Looking up patient: {data.name}")
         existing_patient = c.execute("SELECT id FROM patients WHERE name = ?", (data.name,)).fetchone()
         
         # 🚨 V20: Unified Doctor Retrieval
+        logger.info(f"Retrieving doctor label for ID: {data.doctor_id}")
         doc_res = c.execute("SELECT name FROM doctors WHERE id = ?", (data.doctor_id,)).fetchone()
         assigned_doctor = doc_res['name'] if doc_res else "Dr. Sarah Chen"
+        logger.info(f"Assigned Doctor: {assigned_doctor}")
 
         if existing_patient:
             patient_id = existing_patient['id']
+            logger.info(f"Found existing patient ID: {patient_id}. Updating records...")
             # Update patient risk level and system notes
             c.execute("""
                 UPDATE patients 

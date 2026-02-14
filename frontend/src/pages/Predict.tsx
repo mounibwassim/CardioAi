@@ -153,9 +153,14 @@ export default function Predict() {
             });
             setShowResultModal(true);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Prediction failed:", error);
-            alert("Failed to get prediction. Please check all fields and try again.");
+            const detail = error.response?.data?.detail;
+            const message = typeof detail === 'string' ? detail :
+                detail?.error ? detail.error :
+                    "Failed to get prediction. Please check all fields and try again.";
+
+            alert(`Analysis Error: ${message}`);
         } finally {
             setLoading(false);
         }
