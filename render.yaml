@@ -3,7 +3,6 @@ services:
   - type: web
     name: cardioai-backend
     env: python
-    python_version: 3.11.8
     buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
     startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 2
     envVars:
