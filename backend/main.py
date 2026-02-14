@@ -22,32 +22,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize App
-app = FastAPI(title="CardioAI API", version="2.0", description="Clinical Heart Disease Prediction System")
+app = FastAPI(title="CardioAI API", version="3.0", description="Clinical Heart Disease Prediction System")
 
-# CORS Configuration - Failsafe Triple-Checked
+# CORS Configuration - Definitive Regex Approach
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False, # Set to False to allow wildcard origins
+    allow_origins=[
+        "https://cardio-ai-delta.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:5173"
+    ],
+    allow_origin_regex=r"https://.*\.vercel\.app", # Matches any Vercel subdomain
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
-
-# Custom Middleware to Log Origins and Handle Dynamic CORS
-@app.middleware("http")
-async def log_request_info(request: Request, call_next):
-    origin = request.headers.get("origin")
-    logger.info(f"Incoming Request: {request.method} {request.url} | Origin: {origin}")
-    
-    response = await call_next(request)
-    
-    # Optional: Force allow dynamic Vercel subdomains if not in explicit list
-    if origin and (".vercel.app" in origin or "localhost" in origin):
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        
-    return response
 
 # Load Model and Scaler (Absolute Paths)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -350,7 +339,7 @@ def create_feedback(feedback: FeedbackCreate):
 
 @app.get("/")
 def read_root():
-    return {"message": "CardioAI Clinical API v2.2 is running"}
+    return {"message": "CardioAI Clinical API v3.0 is running"}
 
 @app.get("/health")
 def health_check():
