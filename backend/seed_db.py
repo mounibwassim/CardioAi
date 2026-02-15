@@ -5,11 +5,10 @@ import sqlite3
 import json
 from datetime import datetime, timedelta
 import random
-
-DB_PATH = "backend/cardioai.db"
+from backend.database import get_db_connection
 
 def seed_database():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
     
     # Sample patient data
