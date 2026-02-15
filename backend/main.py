@@ -774,8 +774,8 @@ def predict_heart_disease(data: PatientData):
         system_notes = generate_system_notes(risk_level, risk_probability, data.dict())
 
         # --- SAVE TO DATABASE (WITH RETRY) ---
-        max_retries = 3
-        retry_delay = 0.5
+        max_retries = 5  # increased from 3
+        retry_delay = 1.0 # increased from 0.5
         
         for attempt in range(max_retries):
             try:
