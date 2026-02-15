@@ -773,66 +773,79 @@ def predict_heart_disease(data: PatientData):
         # Generate AI system notes
         system_notes = generate_system_notes(risk_level, risk_probability, data.dict())
 
-        # --- SAVE TO DATABASE ---
-        logger.info("Connecting to database...")
-        conn = get_db_connection()
-        c = conn.cursor()
-        logger.info("Database connection established.")
+        # --- SAVE TO DATABASE (WITH RETRY) ---
+        max_retries = 3
+        retry_delay = 0.5
         
-        # 1. Find or Create Patient
-        patient_id = None
-        logger.info(f"Looking up patient: {data.name}")
-        existing_patient = c.execute("SELECT id FROM patients WHERE name = ?", (data.name,)).fetchone()
-        
-        # 🚨 V20: Unified Doctor Retrieval
-        logger.info(f"Retrieving doctor label for ID: {data.doctor_id}")
-        doc_res = c.execute("SELECT name FROM doctors WHERE id = ?", (data.doctor_id,)).fetchone()
-        assigned_doctor = doc_res['name'] if doc_res else "Dr. Sarah Chen"
-        logger.info(f"Assigned Doctor: {assigned_doctor}")
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"Connecting to database (Attempt {attempt+1}/{max_retries})...")
+                conn = get_db_connection()
+                c = conn.cursor()
+                
+                # 1. Find or Create Patient
+                patient_id = None
+                existing_patient = c.execute("SELECT id FROM patients WHERE name = ?", (data.name,)).fetchone()
+                
+                # 🚨 V20: Unified Doctor Retrieval
+                doc_res = c.execute("SELECT name FROM doctors WHERE id = ?", (data.doctor_id,)).fetchone()
+                assigned_doctor = doc_res['name'] if doc_res else "Dr. Sarah Chen"
 
-        if existing_patient:
-            patient_id = existing_patient['id']
-            logger.info(f"Found existing patient ID: {patient_id}. Updating records...")
-            # Update patient risk level and system notes
-            c.execute("""
-                UPDATE patients 
-                SET risk_level = ?, system_notes = ?, last_updated = CURRENT_TIMESTAMP, age = ?, sex = ?, contact = ?, doctor_name = ?
-                WHERE id = ?
-            """, (risk_level, system_notes, data.age, data.sex, data.contact, assigned_doctor, patient_id))
+                if existing_patient:
+                    patient_id = existing_patient['id']
+                    # Update patient risk level and system notes
+                    c.execute("""
+                        UPDATE patients 
+                        SET risk_level = ?, system_notes = ?, last_updated = CURRENT_TIMESTAMP, age = ?, sex = ?, contact = ?, doctor_name = ?
+                        WHERE id = ?
+                    """, (risk_level, system_notes, data.age, data.sex, data.contact, assigned_doctor, patient_id))
+                else:
+                    # Create new patient with assigned doctor
+                    c.execute("""
+                        INSERT INTO patients (name, age, sex, contact, risk_level, system_notes, last_updated, doctor_name, doctor_id) 
+                        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+                    """, (data.name, data.age, data.sex, data.contact, risk_level, system_notes, assigned_doctor, data.doctor_id))
+                    patient_id = c.lastrowid
+                    
+                # 2. Save Record
+                record_data = data.dict()
+                record_data.pop('name', None)
+                record_data.pop('contact', None)
+                record_data.pop('doctor_id', None) 
+                
+                c.execute("""
+                    INSERT INTO records (
+                        patient_id, input_data, prediction_result, risk_score, risk_level, 
+                        doctor_name, doctor_id, model_probability
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    patient_id, 
+                    json.dumps(record_data), 
+                    int(prediction), 
+                    float(risk_probability), 
+                    risk_level, 
+                    assigned_doctor,
+                    data.doctor_id,
+                    float(risk_probability)
+                ))
+                
+                record_id = c.lastrowid
+                conn.commit()
+                # Success! Break the loop
+                break
+            except sqlite3.OperationalError as e:
+                # Retry if locked
+                if "locked" in str(e):
+                    logger.warning(f"Database locked. Retrying in {retry_delay}s...")
+                    if 'conn' in locals() and conn: conn.close()
+                    time.sleep(retry_delay)
+                else:
+                    raise e
+            finally:
+                if 'conn' in locals() and conn: conn.close()
         else:
-            # Create new patient with assigned doctor
-            c.execute("""
-                INSERT INTO patients (name, age, sex, contact, risk_level, system_notes, last_updated, doctor_name, doctor_id) 
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
-            """, (data.name, data.age, data.sex, data.contact, risk_level, system_notes, assigned_doctor, data.doctor_id))
-            patient_id = c.lastrowid
-            
-        # 2. Save Record with model_probability and doctor_id
-        record_data = data.dict()
-        record_data.pop('name', None)
-        record_data.pop('contact', None)
-        record_data.pop('doctor_id', None) 
-        
-        c.execute("""
-            INSERT INTO records (
-                patient_id, input_data, prediction_result, risk_score, risk_level, 
-                doctor_name, doctor_id, model_probability
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            patient_id, 
-            json.dumps(record_data), 
-            int(prediction), 
-            float(risk_probability), 
-            risk_level, 
-            assigned_doctor,
-            data.doctor_id,
-            float(risk_probability)
-        ))
-        
-        record_id = c.lastrowid
-        conn.commit()
-        conn.close()
+             raise HTTPException(status_code=500, detail="Database busy. Please try again.")
 
         logger.info(f"Prediction successful: Patient ID {patient_id}, Record ID {record_id}, Risk: {risk_level}")
 
