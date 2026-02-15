@@ -41,7 +41,9 @@ app.add_middleware(
     ],
     allow_origin_regex=r"https://.*\.vercel\.app", # Matches any Vercel subdomain
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Health Check & DB Diagnostic
 @app.get("/health")
 def health_check():
