@@ -538,6 +538,9 @@ async def get_dashboard_stats():
             "risk_trends": [],
             "doctor_performance": []
         }
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close()
 
 # PHASE 1: Standardized Analytics Endpoints
 @app.get("/analytics/summary")
@@ -589,6 +592,9 @@ async def get_analytics_summary(doctor_id: Optional[int] = Query(None)):
     except Exception as e:
         logger.error(f"Analytics summary error: {str(e)}")
         return {"critical_cases": 0, "avg_accuracy": 0.0, "total_assessments": 0, "monthly_growth": 0.0}
+    finally:
+         if 'conn' in locals() and conn:
+            conn.close()
 
 @app.get("/analytics/monthly-trends")
 async def get_monthly_trends(doctor_id: Optional[int] = Query(None)):
@@ -628,6 +634,9 @@ async def get_monthly_trends(doctor_id: Optional[int] = Query(None)):
     except Exception as e:
         logger.error(f"Monthly trends error: {str(e)}")
         return []
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close()
 
 @app.get("/analytics/risk-distribution")
 async def get_risk_distribution(doctor_id: Optional[int] = Query(None)):
@@ -653,6 +662,9 @@ async def get_risk_distribution(doctor_id: Optional[int] = Query(None)):
     except Exception as e:
         logger.error(f"Risk distribution error: {str(e)}")
         return []
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close()
 
 @app.get("/analytics/doctor-performance")
 async def get_doctor_performance():
@@ -689,6 +701,9 @@ async def get_doctor_performance():
     except Exception as e:
         logger.error(f"Doctor performance error: {str(e)}")
         return []
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close()
 
 @app.get("/doctors")
 def get_doctors_list():
@@ -701,6 +716,9 @@ def get_doctors_list():
     except Exception as e:
         logger.error(f"Error fetching doctors: {e}")
         return []
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close()
 
 @app.post("/predict", response_model=PredictionResult)
 def predict_heart_disease(data: PatientData):
@@ -835,6 +853,9 @@ def predict_heart_disease(data: PatientData):
                 "trace": traceback.format_exc() if os.getenv("DEBUG") == "True" else "Check server logs"
             }
         )
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close()
 
 @app.post("/patients")
 def create_patient(patient: PatientCreate):
