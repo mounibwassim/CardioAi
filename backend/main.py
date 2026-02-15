@@ -42,8 +42,23 @@ app.add_middleware(
     allow_origin_regex=r"https://.*\.vercel\.app", # Matches any Vercel subdomain
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Health Check & DB Diagnostic
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "version": "3.0"}
+
+@app.get("/health/db")
+def db_diagnostic():
+    """Diagnostic endpoint to verify active database type"""
+    conn = get_db_connection()
+    db_type = "PostgreSQL" if hasattr(conn, 'conn') else "SQLite" # PostgresConnection has 'conn' attr
+    if hasattr(conn, 'close'):
+        conn.close()
+    return {
+        "database_type": db_type,
+        "locking_mode": "Row-Level (No Locking)" if db_type == "PostgreSQL" else "File-Based (Locked)",
+        "worker_process": os.getpid()
+    }
 
 # Load Model and Scaler (Absolute Paths)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
